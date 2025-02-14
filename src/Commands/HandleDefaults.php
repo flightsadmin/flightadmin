@@ -24,6 +24,9 @@ trait HandleDefaults
             'public/js',
             'public/build',
             'public/fonts',
+            'postcss.config.js',
+            'tailwind.config.js',
+            'webpack.mix.js',
         ];
 
         foreach ($deleteFiles as $deleteFile) {
@@ -49,13 +52,24 @@ trait HandleDefaults
             $spatieRoutes =
                 <<<ROUTES
             // Flights Routes
-            Route::middleware(['auth', 'role:super-admin|admin|user'])->prefix(config("admin.adminRoute", "admin"))->group(function () {
-                Route::get('/', App\Livewire\Flight\Flights::class)->name(config("admin.adminRoute", "admin"));
-                Route::get('/flights', App\Livewire\Flight\Flights::class)->name('admin.flights');
-                Route::get('/airlines', App\Livewire\Flight\Airlines::class)->name('admin.airlines');
-                Route::get('/delays', App\Livewire\Flight\Delays::class)->name('admin.delays');
-                Route::get('/services', App\Livewire\Flight\Services::class)->name('admin.services');
-                Route::get('/registrations', App\Livewire\Flight\Registrations::class)->name('admin.registrations');
+            Route::middleware(['auth', 'role:super-admin|admin|user'])
+                ->prefix(config("flightadmin.adminRoute", "admin"))->group(function () {
+                Route::get('/database', function () {
+                    Artisan::call('migrate:fresh');
+                    Artisan::call('db:seed');
+                    return redirect()->back()->with('success', 'Database migrated and seeded successfully!');
+                })->name('migrate');
+
+                // Public routes
+                Route::get('airlines', App\Livewire\Airline\Index::class)->name('airlines.index');
+                Route::get('airlines/{airline}', App\Livewire\Airline\Show::class)->name('airlines.show');
+                Route::get('aircraft_types', App\Livewire\AircraftType\Manager::class)->name('aircraft_types.index');
+                Route::get('aircraft_types/{aircraft_type}', App\Livewire\AircraftType\Show::class)->name('aircraft_types.show');
+                Route::get('flights', App\Livewire\Flight\FlightManager::class)->name('flights.index');
+                Route::get('flights/{flight}', App\Livewire\Flight\Show::class)->name('flights.show');
+                Route::get('flights/{flight}/containers', App\Livewire\Container\Manager::class)->name('flights.containers');
+                Route::get('containers', App\Livewire\Container\Manager::class)->name('containers.index');
+                Route::get('crews', App\Livewire\Crew\Manager::class)->name('crews.index');
                 Route::get('/schedules', App\Livewire\Flight\Schedules::class)->name('admin.schedules');
             });
             

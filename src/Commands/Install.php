@@ -33,6 +33,7 @@ class Install extends Command
 
             $this->defaultSetting();
             $this->defaultInstall();
+            $this->flightInstall();
 
             // Update Auth Routes
             $authRoutes = "\nAuth::routes(['register' => false]);\nRoute::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');";
@@ -50,7 +51,6 @@ class Install extends Command
             Artisan::call('optimize:clear', [], $this->getOutput());
             Artisan::call('storage:link', [], $this->getOutput());
             Artisan::call('db:seed', ['--class' => 'AdminSeeder'], $this->getOutput());
-            Artisan::call('db:seed', ['--class' => 'FlightSeeder'], $this->getOutput());
 
             $this->warn('Running: <info>npm install</info> Please wait...');
             exec('npm install');
@@ -73,7 +73,7 @@ class Install extends Command
 
             $viewsDirectory = resource_path('views');
             $searchExtends = "@extends('layouts.app')";
-            $replaceExtends = "@extends('components.layouts.app')";
+            $replaceExtends = "@extends('layouts.app')";
             $this->correctLayoutExtention($viewsDirectory, $searchExtends, $replaceExtends);
             $this->line('');
 
