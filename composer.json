@@ -1,0 +1,56 @@
+{
+    "name": "flightsadmin/flightadmin",
+    "description": "Modules Manager for several Admin Panels. Check Branch for Specific Module",
+    "keywords": [
+        "flightadmin",
+        "admin"
+    ],
+    "homepage": "https://github.com/flightsadmin/flightadmin",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "George Chitechi",
+            "email": "george@flightadmin.info",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7|^8",
+        "dompdf/dompdf": "^2",
+        "laravel/framework": ">9.20",
+        "laravel/ui": "^4",
+        "livewire/livewire": "^3",
+        "spatie/laravel-permission": "^6"
+    },
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "Flightsadmin\\Flightadmin\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Flightsadmin\\Flightadmin\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Flightsadmin\\Flightadmin\\AdminServiceProvider"
+            ],
+            "aliases": {
+                "Flightadmin": "Flightsadmin\\Flightadmin\\AdminFacade"
+            }
+        }
+    }
+}
