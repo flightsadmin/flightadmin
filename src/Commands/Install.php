@@ -1,6 +1,6 @@
 <?php
 
-namespace Flightsadmin\Admin\Commands;
+namespace Flightsadmin\Flightadmin\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
