@@ -12,8 +12,8 @@ class Install extends Command
     protected $filesystem;
     private $replaces = [];
 
-    protected $signature = 'admin:install';
-    protected $description = 'Install Admin App';
+    protected $signature = 'flightadmin:install';
+    protected $description = 'Install Flight Admin App';
 
     public function handle()
     {

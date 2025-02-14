@@ -34,7 +34,7 @@ trait HandleDefaults
             }
         }
 
-        $this->crudStubDir = __DIR__ . '/../../resources/install/deafaultsFiles';
+        $this->crudStubDir = __DIR__ . '/../../resources/install';
         $this->generateCrudFiles();
     }
 

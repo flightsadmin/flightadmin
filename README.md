@@ -1,9 +1,9 @@
 # Admin Manager for multiple Modules
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/flightsadmin/admin.svg?style=flat-square)](https://packagist.org/packages/flightsadmin/admin)
-[![Total Downloads](https://img.shields.io/packagist/dt/flightsadmin/admin.svg?style=flat-square)](https://packagist.org/packages/flightsadmin/admin)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/flightsadmin/flightadmin.svg?style=flat-square)](https://packagist.org/packages/flightsadmin/flightadmin)
+[![Total Downloads](https://img.shields.io/packagist/dt/flightsadmin/flightadmin.svg?style=flat-square)](https://packagist.org/packages/flightsadmin/flightadmin)
 
-Get multiple admin panels using different branches of this package. Below Modules are supported.
+Get multiple flightadmin panels using different branches of this package. Below Modules are supported.
 
 | # | Module   |      Branch      |  Installation |
 |:------ |:----------|:-------------|:------|
