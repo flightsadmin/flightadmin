@@ -28,42 +28,34 @@ class Users extends Component
     public function submit()
     {
         $validatedData = $this->validate([
-            'name'          => 'required|min:6',
-            'email'         => 'required|email',
-            'phone'         => 'nullable|regex:/^\+?\d{9,11}$/',
-            'title'         => 'nullable|min:6',
+            'name' => 'required|min:6',
+            'email' => 'required|email',
             'selectedRoles' => 'required',
-            'password'      => $this->userId ? 'nullable' : 'required|confirmed',
-            'photo'         => $this->userId ? 'nullable' : 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'password' => $this->userId ? 'nullable' : 'required|confirmed',
         ]);
-        if ($this->photo && !is_string($this->photo)) {
-        $validatedData['photo'] = $this->photo->storeAs('users', explode('@', $validatedData['email'])[0] . '.'.$this->photo->getClientOriginalExtension() , 'public');
-        } else {
-            unset($validatedData['photo']);
-        }
+
         if (!empty($this->password)) {
             $validatedData['password'] = Hash::make($this->password);
         } else {
             unset($validatedData['password']);
         }
-        
+
         $user = User::updateOrCreate(['id' => $this->userId], $validatedData);
         $user->syncRoles(collect($this->selectedRoles)->map(function ($role) {
-            return (int)$role;
+            return (int) $role;
         }));
-        
-        if($user->wasRecentlyCreated){
+
+        if ($user->wasRecentlyCreated) {
             $emailData = [
-                'name'      => $this->name,
-                'email'     => $this->email,
-                'phone'     => $this->phone,
-                'roles'     => $user->roles->pluck('name')->toArray(),
-                'password'  => $this->password
+                'name' => $this->name,
+                'email' => $this->email,
+                'roles' => $user->roles->pluck('name')->toArray(),
+                'password' => $this->password
             ];
-            
-            Mail::send('mails.email', $emailData, function($message) use($emailData) {
+
+            Mail::send('mails.email', $emailData, function ($message) use ($emailData) {
                 $message->to($emailData['email'], $emailData['name'])
-                ->subject('New Account for '. $emailData['name']);
+                    ->subject('New Account for ' . $emailData['name']);
             });
         }
         $this->dispatch(
@@ -78,15 +70,14 @@ class Users extends Component
     {
         $user = User::findOrFail($id);
         $this->userId = $id;
-        $this->name  = $user->name;
+        $this->name = $user->name;
         $this->email = $user->email;
         $this->phone = $user->phone;
-        $this->photo = $user->photo;
-        $this->title = $user->title;
         $this->selectedRoles = $user->roles->pluck('id')->toArray();
     }
 
-    public function details() {
+    public function details()
+    {
         $this->edit(auth()->user()->id);
         return view('livewire.admin.users.details');
     }
@@ -95,9 +86,6 @@ class Users extends Component
     {
         $user = User::findOrFail($userId);
 
-        if($user->photo != 'users/noimage.jpg') {
-            Storage::disk('public')->delete($user->photo);
-        }
         $user->delete();
         $this->dispatch(
             'closeModal',

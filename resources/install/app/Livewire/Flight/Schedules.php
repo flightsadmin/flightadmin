@@ -3,14 +3,10 @@
 namespace App\Livewire\Flight;
 
 use Carbon\Carbon;
-use App\Models\Route;
 use App\Models\Flight;
-use App\Models\Airline;
 use Livewire\Component;
-use App\Models\Registration;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Schedules extends Component
 {
@@ -73,8 +69,8 @@ class Schedules extends Component
                 $flight->registration = '';
                 $flight->origin = strtoupper($this->flightFields[$flightNumber]['origin'] ?? 'DOH');
                 $flight->destination = strtoupper($this->flightFields[$flightNumber]['destination'] ?? 'MCT');
-                $flight->scheduled_time_arrival = $date->format('Y-m-d '). $this->flightFields[$flightNumber]['arrival'] ?? '00:00';
-                $flight->scheduled_time_departure = $date->format('Y-m-d '). $this->flightFields[$flightNumber]['departure'] ?? '00:00';
+                $flight->scheduled_time_arrival = $date->format('Y-m-d ') . $this->flightFields[$flightNumber]['arrival'] ?? '00:00';
+                $flight->scheduled_time_departure = $date->format('Y-m-d ') . $this->flightFields[$flightNumber]['departure'] ?? '00:00';
                 $flight->flight_type = strtoupper($this->flightFields[$flightNumber]['flight_type'] ?? 'departure');
                 $flight->save();
                 $date = $date->next($day);
@@ -87,104 +83,5 @@ class Schedules extends Component
         );
         $this->reset(['selectedDays', 'flightNumbers', 'flightFields']);
         return $this->redirect(route('admin.flights'), true);
-    }
-
-    public function import()
-    {
-        // Validate the file upload
-        $this->validate([
-            'file' => 'nullable|mimes:csv,txt'
-        ]);
-
-        // Read the CSV file using the `fgetcsv()` function
-        $csvFile = fopen($this->file->getRealPath(), 'r');
-        $headerRow = true;
-        while (($row = fgetcsv($csvFile)) !== false) {
-            // Skip the header row
-            if ($headerRow) {
-                $headerRow = false;
-                continue;
-            }
-
-            $flight = new Flight;
-            $flight->airline_id = $row[0];
-            $flight->flight_no = $row[1];
-            $flight->registration = $row[2];
-            $flight->origin = $row[3];
-            $flight->destination = $row[4];
-            $flight->scheduled_time_arrival = date('Y-m-d H:i', strtotime($row[5]));
-            $flight->scheduled_time_departure = date('Y-m-d H:i', strtotime($row[6]));
-            $flight->flight_type = $row[7];
-            $flight->save();
-        }
-
-        $this->dispatch(
-            'closeModal',
-            icon: 'success',
-            message: 'Schedule Imported Successfully.',
-        );
-        return $this->redirect(route('admin.flights'), true);
-    }
-
-    public function downloadSample()
-    {
-        $filename = 'flights.csv';
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename={$filename}",
-        ];
-    
-        $callback = function () {
-            $file = fopen('php://output', 'w');
-    
-            $headers = [
-                'airline_id',
-                'flight_no',
-                'registration',
-                'origin',
-                'destination',
-                'scheduled_time_arrival',
-                'scheduled_time_departure',
-                'flight_type',
-            ];
-    
-            fputcsv($file, $headers);
-            
-            $start_date = Carbon::now('Asia/Qatar');
-            $end_date = $start_date->copy()->addDays(30);
-            $airlines = Airline::all();
-            
-            while ($start_date <= $end_date) {
-                foreach ($airlines as $key => $value) {
-                    foreach (Route::latest()->where('airline_id', $value->id)->get() as $sector) {
-                        $airlineId = $value->id;
-                        $flightNo = $value->iata_code . str_pad(rand(1, 999), 4, '0', STR_PAD_LEFT);
-                        $registration =  Registration::where('airline_id', $airlineId)->pluck('registration')->first();
-                        $origin = $sector->origin;
-                        $destination = $sector->destination;
-                        $arrivalTime = $start_date->copy()->addMinutes(rand(0, 1440))->format('Y-m-d H:i:s');
-                        $departureTime = date('Y-m-d H:i:s', strtotime($arrivalTime . ' + ' . rand(60, 180) . ' minutes'));
-                        $flightType = ($key % 2 == 0) ? 'departure' : 'arrival';
-    
-                        fputcsv($file, [
-                            $airlineId,
-                            $flightNo,
-                            $registration,
-                            $origin,
-                            $destination,
-                            $arrivalTime,
-                            $departureTime,
-                            $flightType,
-                        ]);
-                    }
-                }
-                $start_date->addDay();
-            }
-    
-            fclose($file);
-        };
-    
-        return new StreamedResponse($callback, 200, $headers);
-        session()->flash('message', 'Sample File Downloaded Successfully.');
     }
 }
