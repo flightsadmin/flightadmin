@@ -3,6 +3,7 @@
 namespace App\Livewire\Airline;
 
 use App\Models\Airline;
+use App\Models\Container;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -34,7 +35,7 @@ class UldManager extends Component
     ];
 
     public $uldUnitForm = [
-        'number' => '',
+        'container_number' => '',
         'serviceable' => true,
     ];
 
@@ -52,7 +53,6 @@ class UldManager extends Component
                 'requires_adjacent_positions' => true,
                 'requires_vertical_positions' => true,
             ],
-            'units' => [],
         ],
         'ake' => [
             'code' => 'AKE',
@@ -67,7 +67,6 @@ class UldManager extends Component
                 'requires_adjacent_positions' => false,
                 'requires_vertical_positions' => false,
             ],
-            'units' => [],
         ],
     ];
 
@@ -80,7 +79,7 @@ class UldManager extends Component
     {
         $uldSettings = $this->airline->settings()->where('key', 'uld_types')->first();
 
-        if (! $uldSettings) {
+        if (!$uldSettings) {
             return $this->initializeDefaultUldTypes();
         }
 
@@ -110,7 +109,7 @@ class UldManager extends Component
         $this->editingUldKey = $key;
         $uldTypes = $this->getUldTypes();
 
-        if (! isset($uldTypes[$key])) {
+        if (!isset($uldTypes[$key])) {
             $this->dispatch('alert', icon: 'error', message: 'ULD type not found.');
 
             return;
@@ -138,14 +137,11 @@ class UldManager extends Component
         $uldTypes = $this->getUldTypes();
         $key = $this->editingUldKey ?? strtolower($this->uldForm['code']);
 
-        if (! $this->editingUldKey && isset($uldTypes[$key])) {
+        if (!$this->editingUldKey && isset($uldTypes[$key])) {
             $this->addError('uldForm.code', 'This ULD code already exists.');
 
             return;
         }
-
-        // Preserve existing units if editing, or initialize empty array if new
-        $existingUnits = $this->editingUldKey ? ($uldTypes[$key]['units'] ?? []) : [];
 
         $uldTypes[$key] = [
             'code' => $this->uldForm['code'],
@@ -160,7 +156,6 @@ class UldManager extends Component
                 'requires_adjacent_positions' => (bool) $this->uldForm['restrictions']['requires_adjacent_positions'],
                 'requires_vertical_positions' => (bool) $this->uldForm['restrictions']['requires_vertical_positions'],
             ],
-            'units' => $existingUnits,
         ];
 
         $this->airline->settings()->updateOrCreate(
@@ -170,16 +165,26 @@ class UldManager extends Component
 
         $this->dispatch('uld-saved');
         $this->resetUldForm();
-        $this->dispatch('alert', icon: 'success', message: 'ULD type '.($this->editingUldKey ? 'updated' : 'created').' successfully.');
+        $this->dispatch('alert', icon: 'success', message: 'ULD type ' . ($this->editingUldKey ? 'updated' : 'created') . ' successfully.');
     }
 
     public function deleteUldType($key)
     {
         $uldTypes = $this->getUldTypes();
 
-        if (! isset($uldTypes[$key])) {
+        if (!isset($uldTypes[$key])) {
             $this->dispatch('alert', icon: 'error', message: 'ULD type not found.');
 
+            return;
+        }
+
+        // Check if there are any containers of this type
+        $containersCount = Container::where('airline_id', $this->airline->id)
+            ->where('uld_type', $key)
+            ->count();
+
+        if ($containersCount > 0) {
+            $this->dispatch('alert', icon: 'error', message: "Cannot delete ULD type. {$containersCount} containers of this type exist.");
             return;
         }
 
@@ -221,102 +226,145 @@ class UldManager extends Component
     public function createUldUnit()
     {
         $this->validate([
-            'uldUnitForm.number' => 'required|string|max:20',
+            'uldUnitForm.container_number' => 'required|string|max:20',
             'uldUnitForm.serviceable' => 'required|boolean',
         ]);
 
         $uldTypes = $this->getUldTypes();
 
-        if (! isset($uldTypes[$this->selectedUldType])) {
+        if (!isset($uldTypes[$this->selectedUldType])) {
             $this->dispatch('alert', icon: 'error', message: 'ULD type not found.');
-
             return;
         }
 
-        // Check if unit number already exists
-        $units = $uldTypes[$this->selectedUldType]['units'] ?? [];
-        $existingUnit = collect($units)->firstWhere('number', $this->uldUnitForm['number']);
+        // Get tare weight and max weight from ULD type
+        $tareWeight = $uldTypes[$this->selectedUldType]['tare_weight'] ?? 60;
+        $maxWeight = $uldTypes[$this->selectedUldType]['max_gross_weight'] ?? 2000;
 
-        if ($existingUnit && ! $this->editingUldUnitKey) {
-            $this->addError('uldUnitForm.number', 'This unit number already exists.');
+        // Generate a container number with ULD type code if not provided
+        if (!$this->editingUldUnitKey) {
+            $uldCode = $uldTypes[$this->selectedUldType]['code'];
+            $baseNumber = $this->uldUnitForm['container_number'];
 
+            // If the container number doesn't already include the ULD code, prepend it
+            if (!str_starts_with($baseNumber, $uldCode)) {
+                $this->uldUnitForm['container_number'] = $uldCode . $baseNumber;
+            }
+        }
+
+        // Check if container number already exists
+        $existingContainer = Container::where('airline_id', $this->airline->id)
+            ->where('container_number', $this->uldUnitForm['container_number'])
+            ->first();
+
+        if ($existingContainer && !$this->editingUldUnitKey) {
+            $this->addError('uldUnitForm.container_number', 'This container number already exists.');
             return;
         }
 
-        if ($this->editingUldUnitKey) {
-            // Update existing unit
-            $units = collect($units)->map(function ($unit) {
-                if ($unit['number'] === $this->editingUldUnitKey) {
-                    return [
-                        'number' => $this->uldUnitForm['number'],
+        try {
+            if ($this->editingUldUnitKey) {
+                // Update existing container
+                Container::where('airline_id', $this->airline->id)
+                    ->where('container_number', $this->editingUldUnitKey)
+                    ->update([
+                        'container_number' => $this->uldUnitForm['container_number'],
+                        'tare_weight' => $tareWeight,
+                        'max_weight' => $maxWeight,
                         'serviceable' => (bool) $this->uldUnitForm['serviceable'],
-                    ];
-                }
+                        'uld_type' => $this->selectedUldType,
+                    ]);
+            } else {
+                // Create new container
+                Container::create([
+                    'airline_id' => $this->airline->id,
+                    'container_number' => $this->uldUnitForm['container_number'],
+                    'tare_weight' => $tareWeight,
+                    'max_weight' => $maxWeight,
+                    'serviceable' => (bool) $this->uldUnitForm['serviceable'],
+                    'uld_type' => $this->selectedUldType,
+                ]);
+            }
 
-                return $unit;
-            })->toArray();
-        } else {
-            // Add new unit
-            $units[] = [
-                'number' => $this->uldUnitForm['number'],
-                'serviceable' => (bool) $this->uldUnitForm['serviceable'],
-            ];
+            $this->resetUldUnitForm();
+            $this->dispatch('alert', icon: 'success', message: 'ULD unit ' . ($this->editingUldUnitKey ? 'updated' : 'created') . ' successfully.');
+        } catch (\Exception $e) {
+            $this->dispatch('alert', icon: 'error', message: 'Error saving ULD unit: ' . $e->getMessage());
         }
-
-        $uldTypes[$this->selectedUldType]['units'] = $units;
-
-        $this->airline->settings()->updateOrCreate(
-            ['key' => 'uld_types'],
-            ['value' => json_encode($uldTypes)]
-        );
-
-        $this->resetUldUnitForm();
-        $this->dispatch('alert', icon: 'success', message: 'ULD unit '.($this->editingUldUnitKey ? 'updated' : 'created').' successfully.');
     }
 
-    public function editUldUnit($unitNumber)
+    public function editUldUnit($containerNumber)
     {
-        $uldTypes = $this->getUldTypes();
-        $units = $uldTypes[$this->selectedUldType]['units'] ?? [];
-        $unit = collect($units)->firstWhere('number', $unitNumber);
+        $container = Container::where('airline_id', $this->airline->id)
+            ->where('container_number', $containerNumber)
+            ->first();
 
-        if (! $unit) {
+        if (!$container) {
             $this->dispatch('alert', icon: 'error', message: 'ULD unit not found.');
-
             return;
         }
 
-        $this->editingUldUnitKey = $unitNumber;
+        $this->editingUldUnitKey = $containerNumber;
         $this->uldUnitForm = [
-            'number' => $unit['number'],
-            'serviceable' => $unit['serviceable'],
+            'container_number' => $container->container_number,
+            'serviceable' => $container->serviceable,
         ];
     }
 
-    public function deleteUldUnit($unitNumber)
+    public function deleteUldUnit($containerNumber)
     {
-        $uldTypes = $this->getUldTypes();
-        $units = $uldTypes[$this->selectedUldType]['units'] ?? [];
+        try {
+            // Check if container is assigned to any flights
+            $container = Container::where('airline_id', $this->airline->id)
+                ->where('container_number', $containerNumber)
+                ->first();
 
-        $units = collect($units)->reject(function ($unit) use ($unitNumber) {
-            return $unit['number'] === $unitNumber;
-        })->values()->toArray();
+            if (!$container) {
+                $this->dispatch('alert', icon: 'error', message: 'ULD unit not found.');
+                return;
+            }
 
-        $uldTypes[$this->selectedUldType]['units'] = $units;
+            if ($container->flights()->count() > 0) {
+                $this->dispatch('alert', icon: 'error', message: 'Cannot delete container that is assigned to flights.');
+                return;
+            }
 
-        $this->airline->settings()->updateOrCreate(
-            ['key' => 'uld_types'],
-            ['value' => json_encode($uldTypes)]
-        );
+            // Check if container has baggage or cargo
+            if ($container->baggage()->count() > 0 || $container->cargo()->count() > 0) {
+                $this->dispatch('alert', icon: 'error', message: 'Cannot delete container that contains baggage or cargo.');
+                return;
+            }
 
-        $this->dispatch('alert', icon: 'success', message: 'ULD unit deleted successfully.');
+            $container->delete();
+            $this->dispatch('alert', icon: 'success', message: 'ULD unit deleted successfully.');
+        } catch (\Exception $e) {
+            $this->dispatch('alert', icon: 'error', message: 'Error deleting ULD unit: ' . $e->getMessage());
+        }
+    }
+
+    public function toggleServiceability($containerNumber)
+    {
+        $container = Container::where('airline_id', $this->airline->id)
+            ->where('container_number', $containerNumber)
+            ->first();
+
+        if (!$container) {
+            $this->dispatch('alert', icon: 'error', message: 'ULD unit not found.');
+            return;
+        }
+
+        $container->update([
+            'serviceable' => !$container->serviceable
+        ]);
+
+        $this->dispatch('alert', icon: 'success', message: 'Container marked as ' . ($container->serviceable ? 'serviceable' : 'unserviceable') . '.');
     }
 
     public function resetUldUnitForm()
     {
         $this->editingUldUnitKey = null;
         $this->uldUnitForm = [
-            'number' => '',
+            'container_number' => '',
             'serviceable' => true,
         ];
     }
@@ -333,10 +381,47 @@ class UldManager extends Component
         }
     }
 
+    public function getContainersForSelectedType()
+    {
+        if (!$this->selectedUldType) {
+            return collect();
+        }
+
+        return $this->airline->containers->where('uld_type', $this->selectedUldType);
+    }
+
+    public function getContainerStats()
+    {
+        $containers = $this->airline->containers;
+        $uldTypes = $this->getUldTypes();
+        $stats = [];
+
+        foreach ($uldTypes as $key => $type) {
+            $total = $containers->where('uld_type', $key)->count();
+
+            $serviceable = $containers->where('uld_type', $key)->where('serviceable', true)->count();
+
+            $stats[$key] = [
+                'total' => $total,
+                'serviceable' => $serviceable,
+                'unserviceable' => $total - $serviceable,
+                'available' => $serviceable,
+            ];
+        }
+
+        return $stats;
+    }
+
     public function render()
     {
+        $uldTypes = $this->getUldTypes();
+        $containers = $this->getContainersForSelectedType();
+        $containerStats = $this->getContainerStats();
+
         return view('livewire.airline.uld-manager', [
-            'uldTypes' => $this->getUldTypes(),
+            'uldTypes' => $uldTypes,
+            'containers' => $containers,
+            'containerStats' => $containerStats,
         ]);
     }
 }

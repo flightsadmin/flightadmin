@@ -17,21 +17,13 @@
                             <th>Weights</th>
                             <th>Positions</th>
                             <th>Allowed Holds</th>
-                            <th>Units</th>
-                            <th class="text-end">Actions</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($uldTypes as $key => $value)
                             <tr>
-                                <td>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="p-2 rounded" style="background-color: {{ $value['color'] }}">
-                                            <i class="bi bi-{{ $value['icon'] }} text-white"></i>
-                                        </div>
-                                        <strong>{{ $value['code'] }}</strong>
-                                    </div>
-                                </td>
+                                <td> <strong>{{ $value['code'] }}</strong> </td>
                                 <td>{{ $value['name'] }}</td>
                                 <td>
                                     <div class="small">
@@ -56,9 +48,6 @@
                                     @foreach ($value['allowed_holds'] as $hold)
                                         <span class="badge bg-secondary">{{ $hold }}</span>
                                     @endforeach
-                                </td>
-                                <td>
-                                    {{ count($value['units'] ?? []) }}
                                 </td>
                                 <td>
                                     <div class="d-flex justify-content-end gap-1">
@@ -218,7 +207,7 @@
     <!-- ULD Units Modal -->
     <div class="modal fade" id="uldUnitsModal" tabindex="-1" aria-labelledby="uldUnitsModalLabel" aria-hidden="true"
         wire:ignore.self>
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="uldUnitsModalLabel">
@@ -232,15 +221,15 @@
                     @if ($selectedUldType)
                         <form wire:submit.prevent="createUldUnit" class="mb-4">
                             <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Unit Number</label>
+                                <div class="col-md-4">
+                                    <label class="form-label">Container Number</label>
                                     <input type="text" class="form-control form-control-sm"
-                                        wire:model="uldUnitForm.number" placeholder="Enter unit number (e.g. PMC-12345)">
-                                    @error('uldUnitForm.number')
+                                        wire:model="uldUnitForm.container_number" placeholder="Enter container number (e.g. PMC12345)">
+                                    @error('uldUnitForm.container_number')
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label">Serviceable</label>
                                     <div class="form-check form-switch">
                                         <input class="form-check-input form-check-input-sm" type="checkbox"
@@ -250,18 +239,27 @@
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>
+                                <div class="col-md-4">
+                                    <div class="mt-3 d-flex justify-content-between align-items-center">
+                                        @if ($editingUldUnitKey)
+                                            <button type="button" class="btn btn-sm btn-secondary" wire:click="resetUldUnitForm">
+                                                <i class="bi bi-x-lg"></i>
+                                                Cancel
+                                            </button>
+                                        @endif
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="bi bi-plus-lg"></i>
+                                            {{ $editingUldUnitKey ? 'Update' : 'Add' }} Unit
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mt-3 d-flex justify-content-between align-items-center">
-                                @if ($editingUldUnitKey)
-                                    <button type="button" class="btn btn-sm btn-secondary" wire:click="resetUldUnitForm">
-                                        <i class="bi bi-x-lg"></i>
-                                        Cancel
-                                    </button>
-                                @endif
-                                <button class="btn btn-sm btn-primary">
-                                    <i class="bi bi-plus-lg"></i>
-                                    {{ $editingUldUnitKey ? 'Update' : 'Add' }} Unit
-                                </button>
+                            <div class="mt-3">
+                                <div class="alert alert-info small">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Tare weight ({{ $uldTypes[$selectedUldType]['tare_weight'] }}kg) and max weight
+                                    ({{ $uldTypes[$selectedUldType]['max_gross_weight'] }}kg) will be automatically set from the ULD type.
+                                </div>
                             </div>
                         </form>
 
@@ -269,29 +267,43 @@
                             <table class="table table-sm table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Unit Number</th>
+                                        <th>Container Number</th>
+                                        <th>Weights</th>
                                         <th>Status</th>
                                         <th class="text-end">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($uldTypes[$selectedUldType]['units'] ?? [] as $unit)
+                                    @forelse($containers as $container)
                                         <tr>
-                                            <td>{{ $unit['number'] }}</td>
+                                            <td>{{ $container->container_number }}</td>
                                             <td>
-                                                <span class="badge bg-{{ $unit['serviceable'] ? 'success' : 'danger' }}">
-                                                    {{ $unit['serviceable'] ? 'Serviceable' : 'Unserviceable' }}
+                                                <div class="small">
+                                                    <div>Max: {{ $container->max_weight }}kg</div>
+                                                    <div class="text-muted">Tare: {{ $container->tare_weight }}kg</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ $container->serviceable ? 'success' : 'danger' }}">
+                                                    {{ $container->serviceable ? 'Serviceable' : 'Unserviceable' }}
                                                 </span>
                                             </td>
                                             <td>
                                                 <div class="d-flex justify-content-end gap-1">
+                                                    <button class="btn btn-sm btn-warning"
+                                                        wire:click="toggleServiceability('{{ $container->container_number }}')"
+                                                        title="{{ $container->serviceable ? 'Mark as unserviceable' : 'Mark as serviceable' }}">
+                                                        <i class="bi bi-{{ $container->serviceable ? 'x-circle' : 'check-circle' }}"></i>
+                                                    </button>
                                                     <button class="btn btn-sm btn-primary"
-                                                        wire:click="editUldUnit('{{ $unit['number'] }}')">
+                                                        wire:click="editUldUnit('{{ $container->container_number }}')"
+                                                        title="Edit container">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
                                                     <button class="btn btn-sm btn-danger"
-                                                        wire:click="deleteUldUnit('{{ $unit['number'] }}')"
-                                                        wire:confirm="Are you sure you want to delete this unit?">
+                                                        wire:click="deleteUldUnit('{{ $container->container_number }}')"
+                                                        wire:confirm="Are you sure you want to delete this container?"
+                                                        title="Delete container">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </div>
@@ -299,13 +311,41 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="3" class="text-center">No units found</td>
+                                            <td colspan="4" class="text-center">No containers found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
                     @endif
+                </div>
+                <div class="modal-footer">
+                    <div class="container-fluid p-0">
+                        <div class="row g-2">
+                            @if ($selectedUldType && isset($containerStats[$selectedUldType]))
+                                <div class="col-md-12">
+                                    <div class="d-flex justify-content-between small">
+                                        <div>
+                                            <span class="badge bg-secondary">Total:
+                                                {{ $containerStats[$selectedUldType]['total'] }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-success">Serviceable:
+                                                {{ $containerStats[$selectedUldType]['serviceable'] }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-danger">Unserviceable:
+                                                {{ $containerStats[$selectedUldType]['unserviceable'] }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-info">Available:
+                                                {{ $containerStats[$selectedUldType]['available'] }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

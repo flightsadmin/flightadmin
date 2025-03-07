@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        Airline::factory()->create()->each(function ($airline) {
+        Airline::factory(2)->create()->each(function ($airline) {
             AircraftType::factory()->forAirline($airline)->create()->each(function ($aircraftType) use ($airline) {
                 Aircraft::factory(3)->create([
                     'airline_id' => $airline->id,
@@ -52,15 +52,15 @@ class DatabaseSeeder extends Seeder
                             'flight_id' => $flight->id,
                         ]);
 
-                        foreach (['baggage', 'cargo'] as $type) {
-                            Container::factory(rand(1, 2))->forAirline($airline)->create()->each(function ($container) use ($flight, $type) {
-                                $flight->containers()->attach($container->id, [
-                                    'type' => $type,
-                                    'weight' => $container->tare_weight,
-                                    'status' => 'unloaded',
-                                ]);
-                            });
-                        }
+                        // foreach (['baggage', 'cargo'] as $type) {
+                        //     Container::factory(rand(1, 2))->forAirline($airline)->create()->each(function ($container) use ($flight, $type) {
+                        //         $flight->containers()->attach($container->id, [
+                        //             'type' => $type,
+                        //             'weight' => $container->tare_weight,
+                        //             'status' => 'unloaded',
+                        //         ]);
+                        //     });
+                        // }
                     });
                 });
             });
@@ -71,8 +71,8 @@ class DatabaseSeeder extends Seeder
             AircraftConfigSeeder::class,
             EnvelopeSeeder::class,
             CrewSeatingSeeder::class,
-            UldTypeSeeder::class,
             ScheduleSeeder::class,
+            UldSeeder::class,
         ]);
     }
 }

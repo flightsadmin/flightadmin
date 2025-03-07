@@ -48,6 +48,11 @@ class Airline extends Model
         return $this->hasMany(AircraftType::class);
     }
 
+    public function containers()
+    {
+        return $this->hasMany(Container::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->where('active', true);

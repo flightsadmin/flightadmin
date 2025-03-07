@@ -4,17 +4,20 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('containers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('airline_id')->constrained()->cascadeOnDelete();
             $table->string('container_number')->unique();
+            $table->string('uld_type')->nullable();
             $table->integer('tare_weight')->default(60);
             $table->integer('max_weight')->default(2000);
+            $table->boolean('serviceable')->default(true);
             $table->timestamps();
+
+            $table->unique(['airline_id', 'container_number']);
         });
 
         Schema::create('container_flight', function (Blueprint $table) {

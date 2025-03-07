@@ -15,8 +15,13 @@ class Container extends Model
         'airline_id',
         'container_number',
         'tare_weight',
-        'weight',
         'max_weight',
+        'serviceable',
+        'uld_type',
+    ];
+
+    protected $casts = [
+        'serviceable' => 'boolean',
     ];
 
     public function airline(): BelongsTo
