@@ -26,9 +26,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('aircraft_types/{aircraft_type}', App\Livewire\AircraftType\Show::class)->name('aircraft_types.show');
     Route::get('schedules', App\Livewire\Schedule\ScheduleManager::class)->name('schedules.index');
     Route::get('flights', App\Livewire\Flight\FlightManager::class)->name('flights.index');
-    Route::get('flights/{flight}', App\Livewire\Flight\Show::class)
-        ->middleware(['require.aircraft'])
-        ->name('flights.show');
+    Route::get('flights/{flight}', App\Livewire\Flight\Show::class)->middleware(['require.aircraft'])->name('flights.show');
     Route::get('flights/{flight}/containers', App\Livewire\Container\Manager::class)->name('flights.containers');
     Route::get('flights/{flight}/boarding', App\Livewire\Flight\BoardingControl::class)->name('flights.boarding');
     Route::get('containers', App\Livewire\Container\Manager::class)->name('containers.index');
