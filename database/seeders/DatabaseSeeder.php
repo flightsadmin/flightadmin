@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        Airline::factory(2)->create()->each(function ($airline) {
+        Airline::factory()->create()->each(function ($airline) {
             AircraftType::factory()->forAirline($airline)->create()->each(function ($aircraftType) use ($airline) {
                 Aircraft::factory(3)->create([
                     'airline_id' => $airline->id,
@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
                 ])->each(function ($aircraft) use ($airline) {
                     Flight::factory(1)->forAirline($airline)->create([
                         'aircraft_id' => $aircraft->id,
-                    ])->each(function ($flight) use ($airline) {
+                    ])->each(function ($flight) {
                         $captain = Crew::factory()->captain()->create();
                         $captain->flights()->attach($flight);
 

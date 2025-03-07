@@ -266,13 +266,20 @@ class LoadingManager extends Component
             return;
         }
 
-        $this->searchResults = Container::where('container_number', 'like', "%{$this->searchQuery}%")
+        $airlineId = $this->flight->airline_id;
+
+        $this->searchResults = Container::where('airline_id', $airlineId)
+            ->where('container_number', 'like', "%{$this->searchQuery}%")
+            ->where('serviceable', true)
             ->limit(10)
             ->get()
             ->map(function ($container) {
                 return [
                     'id' => $container->id,
                     'container_number' => $container->container_number,
+                    'uld_type' => $container->uld_type,
+                    'tare_weight' => $container->tare_weight,
+                    'max_weight' => $container->max_weight,
                     'is_attached' => collect($this->containers)->contains('id', $container->id),
                 ];
             })->toArray();

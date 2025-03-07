@@ -101,7 +101,7 @@ class UldSeeder extends Seeder
                         [
                             'tare_weight' => $type['tare_weight'],
                             'max_weight' => $type['max_gross_weight'],
-                            'serviceable' => fake()->boolean(),
+                            'serviceable' => true,
                             'uld_type' => $key,
                         ]
                     );

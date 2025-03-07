@@ -224,34 +224,27 @@
                                 <div class="col-md-4">
                                     <label class="form-label">Container Number</label>
                                     <input type="text" class="form-control form-control-sm"
-                                        wire:model="uldUnitForm.container_number" placeholder="Enter container number (e.g. PMC12345)">
-                                    @error('uldUnitForm.container_number')
-                                        <div class="text-danger small">{{ $message }}</div>
-                                    @enderror
+                                        wire:model="uldUnitForm.container_number" placeholder="Enter ULD Unit Number (e.g. PMC12345)"
+                                        required>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Serviceable</label>
                                     <div class="form-check form-switch">
                                         <input class="form-check-input form-check-input-sm" type="checkbox"
-                                            wire:model="uldUnitForm.serviceable">
+                                            wire:model="uldUnitForm.serviceable" required>
                                     </div>
-                                    @error('uldUnitForm.serviceable')
-                                        <div class="text-danger small">{{ $message }}</div>
-                                    @enderror
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="mt-3 d-flex justify-content-between align-items-center">
-                                        @if ($editingUldUnitKey)
-                                            <button type="button" class="btn btn-sm btn-secondary" wire:click="resetUldUnitForm">
-                                                <i class="bi bi-x-lg"></i>
-                                                Cancel
-                                            </button>
-                                        @endif
-                                        <button class="btn btn-sm btn-primary">
-                                            <i class="bi bi-plus-lg"></i>
-                                            {{ $editingUldUnitKey ? 'Update' : 'Add' }} Unit
+                                    @if ($editingUldUnitKey)
+                                        <button type="button" class="btn btn-sm btn-secondary" wire:click="resetUldUnitForm">
+                                            <i class="bi bi-x-lg"></i>
+                                            Cancel
                                         </button>
-                                    </div>
+                                    @endif
+                                    <button class="btn btn-sm btn-primary">
+                                        <i class="bi bi-plus-lg"></i>
+                                        {{ $editingUldUnitKey ? 'Update' : 'Add' }} Unit
+                                    </button>
                                 </div>
                             </div>
                             <div class="mt-3">

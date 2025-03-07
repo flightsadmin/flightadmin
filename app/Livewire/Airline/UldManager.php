@@ -79,7 +79,7 @@ class UldManager extends Component
     {
         $uldSettings = $this->airline->settings()->where('key', 'uld_types')->first();
 
-        if (!$uldSettings) {
+        if (! $uldSettings) {
             return $this->initializeDefaultUldTypes();
         }
 
@@ -109,7 +109,7 @@ class UldManager extends Component
         $this->editingUldKey = $key;
         $uldTypes = $this->getUldTypes();
 
-        if (!isset($uldTypes[$key])) {
+        if (! isset($uldTypes[$key])) {
             $this->dispatch('alert', icon: 'error', message: 'ULD type not found.');
 
             return;
@@ -137,7 +137,7 @@ class UldManager extends Component
         $uldTypes = $this->getUldTypes();
         $key = $this->editingUldKey ?? strtolower($this->uldForm['code']);
 
-        if (!$this->editingUldKey && isset($uldTypes[$key])) {
+        if (! $this->editingUldKey && isset($uldTypes[$key])) {
             $this->addError('uldForm.code', 'This ULD code already exists.');
 
             return;
@@ -165,14 +165,14 @@ class UldManager extends Component
 
         $this->dispatch('uld-saved');
         $this->resetUldForm();
-        $this->dispatch('alert', icon: 'success', message: 'ULD type ' . ($this->editingUldKey ? 'updated' : 'created') . ' successfully.');
+        $this->dispatch('alert', icon: 'success', message: 'ULD type '.($this->editingUldKey ? 'updated' : 'created').' successfully.');
     }
 
     public function deleteUldType($key)
     {
         $uldTypes = $this->getUldTypes();
 
-        if (!isset($uldTypes[$key])) {
+        if (! isset($uldTypes[$key])) {
             $this->dispatch('alert', icon: 'error', message: 'ULD type not found.');
 
             return;
@@ -185,6 +185,7 @@ class UldManager extends Component
 
         if ($containersCount > 0) {
             $this->dispatch('alert', icon: 'error', message: "Cannot delete ULD type. {$containersCount} containers of this type exist.");
+
             return;
         }
 
@@ -232,8 +233,9 @@ class UldManager extends Component
 
         $uldTypes = $this->getUldTypes();
 
-        if (!isset($uldTypes[$this->selectedUldType])) {
+        if (! isset($uldTypes[$this->selectedUldType])) {
             $this->dispatch('alert', icon: 'error', message: 'ULD type not found.');
+
             return;
         }
 
@@ -242,13 +244,13 @@ class UldManager extends Component
         $maxWeight = $uldTypes[$this->selectedUldType]['max_gross_weight'] ?? 2000;
 
         // Generate a container number with ULD type code if not provided
-        if (!$this->editingUldUnitKey) {
+        if (! $this->editingUldUnitKey) {
             $uldCode = $uldTypes[$this->selectedUldType]['code'];
             $baseNumber = $this->uldUnitForm['container_number'];
 
             // If the container number doesn't already include the ULD code, prepend it
-            if (!str_starts_with($baseNumber, $uldCode)) {
-                $this->uldUnitForm['container_number'] = $uldCode . $baseNumber;
+            if (! str_starts_with($baseNumber, $uldCode)) {
+                $this->uldUnitForm['container_number'] = $uldCode.$baseNumber;
             }
         }
 
@@ -257,8 +259,9 @@ class UldManager extends Component
             ->where('container_number', $this->uldUnitForm['container_number'])
             ->first();
 
-        if ($existingContainer && !$this->editingUldUnitKey) {
+        if ($existingContainer && ! $this->editingUldUnitKey) {
             $this->addError('uldUnitForm.container_number', 'This container number already exists.');
+
             return;
         }
 
@@ -287,9 +290,9 @@ class UldManager extends Component
             }
 
             $this->resetUldUnitForm();
-            $this->dispatch('alert', icon: 'success', message: 'ULD unit ' . ($this->editingUldUnitKey ? 'updated' : 'created') . ' successfully.');
+            $this->dispatch('alert', icon: 'success', message: 'ULD unit '.($this->editingUldUnitKey ? 'updated' : 'created').' successfully.');
         } catch (\Exception $e) {
-            $this->dispatch('alert', icon: 'error', message: 'Error saving ULD unit: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Error saving ULD unit: '.$e->getMessage());
         }
     }
 
@@ -299,8 +302,9 @@ class UldManager extends Component
             ->where('container_number', $containerNumber)
             ->first();
 
-        if (!$container) {
+        if (! $container) {
             $this->dispatch('alert', icon: 'error', message: 'ULD unit not found.');
+
             return;
         }
 
@@ -319,26 +323,29 @@ class UldManager extends Component
                 ->where('container_number', $containerNumber)
                 ->first();
 
-            if (!$container) {
+            if (! $container) {
                 $this->dispatch('alert', icon: 'error', message: 'ULD unit not found.');
+
                 return;
             }
 
             if ($container->flights()->count() > 0) {
                 $this->dispatch('alert', icon: 'error', message: 'Cannot delete container that is assigned to flights.');
+
                 return;
             }
 
             // Check if container has baggage or cargo
             if ($container->baggage()->count() > 0 || $container->cargo()->count() > 0) {
                 $this->dispatch('alert', icon: 'error', message: 'Cannot delete container that contains baggage or cargo.');
+
                 return;
             }
 
             $container->delete();
             $this->dispatch('alert', icon: 'success', message: 'ULD unit deleted successfully.');
         } catch (\Exception $e) {
-            $this->dispatch('alert', icon: 'error', message: 'Error deleting ULD unit: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Error deleting ULD unit: '.$e->getMessage());
         }
     }
 
@@ -348,16 +355,17 @@ class UldManager extends Component
             ->where('container_number', $containerNumber)
             ->first();
 
-        if (!$container) {
+        if (! $container) {
             $this->dispatch('alert', icon: 'error', message: 'ULD unit not found.');
+
             return;
         }
 
         $container->update([
-            'serviceable' => !$container->serviceable
+            'serviceable' => ! $container->serviceable,
         ]);
 
-        $this->dispatch('alert', icon: 'success', message: 'Container marked as ' . ($container->serviceable ? 'serviceable' : 'unserviceable') . '.');
+        $this->dispatch('alert', icon: 'success', message: 'Container marked as '.($container->serviceable ? 'serviceable' : 'unserviceable').'.');
     }
 
     public function resetUldUnitForm()
@@ -383,7 +391,7 @@ class UldManager extends Component
 
     public function getContainersForSelectedType()
     {
-        if (!$this->selectedUldType) {
+        if (! $this->selectedUldType) {
             return collect();
         }
 
