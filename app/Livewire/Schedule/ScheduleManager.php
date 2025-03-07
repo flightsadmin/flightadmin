@@ -16,27 +16,43 @@ class ScheduleManager extends Component
     protected $paginationTheme = 'bootstrap';
 
     public $showModal = false;
+
     public $showFlightsModal = false;
+
     public $editMode = false;
+
     public $search = '';
+
     public $airline_id = '';
+
     public $status = '';
 
     // Form fields
     public $schedule;
+
     public $flight_number = '';
+
     public $aircraft_id = null;
+
     public $departure_airport = '';
+
     public $arrival_airport = '';
+
     public $departure_time = '';
+
     public $arrival_time = '';
+
     public $start_date = '';
+
     public $end_date = '';
+
     public $days_of_week = [];
+
     public $is_active = true;
 
     // For flights modal
     public $selectedSchedule = null;
+
     public $scheduleFlights = [];
 
     // Days of week checkboxes
@@ -128,7 +144,7 @@ class ScheduleManager extends Component
 
     public function toggleStatus(Schedule $schedule)
     {
-        $schedule->update(['is_active' => !$schedule->is_active]);
+        $schedule->update(['is_active' => ! $schedule->is_active]);
 
         $status = $schedule->is_active ? 'activated' : 'deactivated';
         $this->dispatch('alert', icon: 'success', message: "Schedule {$status} successfully.");
@@ -168,9 +184,9 @@ class ScheduleManager extends Component
         $schedules = Schedule::query()
             ->with(['airline', 'aircraft.type'])
             ->when($this->search, function ($query) {
-                $query->whereAny(['flight_number', 'departure_airport', 'arrival_airport'], 'like', '%' . $this->search . '%');
+                $query->whereAny(['flight_number', 'departure_airport', 'arrival_airport'], 'like', '%'.$this->search.'%');
             })
-            ->when($this->airline_id, fn($query) => $query->where('airline_id', $this->airline_id))
+            ->when($this->airline_id, fn ($query) => $query->where('airline_id', $this->airline_id))
             ->when($this->status !== '', function ($query) {
                 $status = $this->status === 'active';
                 $query->where('is_active', $status);

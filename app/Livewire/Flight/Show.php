@@ -3,8 +3,8 @@
 namespace App\Livewire\Flight;
 
 use App\Models\Flight;
-use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Component;
 
 class Show extends Component
 {
@@ -23,26 +23,26 @@ class Show extends Component
             'cargo',
             'fuel',
         ])->loadCount([
-                    'baggage',
-                    'cargo',
-                    'passengers',
-                    'crew',
-                    'passengers as boarded_count' => function ($query) {
-                        $query->where('boarding_status', 'boarded');
-                    },
-                    'passengers as unboarded_count' => function ($query) {
-                        $query->where('boarding_status', 'unboarded');
-                    },
-                    'passengers as accepted_count' => function ($query) {
-                        $query->where('acceptance_status', 'accepted');
-                    },
-                    'passengers as standby_count' => function ($query) {
-                        $query->where('acceptance_status', 'standby');
-                    },
-                    'passengers as offloaded_count' => function ($query) {
-                        $query->where('acceptance_status', 'offloaded');
-                    },
-                ]);
+            'baggage',
+            'cargo',
+            'passengers',
+            'crew',
+            'passengers as boarded_count' => function ($query) {
+                $query->where('boarding_status', 'boarded');
+            },
+            'passengers as unboarded_count' => function ($query) {
+                $query->where('boarding_status', 'unboarded');
+            },
+            'passengers as accepted_count' => function ($query) {
+                $query->where('acceptance_status', 'accepted');
+            },
+            'passengers as standby_count' => function ($query) {
+                $query->where('acceptance_status', 'standby');
+            },
+            'passengers as offloaded_count' => function ($query) {
+                $query->where('acceptance_status', 'offloaded');
+            },
+        ]);
     }
 
     public function mount(Flight $flight)
@@ -52,7 +52,7 @@ class Show extends Component
 
         // If no aircraft and not on overview tab, force overview tab
         $requestedTab = session('flight_tab', 'overview');
-        if (!$this->flight->aircraft_id && $requestedTab !== 'overview') {
+        if (! $this->flight->aircraft_id && $requestedTab !== 'overview') {
             $this->activeTab = 'overview';
             session(['flight_tab' => 'overview']);
 
@@ -69,8 +69,9 @@ class Show extends Component
     public function setTab($tab)
     {
         // If no aircraft and not overview tab, show warning
-        if (!$this->flight->aircraft_id && $tab !== 'overview') {
+        if (! $this->flight->aircraft_id && $tab !== 'overview') {
             $this->dispatch('alert', icon: 'warning', message: 'Aircraft must be assigned before accessing this tab.');
+
             return;
         }
 

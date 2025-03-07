@@ -14,12 +14,12 @@ class RequireAircraft
         $flight = $request->route('flight');
 
         // If there's no flight parameter, proceed
-        if (!$flight) {
+        if (! $flight) {
             return $next($request);
         }
 
         // If the flight has no aircraft assigned, set a session flag
-        if (!$flight->aircraft_id) {
+        if (! $flight->aircraft_id) {
             session()->flash('aircraft_required', true);
         }
 

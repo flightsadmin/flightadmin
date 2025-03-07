@@ -31,7 +31,7 @@ class ScheduleFactory extends Factory
         } while ($arrivalAirport === $departureAirport);
 
         // Generate a random flight number
-        $flightNumber = strtoupper($airline->iata_code) . str_pad(fake()->numberBetween(1, 999), 4, '0', STR_PAD_LEFT);
+        $flightNumber = strtoupper($airline->iata_code).str_pad(fake()->numberBetween(1, 999), 4, '0', STR_PAD_LEFT);
 
         // Generate random departure and arrival times
         $departureTime = fake()->time('H:i:s');

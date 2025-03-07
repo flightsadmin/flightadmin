@@ -68,7 +68,7 @@ class Overview extends Component
             'timeForm.datetime' => 'required|after:scheduled_departure_time',
         ]);
 
-        if (!$this->selectedFlight) {
+        if (! $this->selectedFlight) {
             $this->dispatch('alert', icon: 'danger', message: 'Flight not found');
 
             return;

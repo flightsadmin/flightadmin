@@ -62,8 +62,8 @@ class Schedule extends Model
             // Check if current day of week is in the schedule
             if (in_array($currentDate->dayOfWeek, $this->days_of_week)) {
                 // Create departure and arrival datetime by combining current date with schedule times
-                $departureDateTime = Carbon::parse($currentDate->format('Y-m-d') . ' ' . $this->departure_time->format('H:i:s'));
-                $arrivalDateTime = Carbon::parse($currentDate->format('Y-m-d') . ' ' . $this->arrival_time->format('H:i:s'));
+                $departureDateTime = Carbon::parse($currentDate->format('Y-m-d').' '.$this->departure_time->format('H:i:s'));
+                $arrivalDateTime = Carbon::parse($currentDate->format('Y-m-d').' '.$this->arrival_time->format('H:i:s'));
 
                 // If arrival is before departure, it means it's the next day
                 if ($arrivalDateTime->lt($departureDateTime)) {
@@ -98,6 +98,7 @@ class Schedule extends Model
     public function getDaysOfWeekNamesAttribute(): array
     {
         $dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        return array_map(fn($day) => $dayNames[$day], $this->days_of_week);
+
+        return array_map(fn ($day) => $dayNames[$day], $this->days_of_week);
     }
 }

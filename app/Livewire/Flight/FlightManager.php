@@ -124,12 +124,12 @@ class FlightManager extends Component
         $flights = Flight::query()
             ->with(['aircraft.airline', 'aircraft.type', 'schedule'])
             ->when($this->search, function ($query) {
-                $query->whereAny(['flight_number', 'departure_airport', 'arrival_airport'], 'like', '%' . $this->search . '%');
+                $query->whereAny(['flight_number', 'departure_airport', 'arrival_airport'], 'like', '%'.$this->search.'%');
             })
-            ->when($this->status, fn($query) => $query->where('status', $this->status))
-            ->when($this->airline_id, fn($query) => $query->where('airline_id', $this->airline_id))
-            ->when($this->date, fn($query) => $query->whereDate('scheduled_departure_time', $this->date))
-            ->when($this->schedule_id, fn($query) => $query->where('schedule_id', $this->schedule_id))
+            ->when($this->status, fn ($query) => $query->where('status', $this->status))
+            ->when($this->airline_id, fn ($query) => $query->where('airline_id', $this->airline_id))
+            ->when($this->date, fn ($query) => $query->whereDate('scheduled_departure_time', $this->date))
+            ->when($this->schedule_id, fn ($query) => $query->where('schedule_id', $this->schedule_id))
             ->orderBy('scheduled_departure_time')
             ->paginate(10);
 
