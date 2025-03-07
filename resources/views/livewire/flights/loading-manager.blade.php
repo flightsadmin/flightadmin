@@ -283,125 +283,131 @@
                         <button type="button" class="btn-close" wire:click="toggleAssignModal"></button>
                     </div>
                     <div class="modal-body">
+                        <!-- Container Type Selection -->
                         <div class="mb-3">
-                            <label class="form-label">Search Container</label>
-                            <div class="input-group input-group-sm">
-                                <input type="text" class="form-control form-control-sm" wire:model.live="searchQuery"
-                                    placeholder="Enter ULD number">
-                                <button class="btn btn-outline-secondary" type="button" wire:click="searchContainers">
-                                    <i class="bi bi-search"></i>
+                            <label class="form-label">Container Type</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="containerType" id="typeBaggage" value="baggage"
+                                    wire:model.live="selectedType" autocomplete="off" checked>
+                                <label class="btn btn-outline-primary" for="typeBaggage">Baggage</label>
+
+                                <input type="radio" class="btn-check" name="containerType" id="typeCargo" value="cargo"
+                                    wire:model.live="selectedType" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="typeCargo">Cargo</label>
+                            </div>
+                        </div>
+
+                        <!-- Container Search Section -->
+                        <div class="mb-3">
+                            <label for="searchQuery" class="form-label">Search Containers</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchQuery"
+                                    wire:model.live.debounce.300ms="searchQuery"
+                                    placeholder="Enter container number...">
+                                <button class="btn btn-outline-secondary" type="button" wire:click="$set('searchQuery', '')">
+                                    <i class="bi bi-x-lg"></i>
                                 </button>
                             </div>
-                        </div>
-
-                        <!-- Container Type Selection -->
-                        <div class="mb-3 d-flex justify-content-between"
-                            @if (count($searchResults) > 0) style="display: block !important" @endif>
-                            <label class="form-label d-block">Container Type</label>
-                            <div class="btn-group btn-group-sm" role="group">
-                                <input type="radio" class="btn-check" name="containerType" id="typeBaggage" value="baggage"
-                                    wire:model.live="selectedType">
-                                <label class="btn btn-outline-primary" for="typeBaggage">
-                                    <i class="bi bi-luggage"></i> Baggage
-                                </label>
-                                <input type="radio" class="btn-check" name="containerType" id="typeCargo" value="cargo"
-                                    wire:model.live="selectedType">
-                                <label class="btn btn-outline-warning" for="typeCargo">
-                                    <i class="bi bi-box-seam"></i> Cargo
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Show attached containers when no search -->
-                        <div class="attached-containers mt-3" @if (!$searchQuery) style="display: block !important" @endif>
-                            <h6 class="mb-2">Attached Containers</h6>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>ULD Number</th>
-                                            <th>Type</th>
-                                            <th>Weight</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($containers as $container)
-                                            <tr>
-                                                <td>{{ $container['uld_code'] }}</td>
-                                                <td>
-                                                    <span
-                                                        class="badge {{ $container['type'] === 'baggage' ? 'bg-primary' : 'bg-warning' }}">
-                                                        {{ $container['type'] }}
-                                                    </span>
-                                                </td>
-                                                <td>{{ $container['weight'] }} kg</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-danger"
-                                                        wire:click="detachContainer('{{ $container['id'] }}')"
-                                                        title="Remove container">
-                                                        <i class="bi bi-trash"></i> Remove
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                        @if (count($containers) === 0)
-                                            <tr>
-                                                <td colspan="4" class="text-center text-muted">
-                                                    No containers attached
-                                                </td>
-                                            </tr>
-                                        @endif
-                                    </tbody>
-                                </table>
-                            </div>
+                            <small class="text-muted">Type at least 2 characters to search</small>
                         </div>
 
                         <!-- Search Results -->
-                        <div class="search-results mt-3" @if (count($searchResults) > 0) style="display: block !important" @endif>
-                            <h6 class="mb-2">Search Results</h6>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>ULD Number</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($searchResults as $container)
-                                            <tr>
-                                                <td>{{ $container['container_number'] }}</td>
-                                                <td>
-                                                    @if (collect($containers)->contains('id', $container['id']))
-                                                        <span class="badge bg-success">Attached</span>
-                                                    @else
-                                                        <span class="badge bg-secondary">Available</span>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if (collect($containers)->contains('id', $container['id']))
-                                                        <button class="btn btn-sm btn-outline-danger"
-                                                            wire:click="detachContainer('{{ $container['id'] }}')">
-                                                            <i class="bi bi-trash"></i> Remove
-                                                        </button>
-                                                    @else
-                                                        <button class="btn btn-sm btn-primary"
-                                                            wire:click="attachContainer('{{ $container['id'] }}', '{{ $selectedType }}')">
-                                                            <i class="bi bi-plus-circle"></i> Attach
-                                                        </button>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                        @if (count($searchResults) > 0)
+                            <div class="search-results mb-3">
+                                <!-- Available Containers -->
+                                @php
+                                    $availableContainers = collect($searchResults)->where('is_attached', false);
+                                    $attachedContainers = collect($searchResults)->where('is_attached', true);
+                                @endphp
 
-                        <div @if ($searchQuery && count($searchResults) === 0) style="display: block !important" @endif class="text-center py-3">
-                            <p class="text-muted">No containers found</p>
+                                @if ($availableContainers->count() > 0)
+                                    <h6 class="border-bottom pb-2 mb-2">Available Containers</h6>
+                                    <div class="list-group mb-3">
+                                        @foreach ($availableContainers as $result)
+                                            <div
+                                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>{{ $result['container_number'] }}</strong>
+                                                    <span class="badge bg-secondary ms-2">{{ $result['uld_type'] }}</span>
+                                                    <small class="d-block text-muted">Tare: {{ $result['tare_weight'] }}kg | Max:
+                                                        {{ $result['max_weight'] }}kg</small>
+                                                </div>
+                                                <button class="btn btn-sm btn-primary"
+                                                    wire:click="attachContainer({{ $result['id'] }}, '{{ $selectedType }}')">
+                                                    <i class="bi bi-plus-lg"></i> Assign
+                                                </button>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                <!-- Attached Containers -->
+                                @if ($attachedContainers->count() > 0)
+                                    <h6 class="border-bottom pb-2 mb-2">Attached Containers</h6>
+                                    <div class="list-group">
+                                        @foreach ($attachedContainers as $result)
+                                            <div
+                                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center bg-light">
+                                                <div>
+                                                    <strong>{{ $result['container_number'] }}</strong>
+                                                    <span class="badge bg-secondary ms-2">{{ $result['uld_type'] }}</span>
+                                                    <small class="d-block text-muted">Tare: {{ $result['tare_weight'] }}kg | Max:
+                                                        {{ $result['max_weight'] }}kg</small>
+                                                </div>
+                                                <button class="btn btn-sm btn-danger"
+                                                    wire:click="detachContainer({{ $result['id'] }})">
+                                                    <i class="bi bi-trash"></i> Remove
+                                                </button>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        @elseif(strlen($searchQuery) >= 2)
+                            <div class="alert alert-info">
+                                No matching containers found
+                            </div>
+                        @endif
+
+                        <!-- Currently Attached Containers Summary -->
+                        <div class="mt-4">
+                            <h6 class="border-bottom pb-2 mb-2">Flight Containers ({{ count($this->containers) }})</h6>
+                            <div class="row g-2">
+                                @foreach (collect($this->containers)->take(8) as $container)
+                                    <div class="col-md-6">
+                                        <div class="card bg-light">
+                                            <div class="card-body p-2">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>{{ $container['uld_code'] }}</strong>
+                                                        <span
+                                                            class="badge {{ $container['type'] === 'baggage' ? 'bg-warning' : 'bg-info' }}">
+                                                            {{ ucfirst($container['type']) }}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span class="badge bg-secondary">{{ $container['weight'] }}kg</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+
+                                @if (count($this->containers) > 8)
+                                    <div class="col-12 text-center">
+                                        <small class="text-muted">And {{ count($this->containers) - 8 }} more containers...</small>
+                                    </div>
+                                @endif
+
+                                @if (count($this->containers) === 0)
+                                    <div class="col-12">
+                                        <div class="alert alert-info">
+                                            No containers attached to this flight yet.
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>

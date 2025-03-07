@@ -13,7 +13,7 @@ class UldSeeder extends Seeder
             'AKE' => [
                 'code' => 'AKE',
                 'name' => 'LD3 Container',
-                'tare_weight' => 85,
+                'tare_weight' => 65,
                 'max_gross_weight' => 1588,
                 'positions_required' => 1,
                 'color' => '#0dcaf0',
@@ -27,7 +27,7 @@ class UldSeeder extends Seeder
             'AKH' => [
                 'code' => 'AKH',
                 'name' => 'LD3 Insulated Container',
-                'tare_weight' => 130,
+                'tare_weight' => 64,
                 'max_gross_weight' => 1588,
                 'positions_required' => 1,
                 'color' => '#20c997',
@@ -41,7 +41,7 @@ class UldSeeder extends Seeder
             'PAG' => [
                 'code' => 'PAG',
                 'name' => 'LD7 Pallet',
-                'tare_weight' => 120,
+                'tare_weight' => 95,
                 'max_gross_weight' => 6800,
                 'positions_required' => 2,
                 'color' => '#fd7e14',
@@ -55,7 +55,7 @@ class UldSeeder extends Seeder
             'PLA' => [
                 'code' => 'PLA',
                 'name' => 'LD11 Pallet',
-                'tare_weight' => 180,
+                'tare_weight' => 90,
                 'max_gross_weight' => 10900,
                 'positions_required' => 2,
                 'color' => '#fd7e14',
@@ -92,7 +92,7 @@ class UldSeeder extends Seeder
 
             foreach ($uldTypes as $key => $type) {
                 for ($i = 1; $i <= 5; $i++) {
-                    $containerNumber = $type['code'] . str_pad($i, 5, '0', STR_PAD_LEFT) . $airline->iata_code;
+                    $containerNumber = $type['code'].str_pad($i, 5, '0', STR_PAD_LEFT).$airline->iata_code;
 
                     $airline->containers()->updateOrCreate(
                         [
