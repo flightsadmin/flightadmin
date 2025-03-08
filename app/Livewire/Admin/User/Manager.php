@@ -9,7 +9,6 @@ use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Hash;
 use App\Notifications\GeneralNotification;
-use Illuminate\Support\Facades\Config;
 
 class Manager extends Component
 {
@@ -111,7 +110,7 @@ class Manager extends Component
             // Generate signed verification URL
             $verificationUrl = URL::temporarySignedRoute(
                 'verification.verify',
-                now()->addMinutes(Config::get('auth.verification.expire', 60)),
+                now()->addMinutes(config('auth.verification.expire', 60)),
                 [
                     'id' => $user->getKey(),
                     'hash' => sha1($user->getEmailForVerification()),
