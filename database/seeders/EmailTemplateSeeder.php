@@ -23,7 +23,7 @@ class EmailTemplateSeeder extends Seeder
             [
                 'name' => 'Load Sheet Released',
                 'subject' => 'Load Sheet Released for Flight {flight_number}',
-                'body' => "Dear {name},\n\nThe load sheet for flight {flight_number} has been released.\n\nFlight Details:\nDate: {date}\nDeparture: {departure}\nArrival: {arrival}\nSTD: {departure_time}\n\nTotal Passengers: {pax_count}\nCargo Weight: {cargo_weight}\nZFW: {zfw}\n\nPlease review the attached load sheet and confirm receipt.\n\nBest regards,\nFlight Operations",
+                'body' => "Dear {name},\n\nThe load sheet for flight {flight_number} has been released.\n\nFlight Details:\nDate: {date}\nDeparture: {departure}\nArrival: {arrival}\nSTD: {departure_time}\n\nPlease review the attached load sheet and confirm receipt.\n\nBest regards,\n\nFlight Operations",
                 'variables' => [
                     'name' => 'Recipient\'s name',
                     'flight_number' => 'Flight number',
@@ -31,7 +31,6 @@ class EmailTemplateSeeder extends Seeder
                     'departure' => 'Departure airport',
                     'arrival' => 'Arrival airport',
                     'departure_time' => 'Scheduled departure time',
-                    'pax_count' => 'Passenger count',
                 ]
             ],
             [

@@ -3,10 +3,12 @@
 namespace App\Livewire\Admin\User;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Hash;
+use App\Notifications\GeneralNotification;
 
 class Manager extends Component
 {
@@ -79,8 +81,8 @@ class Manager extends Component
         $rules = $this->rules;
 
         if ($this->editingUser) {
-            $rules['form.email'] = 'required|email|unique:users,email,'.$this->editingUser->id;
-            if (! $this->form['password']) {
+            $rules['form.email'] = 'required|email|unique:users,email,' . $this->editingUser->id;
+            if (!$this->form['password']) {
                 unset($rules['form.password']);
             }
         }
@@ -104,6 +106,11 @@ class Manager extends Component
         } else {
             $user = User::create($userData);
             $user->syncRoles($this->selectedRoles);
+            $user->notify(new GeneralNotification('welcome-new-user', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'verification_link' => "http://localhost:8000",
+            ]));
             $message = 'User created successfully.';
         }
 
@@ -124,9 +131,9 @@ class Manager extends Component
     public function toggleStatus(User $user)
     {
         $this->authorize('editUser');
-        abort_if($user->hasRole('super-admin') && ! auth()->user()->hasRole('super-admin'), 403);
+        abort_if($user->hasRole('super-admin') && !auth()->user()->hasRole('super-admin'), 403);
 
-        $user->update(['active' => ! $user->active]);
+        $user->update(['active' => !$user->active]);
         $this->dispatch('alert', icon: 'success', message: 'User status updated successfully.');
     }
 
@@ -135,7 +142,7 @@ class Manager extends Component
         return view('livewire.admin.user.manager', [
             'users' => User::query()
                 ->with('roles')
-                ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
+                ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%")
                     ->orWhere('email', 'like', "%{$this->search}%"))
                 ->orderBy('name')
                 ->paginate(10),
