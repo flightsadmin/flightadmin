@@ -9,6 +9,8 @@ use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Hash;
 use App\Notifications\GeneralNotification;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Password;
 
 class Manager extends Component
 {
@@ -93,11 +95,8 @@ class Manager extends Component
             'name' => $this->form['name'],
             'email' => $this->form['email'],
             'active' => $this->form['active'],
+            'password' => Str::random(16), // temporary password
         ];
-
-        if ($this->form['password']) {
-            $userData['password'] = Hash::make($this->form['password']);
-        }
 
         if ($this->editingUser) {
             $this->editingUser->update($userData);
@@ -107,23 +106,17 @@ class Manager extends Component
             $user = User::create($userData);
             $user->syncRoles($this->selectedRoles);
 
-            // Generate signed verification URL
-            $verificationUrl = URL::temporarySignedRoute(
-                'verification.verify',
-                now()->addMinutes(config('auth.verification.expire', 60)),
-                [
-                    'id' => $user->getKey(),
-                    'hash' => sha1($user->getEmailForVerification()),
-                ]
-            );
+            // Generate password reset token
+            $token = Password::createToken($user);
+            $resetUrl = route('password.reset', ['token' => $token, 'email' => $user->email]);
 
             $user->notify(new GeneralNotification('welcome-new-user', [
                 'name' => $user->name,
                 'email' => $user->email,
-                'verification_link' => $verificationUrl,
+                'reset_link' => $resetUrl,
             ]));
 
-            $message = 'User created successfully and verification email sent.';
+            $message = 'User created successfully and password set email sent.';
         }
 
         $this->dispatch('alert', icon: 'success', message: $message);

@@ -38,6 +38,6 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Auth::routes([
     'register' => false,
     'verify' => true,
-    'reset' => false,
+    'reset' => true,     // Enable password reset
     'confirm' => false,
 ]);

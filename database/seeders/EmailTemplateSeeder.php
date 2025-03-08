@@ -12,12 +12,18 @@ class EmailTemplateSeeder extends Seeder
         $templates = [
             [
                 'name' => 'Welcome New User',
-                'subject' => 'Welcome to FlightAdmin - Get Started',
-                'body' => "Hello {name},\n\nWelcome to FlightAdmin! We're excited to have you on board.\n\nYour account has been successfully created with the following details:\nEmail: {email}\n\nTo get started, please click the button below to verify your email address:\n\n{verification_link}\n\nIf you have any questions, feel free to reach out to our support team.\n\nBest regards,\nThe FlightAdmin Team",
+                'subject' => 'Welcome to FlightAdmin - Set Your Password',
+                'body' => "Hello {name},\n\n" .
+                    "Welcome to FlightAdmin! Your account has been created with the email: {email}\n\n" .
+                    "To get started, please click the link below to set your password:\n\n" .
+                    "{reset_link}\n\n" .
+                    "This link will expire in 60 minutes.\n\n" .
+                    "If you have any questions, feel free to reach out to our support team.\n\n" .
+                    "Best regards,\nThe FlightAdmin Team",
                 'variables' => [
                     'name' => 'User\'s full name',
                     'email' => 'User\'s email address',
-                    'verification_link' => 'Email verification URL'
+                    'reset_link' => 'Password set URL'
                 ]
             ],
             [
