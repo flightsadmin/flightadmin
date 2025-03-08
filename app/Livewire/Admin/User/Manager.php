@@ -9,6 +9,7 @@ use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Hash;
 use App\Notifications\GeneralNotification;
+use Illuminate\Support\Facades\Config;
 
 class Manager extends Component
 {
@@ -106,12 +107,24 @@ class Manager extends Component
         } else {
             $user = User::create($userData);
             $user->syncRoles($this->selectedRoles);
+
+            // Generate signed verification URL
+            $verificationUrl = URL::temporarySignedRoute(
+                'verification.verify',
+                now()->addMinutes(Config::get('auth.verification.expire', 60)),
+                [
+                    'id' => $user->getKey(),
+                    'hash' => sha1($user->getEmailForVerification()),
+                ]
+            );
+
             $user->notify(new GeneralNotification('welcome-new-user', [
                 'name' => $user->name,
                 'email' => $user->email,
-                'verification_link' => "http://localhost:8000",
+                'verification_link' => $verificationUrl,
             ]));
-            $message = 'User created successfully.';
+
+            $message = 'User created successfully and verification email sent.';
         }
 
         $this->dispatch('alert', icon: 'success', message: $message);

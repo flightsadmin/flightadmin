@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('loadsheets', function (Blueprint $table) {
@@ -15,8 +14,8 @@ return new class extends Migration
             $table->integer('edition')->default(1);
             $table->boolean('final')->default(false);
             $table->string('status', 20)->default('draft');
-            $table->foreignId('created_by')->nullable()->constrained('users');
-            $table->foreignId('released_by')->nullable()->constrained('users');
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('released_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('released_at')->nullable();
             $table->timestamps();
         });

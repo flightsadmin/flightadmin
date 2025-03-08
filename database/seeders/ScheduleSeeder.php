@@ -58,8 +58,7 @@ class ScheduleSeeder extends Seeder
             ->get();
 
         foreach ($schedules as $schedule) {
-            $flightCount = count($schedule->generateFlights());
-            $this->command->info("Generated {$flightCount} flights for schedule {$schedule->flight_number}");
+            $schedule->generateFlights();
         }
     }
 }
