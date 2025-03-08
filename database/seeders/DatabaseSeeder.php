@@ -73,6 +73,7 @@ class DatabaseSeeder extends Seeder
             CrewSeatingSeeder::class,
             ScheduleSeeder::class,
             UldSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
     }
 }

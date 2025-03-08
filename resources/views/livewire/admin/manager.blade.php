@@ -20,6 +20,12 @@
                         <i class="bi bi-house-lock-fill"></i> Permissions
                     </button>
                 </li>
+                <li class="nav-item">
+                    <button class="nav-link {{ $tab === 'templates' ? 'active' : '' }}"
+                        wire:click="setTab('templates')">
+                        <i class="bi bi-house-lock-fill"></i> Email Templates
+                    </button>
+                </li>
             </ul>
         </div>
 
@@ -33,6 +39,9 @@
                 </div>
                 <div class="tab-pane fade {{ $tab === 'permissions' ? 'show active' : '' }}">
                     <livewire:admin.permission.manager lazy />
+                </div>
+                <div class="tab-pane fade {{ $tab === 'templates' ? 'show active' : '' }}">
+                    <livewire:email-templates lazy />
                 </div>
             </div>
         </div>
