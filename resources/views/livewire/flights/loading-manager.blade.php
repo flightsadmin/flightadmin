@@ -15,11 +15,12 @@
                     <i class="bi bi-clipboard-data"></i> Weight Summary
                 </button>
                 <button class="btn btn-sm btn-outline-success"
-                    wire:click="saveToServer"
-                    @disabled($this->flight->loadplan && $this->flight->loadplan->status !== 'released')>
+                    wire:click="finalizeLoadplan"
+                    @disabled($loadplan && $loadplan->status !== 'released')>
                     <i class="bi bi-check-circle"></i> Finalize Load Plan
                 </button>
-                <button class="btn btn-sm btn-outline-primary" wire:click="previewLIRF">
+                <button class="btn btn-sm btn-outline-primary" wire:click="previewLIRF"
+                    @disabled(!isset($loadplan))>
                     <i class="bi bi-eye"></i> Preview LIRF
                 </button>
                 <button class="btn btn-sm btn-outline-danger" wire:click="resetLoadplan">

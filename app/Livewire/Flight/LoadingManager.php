@@ -4,6 +4,7 @@ namespace App\Livewire\Flight;
 
 use App\Models\Container;
 use App\Models\Flight;
+use App\Models\Position;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -11,33 +12,19 @@ use Livewire\Component;
 class LoadingManager extends Component
 {
     public Flight $flight;
-
     public $loadplan;
-
     public $holds;
-
     public $containers;
-
     public $showLirfPreview = false;
-
     public $showWeightSummary = false;
-
     public $showAssignModal = false;
-
     public $loadInstructions = [];
-
     public $selectedContainer = null;
-
     public $searchQuery = '';
-
     public $searchResults = [];
-
     public $selectedType = 'baggage';
-
     public $unplannedType = null;
-
     public $attachedContainers = [];
-
     public function mount(Flight $flight)
     {
         $this->flight = $flight->load([
@@ -671,30 +658,27 @@ class LoadingManager extends Component
         }
     }
 
-    public function saveToServer()
+    public function finalizeLoadplan()
     {
-        try {
-            DB::beginTransaction();
-            if ($this->loadplan) {
-                $this->loadplan->update([
-                    'status' => 'released',
-                    'released_by' => auth()->id(),
-                    'released_at' => now(),
-                    'version' => $this->loadplan->version + 1,
-                ]);
-            } else {
-                $this->dispatch('alert', icon: 'error', message: 'No load plan found');
-            }
+        $loadplan = $this->flight->loadplans()->latest()->first();
 
-            DB::commit();
-            $this->dispatch('alert', icon: 'success', message: 'Load plan released successfully');
-            $this->dispatch('container_position_updated');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            $this->dispatch('alert', icon: 'error', message: 'Failed to release load plan');
-            \Log::error('Failed to release loadplan: ' . $e->getMessage());
+        if (!$loadplan) {
+            $loadplan = $this->flight->loadplans()->create([
+                'version' => 1,
+                'status' => 'released',
+                'released_by' => auth()->id(),
+                'released_at' => now(),
+            ]);
+        } else {
+            $loadplan->update([
+                'status' => 'released',
+                'released_by' => auth()->id(),
+                'released_at' => now(),
+            ]);
         }
+
+        $this->dispatch('alert', icon: 'success', message: 'Load plan released successfully');
+        $this->dispatch('loadplan-updated');
     }
 
     #[On('deadload-updated')]
@@ -727,6 +711,8 @@ class LoadingManager extends Component
             \Log::info('No deadload setting found');
         }
 
-        return view('livewire.flights.loading-manager');
+        return view('livewire.flights.loading-manager', [
+            'loadplan' => $this->loadplan,
+        ]);
     }
 }
