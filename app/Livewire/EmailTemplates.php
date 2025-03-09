@@ -2,18 +2,24 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
-use Illuminate\Support\Str;
 use App\Models\EmailTemplate;
+use Illuminate\Support\Str;
+use Livewire\Component;
 
 class EmailTemplates extends Component
 {
     public $templates;
+
     public $name;
+
     public $subject;
+
     public $body;
+
     public $templateVariables = [];
+
     public $editingId = null;
+
     public $activeTab = 'basic';
 
     public function mount()
@@ -50,8 +56,8 @@ class EmailTemplates extends Component
         ]);
 
         $variables = collect($this->templateVariables)
-            ->filter(fn($var) => !empty($var['key']))
-            ->mapWithKeys(fn($var) => [$var['key'] => $var['description']])
+            ->filter(fn ($var) => ! empty($var['key']))
+            ->mapWithKeys(fn ($var) => [$var['key'] => $var['description']])
             ->toArray();
 
         try {
@@ -85,7 +91,7 @@ class EmailTemplates extends Component
         $this->body = $template->body;
 
         $this->templateVariables = collect($template->variables ?? [])
-            ->map(fn($desc, $key) => ['key' => $key, 'description' => $desc])
+            ->map(fn ($desc, $key) => ['key' => $key, 'description' => $desc])
             ->values()
             ->toArray();
 

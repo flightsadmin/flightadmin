@@ -4,21 +4,25 @@ namespace App\Notifications;
 
 use App\Models\EmailTemplate;
 use Illuminate\Bus\Queueable;
-use Illuminate\Support\Str;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Str;
 
 class GeneralNotification extends Notification
 {
     use Queueable;
 
     protected $templateName;
+
     protected $variables;
 
-    public function __construct($templateName, $variables = [])
+    protected $attachments = [];
+
+    public function __construct($templateName, $variables = [], $attachments = [])
     {
         $this->templateName = $templateName;
         $this->variables = $variables;
+        $this->attachments = $attachments;
     }
 
     public function via($notifiable): array
@@ -30,23 +34,35 @@ class GeneralNotification extends Notification
     {
         $template = EmailTemplate::where('slug', Str::slug($this->templateName))->first();
 
-        if (!$template) {
+        if (! $template) {
             throw new \Exception("Email template not found: {$this->templateName}");
         }
 
         $subject = $this->replaceVariables($template->subject);
         $body = $this->replaceVariables($template->body);
 
-        return (new MailMessage)
+        $mail = (new MailMessage)
             ->subject($subject)
             ->markdown('emails.general', ['content' => $body]);
+
+        foreach ($this->attachments as $attachment) {
+            if (isset($attachment['path']) && isset($attachment['name'])) {
+                $mail->attach($attachment['path'], [
+                    'as' => $attachment['name'],
+                    'mime' => 'application/pdf',
+                ]);
+            }
+        }
+
+        return $mail;
     }
 
     protected function replaceVariables($content)
     {
         foreach ($this->variables as $key => $value) {
-            $content = str_replace("{" . $key . "}", $value, $content);
+            $content = str_replace('{'.$key.'}', $value, $content);
         }
+
         return $content;
     }
 }
