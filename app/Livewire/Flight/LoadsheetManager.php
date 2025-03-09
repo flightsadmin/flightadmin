@@ -240,7 +240,6 @@ class LoadsheetManager extends Component
     {
         if (!$this->loadsheet) {
             $this->dispatch('alert', icon: 'error', message: 'No loadsheet found to finalize.');
-
             return;
         }
 
@@ -250,25 +249,59 @@ class LoadsheetManager extends Component
             'released_by' => auth()->id(),
             'released_at' => now(),
         ]);
-        $this->sendLoadsheetEmail($this->loadsheet);
+
+        // Send loadsheet notifications based on airline and routing
+        $this->sendLoadsheetNotifications();
 
         $this->dispatch('alert', icon: 'success', message: 'Loadsheet finalized successfully.');
     }
 
-    protected function sendLoadsheetEmail($loadsheet)
+    protected function sendLoadsheetNotifications()
     {
         try {
             // Get email notification configuration for this flight and document type
             $notification = \App\Models\EmailNotification::getRecipientsForFlight($this->flight, 'loadsheet');
 
             if (!$notification) {
-                $this->dispatch('alert', icon: 'warning', message: 'No email recipients configured for this flight. Loadsheet saved but not emailed.');
+                $this->dispatch('alert', icon: 'warning', message: 'No notification recipients configured for this flight. Loadsheet saved but not sent.');
                 return;
             }
 
-            // Get the PDF data
-            $pdf = $this->generateLoadsheetPdf($loadsheet);
+            // Generate PDF
+            $pdf = $this->generateLoadsheetPdf($this->loadsheet);
 
+            // Get flight details for the notification
+            $airline = $this->flight->airline->name;
+            $flightNumber = $this->flight->flight_number;
+            $departure = $this->flight->departure_airport;
+            $arrival = $this->flight->arrival_airport;
+            $date = $this->flight->scheduled_departure_time->format('d M Y');
+            $filename = "Loadsheet_{$flightNumber}_{$departure}_{$arrival}_{$date}.pdf";
+
+            // Send email notifications if configured
+            if (!empty($notification->email_addresses)) {
+                $this->sendEmailNotification($notification, $pdf, $filename);
+            }
+
+            // Send SITA notifications if configured
+            if (!empty($notification->sita_addresses)) {
+                $this->sendSitaNotification($notification, $pdf, $filename);
+            }
+
+            // If no recipients were configured
+            if (empty($notification->email_addresses) && empty($notification->sita_addresses)) {
+                $this->dispatch('alert', icon: 'warning', message: 'No email or SITA recipients configured for this flight.');
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to send loadsheet notifications: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to send notifications: ' . $e->getMessage());
+        }
+    }
+
+    protected function sendEmailNotification($notification, $pdf, $filename)
+    {
+        try {
             // Get the airline and flight details for the email
             $airline = $this->flight->airline->name;
             $flightNumber = $this->flight->flight_number;
@@ -279,33 +312,92 @@ class LoadsheetManager extends Component
             // Send the email with the PDF attachment
             \Mail::send('emails.loadsheet', [
                 'flight' => $this->flight,
-                'loadsheet' => $loadsheet,
-            ], function ($message) use ($notification, $pdf, $airline, $flightNumber, $departure, $arrival, $date) {
+                'loadsheet' => $this->loadsheet,
+            ], function ($message) use ($notification, $pdf, $airline, $flightNumber, $departure, $arrival, $date, $filename) {
                 $message->subject("[$airline] Loadsheet for $flightNumber $departure-$arrival $date");
 
                 // Set recipients
                 $message->to($notification->email_addresses);
 
-                if (!empty($notification->cc_addresses)) {
-                    $message->cc($notification->cc_addresses);
-                }
-
-                if (!empty($notification->bcc_addresses)) {
-                    $message->bcc($notification->bcc_addresses);
-                }
-
                 // Attach the PDF
-                $message->attachData($pdf, "Loadsheet_{$flightNumber}_{$departure}_{$arrival}_{$date}.pdf", [
+                $message->attachData($pdf, $filename, [
                     'mime' => 'application/pdf',
                 ]);
             });
 
             $this->dispatch('alert', icon: 'success', message: 'Loadsheet emailed successfully to ' . count($notification->email_addresses) . ' recipients.');
-
         } catch (\Exception $e) {
             \Log::error('Failed to send loadsheet email: ' . $e->getMessage());
             $this->dispatch('alert', icon: 'error', message: 'Failed to send email: ' . $e->getMessage());
         }
+    }
+
+    protected function sendSitaNotification($notification, $pdf, $filename)
+    {
+        try {
+            // Format the loadsheet data for SITA Type B message
+            $sitaMessage = $this->formatLoadsheetForSita();
+
+            // Log the SITA message that would be sent
+            \Log::info('SITA notification would be sent to: ' . implode(', ', $notification->sita_addresses), [
+                'flight' => $this->flight->flight_number,
+                'route' => $this->flight->departure_airport . '-' . $this->flight->arrival_airport,
+                'message' => $sitaMessage
+            ]);
+
+            // Here you would integrate with your SITA service provider
+            // Example:
+            // $sitaService = app(SitaService::class);
+            // $sitaService->sendMessage($notification->sita_addresses, $sitaMessage);
+
+            $this->dispatch('alert', icon: 'success', message: 'Loadsheet SITA message prepared for ' . count($notification->sita_addresses) . ' addresses.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to send SITA notification: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to prepare SITA message: ' . $e->getMessage());
+        }
+    }
+
+    protected function formatLoadsheetForSita()
+    {
+        // Format the loadsheet data for SITA Type B message
+        $flight = $this->flight;
+        $loadsheet = $this->loadsheet;
+
+        $message = "FFM\n";
+        $message .= "{$flight->airline->iata}{$flight->flight_number}/{$flight->scheduled_departure_time->format('dM')}\n";
+        $message .= "{$flight->departure_airport}{$flight->arrival_airport}\n";
+
+        // Add loadsheet details
+        $message .= "LOADSHEET\n";
+
+        // Add passenger information
+        $paxByType = $loadsheet->distribution['load_data']['pax_by_type'] ?? [];
+        $totalPax = array_sum(array_column($paxByType, 'count'));
+        $message .= "PAX: {$totalPax}\n";
+
+        // Add weight information
+        $weights = $loadsheet->distribution['weights'] ?? [];
+        $message .= "ZFW: {$weights['zero_fuel_weight']} KG\n";
+        $message .= "TOW: {$weights['takeoff_weight']} KG\n";
+        $message .= "LDW: {$weights['landing_weight']} KG\n";
+
+        // Add fuel information
+        $fuel = $loadsheet->distribution['fuel'] ?? [];
+        $message .= "FUEL: {$fuel['takeoff']} KG\n";
+
+        return $message;
+    }
+
+    protected function generateLoadsheetPdf($loadsheet)
+    {
+        // Generate PDF using Laravel DomPDF
+        $pdf = Pdf::loadView('pdfs.loadsheet', [
+            'flight' => $this->flight,
+            'loadsheet' => $loadsheet,
+            'distribution' => $loadsheet->distribution,
+        ]);
+
+        return $pdf->output();
     }
 
     public function revokeLoadsheet()
