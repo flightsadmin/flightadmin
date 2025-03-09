@@ -66,12 +66,10 @@ return new class extends Migration {
             $table->foreignId('airline_id')->constrained()->onDelete('cascade');
             $table->foreignId('station_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('route_id')->nullable()->constrained()->onDelete('cascade');
-            $table->string('document_type')->comment('Type of document: loadsheet, lirf, notoc, etc.');
-            $table->json('email_addresses')->comment('Primary recipients');
-            $table->json('cc_addresses')->nullable()->comment('CC recipients');
-            $table->json('bcc_addresses')->nullable()->comment('BCC recipients');
+            $table->string('document_type');
+            $table->json('email_addresses')->nullable();
+            $table->json('sita_addresses')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->text('notes')->nullable();
             $table->timestamps();
 
             // Ensure we don't have duplicate configurations

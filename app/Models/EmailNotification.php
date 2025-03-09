@@ -16,16 +16,13 @@ class EmailNotification extends Model
         'route_id',
         'document_type', // loadsheet, lirf, notoc, etc.
         'email_addresses',
-        'cc_addresses',
-        'bcc_addresses',
+        'sita_addresses',
         'is_active',
-        'notes',
     ];
 
     protected $casts = [
         'email_addresses' => 'array',
-        'cc_addresses' => 'array',
-        'bcc_addresses' => 'array',
+        'sita_addresses' => 'array',
         'is_active' => 'boolean',
     ];
 

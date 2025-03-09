@@ -6,6 +6,7 @@ use App\Models\Airline;
 use App\Models\EmailNotification;
 use App\Models\Route;
 use App\Models\Station;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -21,45 +22,45 @@ class EmailNotificationManager extends Component
     public $stationFilter = '';
     public $showModal = false;
     public $editMode = false;
+    public $notification_id = null;
 
     // Form fields
-    public $notificationId;
-    public $station_id;
-    public $route_id;
-    public $document_type;
+    public $document_type = '';
+    public $station_id = null;
+    public $route_id = null;
     public $email_addresses = [];
-    public $cc_addresses = [];
-    public $bcc_addresses = [];
+    public $sita_addresses = [];
+    public $notes = '';
     public $is_active = true;
-    public $notes;
 
     // Temporary fields for email input
     public $newEmail = '';
-    public $newCc = '';
-    public $newBcc = '';
+    public $newSita = '';
 
     // Available document types
     public $documentTypes = [
         'loadsheet' => 'Load Sheet',
-        'lirf' => 'Loading Instruction Report',
-        'notoc' => 'Notification to Captain',
-        'manifest' => 'Passenger Manifest',
-        'general' => 'General Notifications',
+        'loadinginstruction' => 'Loading Instructions',
+        'flightplan' => 'Flight Plan',
+        'notoc' => 'NOTOC',
+        'gendec' => 'General Declaration',
+        'fueling' => 'Fueling Order',
+        'delay' => 'Delay Report',
+        'incident' => 'Incident Report',
+        'weather' => 'Weather Report',
     ];
 
     protected $rules = [
+        'document_type' => 'required|string',
         'station_id' => 'nullable|exists:stations,id',
         'route_id' => 'nullable|exists:routes,id',
-        'document_type' => 'required|string',
-        'email_addresses' => 'required|array|min:1',
-        'email_addresses.*' => 'required|email',
-        'cc_addresses' => 'nullable|array',
-        'cc_addresses.*' => 'nullable|email',
-        'bcc_addresses' => 'nullable|array',
-        'bcc_addresses.*' => 'nullable|email',
-        'is_active' => 'boolean',
+        'email_addresses' => 'required_without:sita_addresses|array',
+        'sita_addresses' => 'required_without:email_addresses|array',
         'notes' => 'nullable|string',
+        'is_active' => 'boolean',
     ];
+
+    protected $listeners = ['refreshNotifications' => '$refresh'];
 
     public function mount(Airline $airline)
     {
@@ -90,83 +91,69 @@ class EmailNotificationManager extends Component
     public function createNotification()
     {
         $this->resetForm();
-        $this->editMode = false;
         $this->showModal = true;
+        $this->editMode = false;
     }
 
     public function editNotification($id)
     {
-        $this->resetForm();
-        $this->notificationId = $id;
-        $this->editMode = true;
-
         $notification = EmailNotification::findOrFail($id);
+        $this->notification_id = $notification->id;
+        $this->document_type = $notification->document_type;
         $this->station_id = $notification->station_id;
         $this->route_id = $notification->route_id;
-        $this->document_type = $notification->document_type;
         $this->email_addresses = $notification->email_addresses;
-        $this->cc_addresses = $notification->cc_addresses ?: [];
-        $this->bcc_addresses = $notification->bcc_addresses ?: [];
+        $this->sita_addresses = $notification->sita_addresses ?? [];
         $this->is_active = $notification->is_active;
-        $this->notes = $notification->notes;
 
         $this->showModal = true;
+        $this->editMode = true;
     }
 
     public function save()
     {
-        $this->validate();
-
-        // Check for duplicate configuration
-        $query = EmailNotification::where('airline_id', $this->airline->id)
-            ->where('document_type', $this->document_type);
-
-        if ($this->station_id) {
-            $query->where('station_id', $this->station_id);
-        } else {
-            $query->whereNull('station_id');
-        }
-
-        if ($this->route_id) {
-            $query->where('route_id', $this->route_id);
-        } else {
-            $query->whereNull('route_id');
-        }
-
-        if ($this->editMode) {
-            $query->where('id', '!=', $this->notificationId);
-        }
-
-        $exists = $query->exists();
-
-        if ($exists) {
-            $this->addError('document_type', 'A notification configuration already exists for this combination.');
+        // Validate that at least one recipient is provided
+        if (empty($this->email_addresses) && empty($this->sita_addresses)) {
+            $this->addError('email_addresses', 'At least one email or SITA address is required');
             return;
         }
 
-        $notificationData = [
+        $this->validate([
+            'document_type' => 'required|string',
+            'station_id' => 'nullable|exists:stations,id',
+            'route_id' => 'nullable|exists:routes,id',
+            'email_addresses' => 'required_without:sita_addresses|array',
+            'sita_addresses' => 'required_without:email_addresses|array',
+            'is_active' => 'boolean',
+        ]);
+
+        $data = [
             'airline_id' => $this->airline->id,
+            'document_type' => $this->document_type,
             'station_id' => $this->station_id,
             'route_id' => $this->route_id,
-            'document_type' => $this->document_type,
             'email_addresses' => $this->email_addresses,
-            'cc_addresses' => !empty($this->cc_addresses) ? $this->cc_addresses : null,
-            'bcc_addresses' => !empty($this->bcc_addresses) ? $this->bcc_addresses : null,
+            'sita_addresses' => $this->sita_addresses,
             'is_active' => $this->is_active,
-            'notes' => $this->notes,
         ];
 
-        if ($this->editMode) {
-            EmailNotification::findOrFail($this->notificationId)->update($notificationData);
-            $message = 'Email notification updated successfully';
+        if ($this->notification_id) {
+            EmailNotification::findOrFail($this->notification_id)->update($data);
+            $message = 'Notification updated successfully';
         } else {
-            EmailNotification::create($notificationData);
-            $message = 'Email notification created successfully';
+            EmailNotification::create($data);
+            $message = 'Notification created successfully';
         }
 
-        $this->dispatch('alert', icon: 'success', message: $message);
-        $this->showModal = false;
+        $this->dispatch('notify', ['message' => $message, 'type' => 'success']);
         $this->resetForm();
+        $this->showModal = false;
+    }
+
+    public function deleteNotification($id)
+    {
+        EmailNotification::findOrFail($id)->delete();
+        $this->dispatch('notify', ['message' => 'Notification deleted successfully', 'type' => 'success']);
     }
 
     public function toggleActive($id)
@@ -175,93 +162,114 @@ class EmailNotificationManager extends Component
         $notification->update(['is_active' => !$notification->is_active]);
 
         $status = $notification->is_active ? 'activated' : 'deactivated';
-        $this->dispatch('alert', icon: 'success', message: "Email notification {$status} successfully");
-    }
-
-    public function deleteNotification($id)
-    {
-        EmailNotification::findOrFail($id)->delete();
-        $this->dispatch('alert', icon: 'success', message: 'Email notification deleted successfully');
+        $this->dispatch('notify', ['message' => "Notification {$status} successfully", 'type' => 'success']);
     }
 
     public function addEmail()
     {
-        if (!empty($this->newEmail)) {
-            $this->validate(['newEmail' => 'required|email']);
-            $this->email_addresses[] = $this->newEmail;
-            $this->newEmail = '';
+        if (empty($this->newEmail)) {
+            return;
         }
+
+        $validator = Validator::make(
+            ['email' => $this->newEmail],
+            ['email' => 'required|email']
+        );
+
+        if ($validator->fails()) {
+            $this->addError('newEmail', 'Please enter a valid email address');
+            return;
+        }
+
+        if (!in_array($this->newEmail, $this->email_addresses)) {
+            $this->email_addresses[] = $this->newEmail;
+        }
+
+        $this->newEmail = '';
     }
 
     public function removeEmail($index)
     {
-        unset($this->email_addresses[$index]);
-        $this->email_addresses = array_values($this->email_addresses);
-    }
-
-    public function addCc()
-    {
-        if (!empty($this->newCc)) {
-            $this->validate(['newCc' => 'required|email']);
-            $this->cc_addresses[] = $this->newCc;
-            $this->newCc = '';
+        if (isset($this->email_addresses[$index])) {
+            unset($this->email_addresses[$index]);
+            $this->email_addresses = array_values($this->email_addresses);
         }
     }
 
-    public function removeCc($index)
+    public function addSita()
     {
-        unset($this->cc_addresses[$index]);
-        $this->cc_addresses = array_values($this->cc_addresses);
-    }
-
-    public function addBcc()
-    {
-        if (!empty($this->newBcc)) {
-            $this->validate(['newBcc' => 'required|email']);
-            $this->bcc_addresses[] = $this->newBcc;
-            $this->newBcc = '';
+        if (empty($this->newSita)) {
+            return;
         }
+
+        $validator = Validator::make(
+            ['sita' => $this->newSita],
+            ['sita' => 'required|regex:/^[A-Z0-9]{7}$/']
+        );
+
+        if ($validator->fails()) {
+            $this->addError('newSita', 'Please enter a valid 7-character SITA address');
+            return;
+        }
+
+        if (!in_array($this->newSita, $this->sita_addresses)) {
+            $this->sita_addresses[] = strtoupper($this->newSita);
+        }
+
+        $this->newSita = '';
     }
 
-    public function removeBcc($index)
+    public function removeSita($index)
     {
-        unset($this->bcc_addresses[$index]);
-        $this->bcc_addresses = array_values($this->bcc_addresses);
+        if (isset($this->sita_addresses[$index])) {
+            unset($this->sita_addresses[$index]);
+            $this->sita_addresses = array_values($this->sita_addresses);
+        }
     }
 
     public function resetForm()
     {
-        $this->reset([
-            'notificationId',
-            'station_id',
-            'route_id',
-            'document_type',
-            'email_addresses',
-            'cc_addresses',
-            'bcc_addresses',
-            'is_active',
-            'notes',
-            'newEmail',
-            'newCc',
-            'newBcc',
-            'editMode'
-        ]);
-        $this->resetValidation();
+        $this->notification_id = null;
+        $this->document_type = '';
+        $this->station_id = null;
+        $this->route_id = null;
+        $this->email_addresses = [];
+        $this->sita_addresses = [];
+        $this->newEmail = '';
+        $this->newSita = '';
+        $this->is_active = true;
+        $this->resetErrorBag();
     }
 
     public function render()
     {
-        // Get all notifications for this airline
-        $notifications = $this->airline->emailNotifications()
-            ->with(['station', 'route.departureStation', 'route.arrivalStation'])
+        $stations = Station::whereHas('airlines', function ($query) {
+            $query->where('airlines.id', $this->airline->id);
+        })->orderBy('code')->get();
+
+        $routes = collect([]);
+        if ($this->station_id) {
+            $routes = Route::where('airline_id', $this->airline->id)
+                ->where(function ($query) {
+                    $query->where('departure_station_id', $this->station_id)
+                        ->orWhere('arrival_station_id', $this->station_id);
+                })
+                ->with(['departureStation', 'arrivalStation'])
+                ->orderBy('departure_station_id')
+                ->orderBy('arrival_station_id')
+                ->get();
+        }
+
+        $notifications = EmailNotification::where('airline_id', $this->airline->id)
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->whereHas('station', function ($sq) {
-                        $sq->where('code', 'like', '%' . $this->search . '%')
-                            ->orWhere('name', 'like', '%' . $this->search . '%');
-                    })
-                        ->orWhere('document_type', 'like', '%' . $this->search . '%')
-                        ->orWhere('notes', 'like', '%' . $this->search . '%');
+                    $q->whereJsonContains('email_addresses', $this->search)
+                        ->orWhereJsonContains('sita_addresses', $this->search)
+                        ->orWhereHas('station', function ($sq) {
+                            $sq->where('name', 'like', '%' . $this->search . '%')
+                                ->orWhere('code', 'like', '%' . $this->search . '%');
+                        })
+                        ->orWhere('document_type', 'like', '%' . $this->search . '%');
                 });
             })
             ->when($this->documentTypeFilter, function ($query) {
@@ -270,30 +278,17 @@ class EmailNotificationManager extends Component
             ->when($this->stationFilter, function ($query) {
                 $query->where('station_id', $this->stationFilter);
             })
+            ->with(['station', 'route.departureStation', 'route.arrivalStation'])
             ->orderBy('document_type')
             ->orderBy('station_id')
+            ->orderBy('route_id')
             ->paginate(10);
-
-        // Get all stations assigned to this airline
-        $stations = $this->airline->stations()->orderBy('code')->get();
-
-        // Get routes for the selected station
-        $routes = collect();
-        if ($this->station_id) {
-            $routes = Route::where('airline_id', $this->airline->id)
-                ->where(function ($query) {
-                    $query->where('departure_station_id', $this->station_id)
-                        ->orWhere('arrival_station_id', $this->station_id);
-                })
-                ->where('is_active', true)
-                ->with(['departureStation', 'arrivalStation'])
-                ->get();
-        }
 
         return view('livewire.airline.email-notification-manager', [
             'notifications' => $notifications,
             'stations' => $stations,
             'routes' => $routes,
+            'documentTypes' => $this->documentTypes,
         ]);
     }
 }

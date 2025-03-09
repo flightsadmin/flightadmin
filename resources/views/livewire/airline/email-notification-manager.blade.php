@@ -25,13 +25,12 @@
                         <option value="{{ $station->id }}">{{ $station->code }} - {{ $station->name }}</option>
                     @endforeach
                 </select>
-                <button wire:click="createNotification" class="btn btn-sm btn-primary d-flex align-items-center nowrap">
-                    <i class="bi bi-plus-circle"></i>
-                    <span class="text-nowrap ms-1"> Add Notification</span>
+                <button wire:click="createNotification" class="btn btn-sm btn-primary d-inline-flex align-items-center nowrap">
+                    <i class="bi bi-plus-circle me-1"></i><span class="text-nowrap">Add Notification</span>
                 </button>
             </div>
         </div>
-        <div class="card-body">
+        <div class="card-body p-2">
             <div class="table-responsive">
                 <table class="table table-hover table-sm mb-0">
                     <thead class="table-light">
@@ -75,27 +74,38 @@
                                 </td>
                                 <td>
                                     <div class="d-flex flex-wrap gap-1 align-items-center">
-                                        <span class="badge bg-secondary d-flex align-items-center">
-                                            <i class="bi bi-envelope-fill me-1"></i>
-                                            {{ count($notification->email_addresses) }} To
-                                        </span>
-                                        @if (!empty($notification->cc_addresses))
-                                            <span class="badge bg-info text-dark d-flex align-items-center">
-                                                <i class="bi bi-envelope me-1"></i> {{ count($notification->cc_addresses) }} CC
+                                        @if (!empty($notification->email_addresses))
+                                            <span class="badge bg-secondary d-flex align-items-center">
+                                                <i class="bi bi-envelope-fill me-1"></i>
+                                                {{ count($notification->email_addresses) }} Emails
                                             </span>
                                         @endif
-                                        @if (!empty($notification->bcc_addresses))
-                                            <span class="badge bg-dark d-flex align-items-center">
-                                                <i class="bi bi-envelope me-1"></i> {{ count($notification->bcc_addresses) }}
-                                                BCC
+                                        @if (!empty($notification->sita_addresses))
+                                            <span class="badge bg-primary d-flex align-items-center">
+                                                <i class="bi bi-send me-1"></i> {{ count($notification->sita_addresses) }} SITA
                                             </span>
                                         @endif
                                     </div>
-                                    <div class="small text-muted mt-1 text-truncate" style="max-width: 200px;"
-                                        title="{{ implode(', ', $notification->email_addresses) }}">
-                                        {{ implode(', ', array_slice($notification->email_addresses, 0, 2)) }}
-                                        @if (count($notification->email_addresses) > 2)
-                                            <span>+{{ count($notification->email_addresses) - 2 }} more</span>
+                                    <div class="small text-muted mt-1">
+                                        @if (!empty($notification->email_addresses))
+                                            <div class="text-truncate" style="max-width: 200px;"
+                                                title="{{ implode(', ', $notification->email_addresses) }}">
+                                                <i class="bi bi-envelope-fill me-1 small"></i>
+                                                {{ implode(', ', array_slice($notification->email_addresses, 0, 2)) }}
+                                                @if (count($notification->email_addresses) > 2)
+                                                    <span>+{{ count($notification->email_addresses) - 2 }} more</span>
+                                                @endif
+                                            </div>
+                                        @endif
+                                        @if (!empty($notification->sita_addresses))
+                                            <div class="text-truncate" style="max-width: 200px;"
+                                                title="{{ implode(', ', $notification->sita_addresses) }}">
+                                                <i class="bi bi-send me-1 small"></i>
+                                                {{ implode(', ', array_slice($notification->sita_addresses, 0, 2)) }}
+                                                @if (count($notification->sita_addresses) > 2)
+                                                    <span>+{{ count($notification->sita_addresses) - 2 }} more</span>
+                                                @endif
+                                            </div>
                                         @endif
                                     </div>
                                 </td>
@@ -140,9 +150,11 @@
                 </table>
             </div>
 
-            <div class="px-3 py-2 border-top">
-                {{ $notifications->links() }}
-            </div>
+            @if ($notifications->hasPages())
+                <div class="px-3 py-2 border-top">
+                    {{ $notifications->links() }}
+                </div>
+            @endif
         </div>
     </div>
 
@@ -158,8 +170,8 @@
                         </h5>
                         <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
                     </div>
-                    <div class="modal-body">
-                        <form wire:submit="save">
+                    <form wire:submit="save">
+                        <div class="modal-body">
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="document_type" class="form-label fw-medium">Document Type <span
@@ -197,42 +209,41 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="route_id" class="form-label fw-medium">Route (Optional)</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light"><i
-                                                class="bi bi-signpost-split"></i></span>
-                                        <select class="form-select" id="route_id" wire:model="route_id"
-                                            @if (!$station_id) disabled @endif>
-                                            <option value="">All Routes</option>
-                                            @foreach ($routes as $route)
-                                                <option value="{{ $route->id }}">
-                                                    {{ $route->departureStation->code }} -
-                                                    {{ $route->arrivalStation->code }}
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                    <div class="mb-3">
+                                        <label for="route_id" class="form-label fw-medium">Route (Optional)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-signpost-split"></i></span>
+                                            <select class="form-select" id="route_id" wire:model="route_id"
+                                                @if (!$station_id) disabled @endif>
+                                                <option value="">All Routes</option>
+                                                @foreach ($routes as $route)
+                                                    <option value="{{ $route->id }}">
+                                                        {{ $route->departureStation->code }} - {{ $route->arrivalStation->code }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="form-text text-muted">
+                                            <small>
+                                                @if (!$station_id)
+                                                    Select a station first to see available routes
+                                                @else
+                                                    Leave blank to apply to all routes from/to this station
+                                                @endif
+                                            </small>
+                                        </div>
+                                        @error('route_id')
+                                            <div class="text-danger small mt-1">{{ $message ?? 'Invalid route' }}</div>
+                                        @enderror
                                     </div>
-                                    <div class="form-text text-muted">
-                                        <small>
-                                            @if (!$station_id)
-                                                Select a station first to see available routes
-                                            @else
-                                                Leave blank to apply to all routes from/to this station
-                                            @endif
-                                        </small>
-                                    </div>
-                                    @error('route_id')
-                                        <div class="text-danger small mt-1">{{ $message ?? 'Invalid route' }}</div>
-                                    @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="is_active" class="form-label fw-medium">Status</label>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" id="is_active"
-                                            wire:model="is_active">
-                                        <label class="form-check-label" for="is_active">Active</label>
-                                        <div class="form-text text-muted">
-                                            <small>Inactive configurations won't be used for emails</small>
+                                    <div class="mb-3">
+                                        <label for="is_active" class="form-label fw-medium">Active</label>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="is_active"
+                                                wire:model="is_active">
+                                            <label class="form-check-label" for="is_active">Active</label>
                                         </div>
                                     </div>
                                 </div>
@@ -240,123 +251,84 @@
 
                             <hr class="my-3">
                             <h6 class="mb-3 d-flex align-items-center">
-                                <i class="bi bi-envelope-paper me-2"></i> Email Recipients
+                                <i class="bi bi-envelope-paper me-2"></i> Notification Recipients
                             </h6>
 
-                            <div class="row mb-3">
-                                <div class="col-md-12 mb-2">
-                                    <label class="form-label fw-medium">Primary Recipients (To) <span
-                                            class="text-danger">*</span></label>
-                                    <div class="input-group mb-2">
-                                        <span class="input-group-text bg-light"><i class="bi bi-envelope-fill"></i></span>
-                                        <input type="email" class="form-control" wire:model="newEmail"
-                                            wire:keydown.enter.prevent="addEmail" placeholder="Enter email address">
-                                        <button class="btn btn-outline-primary" type="button" wire:click="addEmail">
-                                            <i class="bi bi-plus"></i> Add
-                                        </button>
-                                    </div>
-                                    @error('newEmail')
-                                        <div class="text-danger small mt-1">{{ $message ?? 'Invalid email format' }}</div>
-                                    @enderror
-                                    @error('email_addresses')
-                                        <div class="text-danger small mt-1">
-                                            {{ $message ?? 'At least one email address is required' }}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-4">
+                                        <label class="form-label fw-medium">Email Recipients</label>
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text bg-light"><i class="bi bi-envelope-fill"></i></span>
+                                            <input type="email" class="form-control" wire:model="newEmail"
+                                                wire:keydown.enter.prevent="addEmail" placeholder="Enter email address">
+                                            <button class="btn btn-outline-primary" type="button" wire:click="addEmail">
+                                                <i class="bi bi-plus"></i> Add
+                                            </button>
                                         </div>
-                                    @enderror
-
-                                    <div class="d-flex flex-wrap gap-2 mt-1">
-                                        @foreach ($email_addresses as $index => $email)
-                                            <div class="badge bg-primary d-flex align-items-center p-2">
-                                                <i class="bi bi-envelope-fill me-1"></i> {{ $email }}
-                                                <button type="button" class="btn-close btn-close-white ms-2"
-                                                    wire:click="removeEmail({{ $index }})"
-                                                    style="font-size: 0.5rem;"></button>
+                                        @error('newEmail')
+                                            <div class="text-danger small mt-1">{{ $message ?? 'Invalid email format' }}</div>
+                                        @enderror
+                                        @error('email_addresses')
+                                            <div class="text-danger small mt-1">
+                                                {{ $message ?? 'At least one recipient is required' }}
                                             </div>
-                                        @endforeach
+                                        @enderror
+
+                                        <div class="d-flex flex-wrap gap-2 mt-2">
+                                            @foreach ($email_addresses as $index => $email)
+                                                <div class="badge bg-primary d-flex align-items-center p-2">
+                                                    <i class="bi bi-envelope-fill me-1"></i> {{ $email }}
+                                                    <button type="button" class="btn-close btn-close-white ms-2"
+                                                        wire:click="removeEmail({{ $index }})"
+                                                        style="font-size: 0.5rem;"></button>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </div>
+                                <div class="col-md-6">
+                                    <div class="mb-4">
+                                        <label class="form-label fw-medium">SITA Addresses</label>
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text bg-light"><i class="bi bi-send"></i></span>
+                                            <input type="text" class="form-control" wire:model="newSita"
+                                                wire:keydown.enter.prevent="addSita" placeholder="Enter SITA address (e.g. LHROPXH)">
+                                            <button class="btn btn-outline-secondary" type="button" wire:click="addSita">
+                                                <i class="bi bi-plus"></i> Add
+                                            </button>
+                                        </div>
+                                        @error('newSita')
+                                            <div class="text-danger small mt-1">{{ $message ?? 'Invalid SITA address format' }}</div>
+                                        @enderror
+                                        @error('sita_addresses')
+                                            <div class="text-danger small mt-1">{{ $message ?? 'Invalid SITA addresses' }}</div>
+                                        @enderror
 
-                                <div class="col-md-12 mb-2">
-                                    <label class="form-label fw-medium">CC Recipients (Optional)</label>
-                                    <div class="input-group mb-2">
-                                        <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
-                                        <input type="email" class="form-control" wire:model="newCc"
-                                            wire:keydown.enter.prevent="addCc" placeholder="Enter CC email address">
-                                        <button class="btn btn-outline-secondary" type="button" wire:click="addCc">
-                                            <i class="bi bi-plus"></i> Add
-                                        </button>
-                                    </div>
-                                    @error('newCc')
-                                        <div class="text-danger small mt-1">{{ $message ?? 'Invalid CC email format' }}</div>
-                                    @enderror
-                                    @error('cc_addresses')
-                                        <div class="text-danger small mt-1">{{ $message ?? 'Invalid CC email addresses' }}</div>
-                                    @enderror
-
-                                    <div class="d-flex flex-wrap gap-2 mt-1">
-                                        @foreach ($cc_addresses as $index => $email)
-                                            <div class="badge bg-secondary d-flex align-items-center p-2">
-                                                <i class="bi bi-envelope me-1"></i> {{ $email }}
-                                                <button type="button" class="btn-close btn-close-white ms-2"
-                                                    wire:click="removeCc({{ $index }})"
-                                                    style="font-size: 0.5rem;"></button>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-
-                                <div class="col-md-12 mb-2">
-                                    <label class="form-label fw-medium">BCC Recipients (Optional)</label>
-                                    <div class="input-group mb-2">
-                                        <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
-                                        <input type="email" class="form-control" wire:model="newBcc"
-                                            wire:keydown.enter.prevent="addBcc" placeholder="Enter BCC email address">
-                                        <button class="btn btn-outline-dark" type="button" wire:click="addBcc">
-                                            <i class="bi bi-plus"></i> Add
-                                        </button>
-                                    </div>
-                                    @error('newBcc')
-                                        <div class="text-danger small mt-1">{{ $message ?? 'Invalid BCC email format' }}</div>
-                                    @enderror
-                                    @error('bcc_addresses')
-                                        <div class="text-danger small mt-1">{{ $message ?? 'Invalid BCC email addresses' }}</div>
-                                    @enderror
-
-                                    <div class="d-flex flex-wrap gap-2 mt-1">
-                                        @foreach ($bcc_addresses as $index => $email)
-                                            <div class="badge bg-dark d-flex align-items-center p-2">
-                                                <i class="bi bi-envelope me-1"></i> {{ $email }}
-                                                <button type="button" class="btn-close btn-close-white ms-2"
-                                                    wire:click="removeBcc({{ $index }})" style="font-size: 0.5rem;"></button>
-                                            </div>
-                                        @endforeach
+                                        <div class="d-flex flex-wrap gap-2 mt-2">
+                                            @foreach ($sita_addresses as $index => $sita)
+                                                <div class="badge bg-secondary d-flex align-items-center p-2">
+                                                    <i class="bi bi-send me-1"></i> {{ $sita }}
+                                                    <button type="button" class="btn-close btn-close-white ms-2"
+                                                        wire:click="removeSita({{ $index }})" style="font-size: 0.5rem;"></button>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-12">
-                                    <label for="notes" class="form-label fw-medium">Notes (Optional)</label>
-                                    <textarea class="form-control" id="notes" wire:model="notes" rows="2"
-                                        placeholder="Additional information about this notification configuration"></textarea>
-                                    @error('notes')
-                                        <div class="text-danger small mt-1">{{ $message ?? 'Invalid notes format' }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="d-flex justify-content-end gap-2">
-                                <button type="button" class="btn btn-outline-secondary"
-                                    wire:click="$set('showModal', false)">
-                                    <i class="bi bi-x-circle me-1"></i> Cancel
-                                </button>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-{{ $editMode ? 'check-circle' : 'envelope-plus' }} me-1"></i>
-                                    {{ $editMode ? 'Update' : 'Create' }} Notification
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        </div>
+                        <div class="modal-footer d-flex justify-content-between gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                wire:click="$set('showModal', false)">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </button>
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="bi bi-{{ $editMode ? 'check-circle' : 'envelope-plus' }} me-1"></i>
+                                {{ $editMode ? 'Update' : 'Create' }} Notification
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

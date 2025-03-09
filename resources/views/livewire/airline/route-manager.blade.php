@@ -13,37 +13,26 @@
                     <input wire:model.live="search" type="text" class="form-control border-start-0"
                         placeholder="Search routes...">
                 </div>
+                <select wire:model.live="departureFilter" id="departureFilter"
+                    class="form-select form-select-sm">
+                    <option value="">All Departure Stations</option>
+                    @foreach ($stations as $station)
+                        <option value="{{ $station->id }}">{{ $station->code }} - {{ $station->name }}</option>
+                    @endforeach
+                </select>
+                <select wire:model.live="arrivalFilter" id="arrivalFilter" class="form-select form-select-sm">
+                    <option value="">All Arrival Stations</option>
+                    @foreach ($stations as $station)
+                        <option value="{{ $station->id }}">{{ $station->code }} - {{ $station->name }}</option>
+                    @endforeach
+                </select>
                 <button wire:click="createRoute" class="btn btn-sm btn-primary d-inline-flex align-items-center nowrap">
                     <i class="bi bi-plus-circle"></i>
                     <span class="text-nowrap"> Add Route</span>
                 </button>
             </div>
         </div>
-        <div class="card-body p-0">
-            <div class="mb-3 p-3 bg-light border-bottom">
-                <div class="row g-2">
-                    <div class="col-md-6">
-                        <label for="departureFilter" class="form-label small text-muted mb-1">Departure Station</label>
-                        <select wire:model.live="departureFilter" id="departureFilter"
-                            class="form-select form-select-sm">
-                            <option value="">All Departure Stations</option>
-                            @foreach ($stations as $station)
-                                <option value="{{ $station->id }}">{{ $station->code }} - {{ $station->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="arrivalFilter" class="form-label small text-muted mb-1">Arrival Station</label>
-                        <select wire:model.live="arrivalFilter" id="arrivalFilter" class="form-select form-select-sm">
-                            <option value="">All Arrival Stations</option>
-                            @foreach ($stations as $station)
-                                <option value="{{ $station->id }}">{{ $station->code }} - {{ $station->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-            </div>
-
+        <div class="card-body p-2">
             <div class="table-responsive">
                 <table class="table table-hover table-sm mb-0">
                     <thead class="table-light">
@@ -127,7 +116,7 @@
                 </table>
             </div>
 
-            @if($routes->hasPages())
+            @if ($routes->hasPages())
                 <div class="px-3 py-2 border-top">
                     {{ $routes->links() }}
                 </div>
@@ -162,7 +151,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                @error('departure_station_id') 
+                                @error('departure_station_id')
                                     <div class="text-danger small mt-1">{{ $message ?? 'Departure station is required' }}</div>
                                 @enderror
                             </div>
@@ -180,7 +169,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                @error('arrival_station_id') 
+                                @error('arrival_station_id')
                                     <div class="text-danger small mt-1">{{ $message ?? 'Arrival station is required' }}</div>
                                 @enderror
                             </div>
@@ -198,7 +187,7 @@
                                                 wire:model="flight_time" min="1">
                                         </div>
                                         <div class="form-text text-muted"><small>e.g. 90 for 1h 30m</small></div>
-                                        @error('flight_time') 
+                                        @error('flight_time')
                                             <div class="text-danger small mt-1">{{ $message ?? 'Invalid flight time' }}</div>
                                         @enderror
                                     </div>
@@ -211,7 +200,7 @@
                                             <input type="number" class="form-control" id="distance" wire:model="distance"
                                                 min="1">
                                         </div>
-                                        @error('distance') 
+                                        @error('distance')
                                             <div class="text-danger small mt-1">{{ $message ?? 'Invalid distance' }}</div>
                                         @enderror
                                     </div>
@@ -222,7 +211,7 @@
                                 <label for="notes" class="form-label fw-medium">Notes</label>
                                 <textarea class="form-control" id="notes" wire:model="notes" rows="3"
                                     placeholder="Additional information about this route"></textarea>
-                                @error('notes') 
+                                @error('notes')
                                     <div class="text-danger small mt-1">{{ $message ?? 'Invalid notes format' }}</div>
                                 @enderror
                             </div>
