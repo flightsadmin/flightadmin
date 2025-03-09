@@ -10,22 +10,31 @@
                                 wire:loading.attr="disabled">
                                 <i class="bi bi-check2-circle"></i> Finalize Loadsheet
                             </button>
-                        @elseif($loadsheet && $loadsheet->status === 'released')
+                        @elseif ($loadsheet && $loadsheet->status === 'released')
                             <button class="btn btn-secondary btn-sm mb-0" wire:click="revokeLoadsheet"
                                 wire:confirm="Are you sure you want to revoke this loadsheet?" wire:loading.attr="disabled">
                                 <i class="bi bi-trash-fill"></i> Revoke Loadsheet
                             </button>
-                        @elseif (!$loadsheet || $loadsheet->status === 'revoked')
+                        @elseif (!$loadsheet || $loadsheet->status === 'revoked' || $loadsheet->status === 'draft')
                             <button class="btn btn-primary btn-sm mb-0" wire:click="generateLoadsheet"
-                                @disabled(!$flight->fuel || !$loadplan || $loadplan->status !== 'released')
-                                wire:loading.attr="disabled">
+                                wire:loading.attr="disabled" @disabled(!$flight->fuel || !$loadplan || $loadplan->status !== 'released')>
                                 <i class="bi bi-plus-circle"></i> Generate Loadsheet
                             </button>
                         @endif
                     </div>
                 </div>
                 @if ($loadsheet)
-                    @include('livewire.flights.partials.loadsheet')
+                                @php
+                                    $distribution = $loadsheet->distribution;
+                                    $pax = $distribution['load_data'];
+                                    $totalPax = array_sum(
+                                        array_column(
+                                            array_filter($pax['pax_by_type'], fn($data, $type) => $type !== 'infant', ARRAY_FILTER_USE_BOTH),
+                                            'count',
+                                        ),
+                                    );
+                                @endphp
+                                @include('livewire.flights.partials.loadsheet')
                 @else
                     <div class="card-body">
                         <div class="text-center py-4">
@@ -37,8 +46,8 @@
                             @endif
                             @if (!$loadplan || $loadplan->status !== 'released')
                                 <div class="alert alert-warning">
-                                    <i class="bi bi-exclamation-triangle"></i> Load plan must be released before generating
-                                    loadsheet.
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    Load plan must be released before generating loadsheet.
                                 </div>
                             @else
                                 <div class="alert alert-success">
@@ -248,7 +257,7 @@
                                     if (label) {
                                         label += ': ';
                                     }
-                      i           label += '(Index ' + (context.raw.x).toFixed(2) + ', Weight ' + (context.raw.y)
+                                    label += '(Index ' + (context.raw.x).toFixed(2) + ', Weight ' + (context.raw.y)
                                         .toLocaleString() + ' kg)';
                                     return label;
                                 }

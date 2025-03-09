@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
                 ])->each(function ($aircraft) use ($airline) {
                     Flight::factory(1)->forAirline($airline)->create([
                         'aircraft_id' => $aircraft->id,
-                    ])->each(function ($flight) {
+                    ])->each(function ($flight) use ($airline) {
                         $captain = Crew::factory()->captain()->create();
                         $captain->flights()->attach($flight);
 
@@ -52,15 +52,15 @@ class DatabaseSeeder extends Seeder
                             'flight_id' => $flight->id,
                         ]);
 
-                        // foreach (['baggage', 'cargo'] as $type) {
-                        //     Container::factory(rand(1, 2))->forAirline($airline)->create()->each(function ($container) use ($flight, $type) {
-                        //         $flight->containers()->attach($container->id, [
-                        //             'type' => $type,
-                        //             'weight' => $container->tare_weight,
-                        //             'status' => 'unloaded',
-                        //         ]);
-                        //     });
-                        // }
+                        foreach (['baggage', 'cargo'] as $type) {
+                            Container::factory(rand(1, 2))->forAirline($airline)->create()->each(function ($container) use ($flight, $type) {
+                                $flight->containers()->attach($container->id, [
+                                    'type' => $type,
+                                    'weight' => $container->tare_weight,
+                                    'status' => 'unloaded',
+                                ]);
+                            });
+                        }
                     });
                 });
             });
@@ -68,11 +68,11 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             AdminSeeder::class,
-            AircraftConfigSeeder::class,
+            AircraftSeeder::class,
             EnvelopeSeeder::class,
             CrewSeatingSeeder::class,
-            ScheduleSeeder::class,
             UldSeeder::class,
+            ScheduleSeeder::class,
             EmailTemplateSeeder::class,
         ]);
     }

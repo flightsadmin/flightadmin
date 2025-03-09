@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Airline;
 use App\Models\Schedule;
+use App\Models\Container;
 use Illuminate\Database\Seeder;
 
 class ScheduleSeeder extends Seeder
@@ -58,7 +59,23 @@ class ScheduleSeeder extends Seeder
             ->get();
 
         foreach ($schedules as $schedule) {
-            $schedule->generateFlights();
+            $flightIds = $schedule->generateFlights();
+
+            foreach ($flightIds as $flightId) {
+                $flight = $schedule->flights()->find($flightId);
+
+                Container::factory()->forAirline($schedule->airline)->create()->flights()->attach($flight->id, [
+                    'type' => 'baggage',
+                    'weight' => 70,
+                    'status' => 'unloaded'
+                ]);
+
+                Container::factory()->forAirline($schedule->airline)->create()->flights()->attach($flight->id, [
+                    'type' => 'cargo',
+                    'weight' => 80,
+                    'status' => 'unloaded'
+                ]);
+            }
         }
     }
 }

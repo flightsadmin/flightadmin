@@ -24,14 +24,14 @@
         }
 
         table {
-            width: 60%;
+            width: 70%;
             border-collapse: collapse;
         }
 
         hr {
             border: 0;
             border-top: 1px dashed #333;
-            width: 60%;
+            width: 70%;
             margin-left: 0;
         }
     </style>

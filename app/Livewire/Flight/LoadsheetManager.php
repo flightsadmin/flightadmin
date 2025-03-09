@@ -291,18 +291,14 @@ class LoadsheetManager extends Component
                 [
                     'path' => $fullPath,
                     'name' => $filename,
-                ],
-                [
-                    'path' => $fullPath,
-                    'name' => $filename,
-                ],
+                ]
             ]));
         }
 
-        // Clean up temporary file
-        // if (file_exists($fullPath)) {
-        //     // unlink($fullPath);
-        // }
+        // Clean up file
+        if (file_exists($fullPath)) {
+            unlink($fullPath);
+        }
     }
 
     public function revokeLoadsheet()

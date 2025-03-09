@@ -8,7 +8,7 @@ use App\Models\CabinZone;
 use App\Models\Hold;
 use Illuminate\Database\Seeder;
 
-class AircraftConfigSeeder extends Seeder
+class AircraftSeeder extends Seeder
 {
     public function run(): void
     {
