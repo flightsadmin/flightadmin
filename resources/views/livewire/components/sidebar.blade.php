@@ -1,7 +1,8 @@
 <div class="d-flex flex-column h-100">
     <div class="position-sticky top-0 border-bottom bg-dark-subtle">
         <div class="d-flex justify-content-between align-items-center m-2">
-            <input type="date" wire:model.live="selectedDate" class="form-control form-control-sm me-3" id="date-picker">
+            <input type="date" wire:model.live="selectedDate" class="form-control form-control-sm me-3"
+                id="date-picker">
             <a wire:navigate href="{{ route('flights.index') }}"
                 class="btn-link text-secondary bi-airplane-engines-fill float-end h4 m-0"></a>
         </div>
@@ -12,8 +13,8 @@
             @forelse ($flights as $f)
                 <li class="nav-item text-body-dark">
                     <a class="nav-link {{ isset($selectedFlight) && $selectedFlight->id == $f->id ? 'active bg-secondary text-white' : '' }} text-reset"
-                        wire:click.prevent="setActiveFlight({{ $f->id }})"
-                        wire:navigate href="{{ route('flights.show', ['flight' => $f->id]) }}">
+                        wire:click.prevent="setActiveFlight({{ $f->id }})" wire:navigate
+                        href="{{ route('flights.show', ['flight' => $f->id]) }}">
                         {{ $f->flight_number }} - {{ $f->scheduled_departure_time->format('dS, M Y') }}
                     </a>
                 </li>
@@ -65,8 +66,8 @@
                 </a>
             </li>
             <li class="dropdown-item">
-                <a class="nav-link" wire:navigate href="{{ route('crews.index') }}">
-                    <i class="bi bi-people-fill"></i> Crew
+                <a class="nav-link" wire:navigate href="{{ route('admin.stations') }}">
+                    <i class="bi bi-geo-alt"></i> Stations
                 </a>
             </li>
             <li>

@@ -108,12 +108,8 @@ class StationManager extends Component
     public function render()
     {
         $stations = Station::when($this->search, function ($query) {
-            $query->where('code', 'like', '%' . $this->search . '%')
-                ->orWhere('name', 'like', '%' . $this->search . '%')
-                ->orWhere('country', 'like', '%' . $this->search . '%');
-        })
-            ->orderBy('code')
-            ->paginate(10);
+            $query->whereAny(['code', 'name', 'country'], 'like', '%' . $this->search . '%');
+        })->orderBy('code')->paginate(10);
 
         return view('livewire.admin.station-manager', [
             'stations' => $stations,
