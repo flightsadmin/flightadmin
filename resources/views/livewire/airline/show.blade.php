@@ -51,6 +51,12 @@
                         <i class="bi bi-envelope"></i> Email Notifications
                     </button>
                 </li>
+                <li class="nav-item">
+                    <button class="nav-link {{ $activeTab === 'email_templates' ? 'active' : '' }}"
+                        wire:click="$set('activeTab', 'email_templates')">
+                        <i class="bi bi-envelope-paper"></i> Email Templates
+                    </button>
+                </li>
             </ul>
 
             @if ($activeTab === 'overview')
@@ -301,6 +307,8 @@
                 <livewire:airline.route-manager :airline="$airline" />
             @elseif ($activeTab === 'email_notifications')
                 <livewire:airline.email-notification-manager :airline="$airline" />
+            @elseif ($activeTab === 'email_templates')
+                <livewire:email-templates />
             @endif
         </div>
     </div>
