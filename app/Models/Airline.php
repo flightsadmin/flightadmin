@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Airline extends Model
@@ -16,26 +17,55 @@ class Airline extends Model
         'name',
         'iata_code',
         'icao_code',
+        'logo',
         'country',
-        'address',
-        'phone',
-        'email',
-        'description',
-        'active',
+        'is_active',
     ];
 
     protected $casts = [
-        'active' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
+    /**
+     * Get the aircraft for this airline.
+     */
     public function aircraft(): HasMany
     {
         return $this->hasMany(Aircraft::class);
     }
 
+    /**
+     * Get the flights for this airline.
+     */
     public function flights(): HasMany
     {
         return $this->hasMany(Flight::class);
+    }
+
+    /**
+     * Get the stations where this airline operates.
+     */
+    public function stations(): BelongsToMany
+    {
+        return $this->belongsToMany(Station::class, 'airline_station')
+            ->withPivot(['is_hub', 'contact_email', 'contact_phone', 'notes'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the routes operated by this airline.
+     */
+    public function routes(): HasMany
+    {
+        return $this->hasMany(Route::class);
+    }
+
+    /**
+     * Get the email notifications for this airline.
+     */
+    public function emailNotifications(): HasMany
+    {
+        return $this->hasMany(EmailNotification::class);
     }
 
     public function settings(): HasMany
@@ -55,7 +85,7 @@ class Airline extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('active', true);
+        return $query->where('is_active', true);
     }
 
     public function getStandardPassengerWeight($type)

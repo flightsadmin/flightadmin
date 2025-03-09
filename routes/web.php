@@ -35,6 +35,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('containers', App\Livewire\Container\Manager::class)->name('containers.index');
     Route::get('crews', App\Livewire\Crew\Manager::class)->name('crews.index');
     Route::get('admin', App\Livewire\Admin\Manager::class)->name('admin')->middleware('role:super-admin|admin');
+
+    // Station management
+    Route::get('/stations', App\Livewire\Admin\StationManager::class)->name('admin.stations');
 });
 
 Auth::routes([

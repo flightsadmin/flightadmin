@@ -33,6 +33,24 @@
                         <i class="bi bi-box-seam"></i> ULD Types
                     </button>
                 </li>
+                <li class="nav-item">
+                    <button class="nav-link {{ $activeTab === 'stations' ? 'active' : '' }}"
+                        wire:click="$set('activeTab', 'stations')">
+                        <i class="bi bi-geo-alt"></i> Stations
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link {{ $activeTab === 'routes' ? 'active' : '' }}"
+                        wire:click="$set('activeTab', 'routes')">
+                        <i class="bi bi-signpost-split"></i> Routes
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link {{ $activeTab === 'email_notifications' ? 'active' : '' }}"
+                        wire:click="$set('activeTab', 'email_notifications')">
+                        <i class="bi bi-envelope"></i> Email Notifications
+                    </button>
+                </li>
             </ul>
 
             @if ($activeTab === 'overview')
@@ -277,6 +295,12 @@
                 </div>
             @elseif ($activeTab === 'uld_types')
                 <livewire:airline.uld-manager :airline="$airline" />
+            @elseif ($activeTab === 'stations')
+                <livewire:airline.station-manager :airline="$airline" />
+            @elseif ($activeTab === 'routes')
+                <livewire:airline.route-manager :airline="$airline" />
+            @elseif ($activeTab === 'email_notifications')
+                <livewire:airline.email-notification-manager :airline="$airline" />
             @endif
         </div>
     </div>

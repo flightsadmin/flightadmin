@@ -257,47 +257,54 @@ class LoadsheetManager extends Component
 
     protected function sendLoadsheetEmail($loadsheet)
     {
-        $recipients = User::role('super-admin')->get();
+        try {
+            // Get email notification configuration for this flight and document type
+            $notification = \App\Models\EmailNotification::getRecipientsForFlight($this->flight, 'loadsheet');
 
-        // Generate Loadsheet PDF
-        $pdf = PDF::loadView('emails.loadsheet', [
-            'flight' => $this->flight->load([
-                'airline',
-                'aircraft',
-                'passengers',
-                'crew',
-                'baggage',
-                'cargo',
-                'fuel',
-            ]),
-            'loadsheet' => $loadsheet,
-        ]);
+            if (!$notification) {
+                $this->dispatch('alert', icon: 'warning', message: 'No email recipients configured for this flight. Loadsheet saved but not emailed.');
+                return;
+            }
 
-        $tempPath = storage_path('app/loadsheet');
-        if (!file_exists($tempPath)) {
-            mkdir($tempPath, 0755, true);
-        }
+            // Get the PDF data
+            $pdf = $this->generateLoadsheetPdf($loadsheet);
 
-        $filename = "loadsheet_{$this->flight->flight_number}_edition_{$loadsheet->edition}.pdf";
-        $fullPath = $tempPath . DIRECTORY_SEPARATOR . $filename;
-        $pdf->save($fullPath);
+            // Get the airline and flight details for the email
+            $airline = $this->flight->airline->name;
+            $flightNumber = $this->flight->flight_number;
+            $departure = $this->flight->departure_airport;
+            $arrival = $this->flight->arrival_airport;
+            $date = $this->flight->scheduled_departure_time->format('d M Y');
 
-        foreach ($recipients as $user) {
-            $user->notify(new GeneralNotification('load-sheet-released', [
-                'name' => $user->name,
-                'flight_number' => $this->flight->flight_number,
-                'date' => $this->flight->scheduled_departure_time->format('d M Y'),
-            ], [
-                [
-                    'path' => $fullPath,
-                    'name' => $filename,
-                ]
-            ]));
-        }
+            // Send the email with the PDF attachment
+            \Mail::send('emails.loadsheet', [
+                'flight' => $this->flight,
+                'loadsheet' => $loadsheet,
+            ], function ($message) use ($notification, $pdf, $airline, $flightNumber, $departure, $arrival, $date) {
+                $message->subject("[$airline] Loadsheet for $flightNumber $departure-$arrival $date");
 
-        // Clean up file
-        if (file_exists($fullPath)) {
-            unlink($fullPath);
+                // Set recipients
+                $message->to($notification->email_addresses);
+
+                if (!empty($notification->cc_addresses)) {
+                    $message->cc($notification->cc_addresses);
+                }
+
+                if (!empty($notification->bcc_addresses)) {
+                    $message->bcc($notification->bcc_addresses);
+                }
+
+                // Attach the PDF
+                $message->attachData($pdf, "Loadsheet_{$flightNumber}_{$departure}_{$arrival}_{$date}.pdf", [
+                    'mime' => 'application/pdf',
+                ]);
+            });
+
+            $this->dispatch('alert', icon: 'success', message: 'Loadsheet emailed successfully to ' . count($notification->email_addresses) . ' recipients.');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to send loadsheet email: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to send email: ' . $e->getMessage());
         }
     }
 
