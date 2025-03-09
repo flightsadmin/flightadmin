@@ -28,7 +28,7 @@ class Route extends Model
     ];
 
     /**
-     * Get the airline that operates this route.
+     * Get the airline that owns the route.
      */
     public function airline(): BelongsTo
     {
@@ -65,5 +65,13 @@ class Route extends Model
     public function emailNotifications(): HasMany
     {
         return $this->hasMany(EmailNotification::class);
+    }
+
+    /**
+     * Get the flights for this route.
+     */
+    public function flights()
+    {
+        return $this->hasMany(Flight::class);
     }
 }

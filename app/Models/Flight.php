@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Flight extends Model
@@ -25,6 +27,7 @@ class Flight extends Model
         'actual_arrival_time',
         'status',
         'schedule_id',
+        'route_id',
     ];
 
     protected $casts = [
@@ -206,5 +209,29 @@ class Flight extends Model
     public function schedule(): BelongsTo
     {
         return $this->belongsTo(Schedule::class, 'schedule_id');
+    }
+
+    /**
+     * Get the route associated with the flight.
+     */
+    public function route(): BelongsTo
+    {
+        return $this->belongsTo(Route::class);
+    }
+
+    /**
+     * Get the departure station for this flight.
+     */
+    public function departureStation()
+    {
+        return $this->belongsTo(Station::class, 'departure_airport', 'code');
+    }
+
+    /**
+     * Get the arrival station for this flight.
+     */
+    public function arrivalStation()
+    {
+        return $this->belongsTo(Station::class, 'arrival_airport', 'code');
     }
 }

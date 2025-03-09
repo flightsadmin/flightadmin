@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('airline_id')->constrained()->onDelete('cascade');
             $table->foreignId('aircraft_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('schedule_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('route_id')->nullable()->constrained()->nullOnDelete();
             $table->string('flight_number');
             $table->string('departure_airport');
             $table->string('arrival_airport');
