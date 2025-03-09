@@ -3,53 +3,45 @@
 namespace Database\Seeders;
 
 use App\Models\Airline;
+use App\Models\Route;
 use App\Models\Schedule;
 use App\Models\Container;
 use Illuminate\Database\Seeder;
 
 class ScheduleSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
+        // Get all airlines
         $airlines = Airline::all();
 
-        if ($airlines->isEmpty()) {
-            $this->command->info('No airlines found. Creating a default airline.');
-            $airlines = Airline::factory()->count(1)->create();
-        }
-
         foreach ($airlines as $airline) {
-            // Create some weekday-only schedules
-            Schedule::factory()
-                ->count(3)
-                ->forAirline($airline)
-                ->weekdaysOnly()
-                ->active()
-                ->create();
+            // Get routes for this airline
+            $routes = Route::where('airline_id', $airline->id)->get();
 
-            // Create some weekend-only schedules
-            Schedule::factory()
-                ->count(2)
-                ->forAirline($airline)
-                ->weekendsOnly()
-                ->active()
-                ->create();
+            // Skip if no routes exist for this airline
+            if ($routes->isEmpty()) {
+                $this->command->info("No routes found for {$airline->name}, skipping schedule creation.");
+                continue;
+            }
 
-            // Create some daily schedules
-            Schedule::factory()
-                ->count(2)
-                ->forAirline($airline)
-                ->daily()
-                ->active()
-                ->create();
+            // Create 3-5 schedules for each airline
+            $scheduleCount = rand(3, 5);
 
-            // Create some schedules without aircraft
-            Schedule::factory()
-                ->count(2)
-                ->forAirline($airline)
-                ->withoutAircraft()
-                ->active()
-                ->create();
+            for ($i = 0; $i < $scheduleCount; $i++) {
+                // Get a random route
+                $route = $routes->random();
+
+                // Create a schedule using this route
+                Schedule::factory()
+                    ->forRoute($route)
+                    ->create();
+            }
+
+            $this->command->info("Created {$scheduleCount} schedules for {$airline->name}.");
         }
 
         // Generate flights for some of the schedules

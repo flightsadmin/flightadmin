@@ -19,15 +19,13 @@ class Flight extends Model
         'flight_number',
         'airline_id',
         'aircraft_id',
-        'departure_airport',
-        'arrival_airport',
+        'route_id',
         'scheduled_departure_time',
         'scheduled_arrival_time',
         'actual_departure_time',
         'actual_arrival_time',
         'status',
         'schedule_id',
-        'route_id',
     ];
 
     protected $casts = [
@@ -36,6 +34,26 @@ class Flight extends Model
         'actual_departure_time' => 'datetime',
         'actual_arrival_time' => 'datetime',
     ];
+
+    /**
+     * Get the departure airport code.
+     * 
+     * @return string|null
+     */
+    public function getDepartureAirportAttribute()
+    {
+        return $this->route ? $this->route->departureStation->code : null;
+    }
+
+    /**
+     * Get the arrival airport code.
+     * 
+     * @return string|null
+     */
+    public function getArrivalAirportAttribute()
+    {
+        return $this->route ? $this->route->arrivalStation->code : null;
+    }
 
     public function baggage()
     {
@@ -224,7 +242,7 @@ class Flight extends Model
      */
     public function departureStation()
     {
-        return $this->belongsTo(Station::class, 'departure_airport', 'code');
+        return $this->route ? $this->route->departureStation() : null;
     }
 
     /**
@@ -232,6 +250,6 @@ class Flight extends Model
      */
     public function arrivalStation()
     {
-        return $this->belongsTo(Station::class, 'arrival_airport', 'code');
+        return $this->route ? $this->route->arrivalStation() : null;
     }
 }

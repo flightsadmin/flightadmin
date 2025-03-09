@@ -2,146 +2,178 @@
 
 namespace Database\Factories;
 
-use App\Models\Aircraft;
 use App\Models\Airline;
+use App\Models\AircraftType;
+use App\Models\Route;
 use App\Models\Schedule;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Schedule>
+ */
 class ScheduleFactory extends Factory
 {
     protected $model = Schedule::class;
 
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
-        $airline = Airline::inRandomOrder()->first() ?? Airline::factory()->create();
+        // Try to get a valid route from the database
+        $route = $this->getRandomRoute();
 
-        // Aircraft is optional, so we'll make it null 20% of the time
-        $aircraft = fake()->boolean(80)
-            ? (Aircraft::where('airline_id', $airline->id)->inRandomOrder()->first() ?? Aircraft::factory()->create(['airline_id' => $airline->id]))
-            : null;
+        // If no routes exist, we need to create one
+        if (!$route) {
+            $airline = Airline::inRandomOrder()->first();
+            if (!$airline) {
+                $airline = Airline::factory()->create();
+            }
 
-        // Generate random IATA airport codes
-        $airports = ['JFK', 'LAX', 'ORD', 'DFW', 'DEN', 'ATL', 'SFO', 'SEA', 'MIA', 'LAS', 'BOS', 'CLT', 'MCO', 'PHX', 'IAH', 'LHR', 'CDG', 'FRA', 'AMS', 'DXB'];
-        $departureAirport = fake()->randomElement($airports);
-
-        // Make sure arrival airport is different from departure
-        do {
-            $arrivalAirport = fake()->randomElement($airports);
-        } while ($arrivalAirport === $departureAirport);
+            // Create a route if none exists
+            $route = Route::factory()->create([
+                'airline_id' => $airline->id
+            ]);
+        }
 
         // Generate a random flight number
-        $flightNumber = strtoupper($airline->iata_code).str_pad(fake()->numberBetween(1, 999), 4, '0', STR_PAD_LEFT);
+        $flightNumber = $route->airline->iata_code . fake()->numberBetween(100, 999);
 
-        // Generate random departure and arrival times
-        $departureTime = fake()->time('H:i:s');
-        $arrivalTime = Carbon::parse($departureTime)->addHours(fake()->numberBetween(1, 12))->format('H:i:s');
+        // Generate random days of week (1-7, where 1 is Monday)
+        $daysOfWeek = [];
+        for ($i = 1; $i <= 7; $i++) {
+            if (fake()->boolean(70)) { // 70% chance to include each day
+                $daysOfWeek[] = $i;
+            }
+        }
+
+        // Ensure at least one day is selected
+        if (empty($daysOfWeek)) {
+            $daysOfWeek[] = fake()->numberBetween(1, 7);
+        }
 
         // Generate start and end dates
-        $startDate = fake()->dateTimeBetween('-2 days', '+1 month');
-        $endDate = fake()->dateTimeBetween($startDate, '+6 months');
+        $startDate = fake()->dateTimeBetween('now', '+1 month');
+        $endDate = fake()->dateTimeBetween('+1 months', '+3 months');
 
-        // Generate random days of the week (0 = Sunday, 6 = Saturday)
-        $daysOfWeek = fake()->randomElements([0, 1, 2, 3, 4, 5, 6], fake()->numberBetween(1, 7));
-        sort($daysOfWeek);
+        // Generate departure and arrival times
+        $departureTime = fake()->dateTimeBetween('08:00', '20:00');
+
+        // Calculate arrival time based on flight time from route
+        $flightTimeMinutes = $route->flight_time;
+        $arrivalTime = (clone $departureTime)->modify("+{$flightTimeMinutes} minutes");
+
+        // Get a random aircraft type for this airline
+        $aircraftType = AircraftType::where('airline_id', $route->airline_id)->inRandomOrder()->first();
+
+        // If no aircraft type exists, create one
+        if (!$aircraftType) {
+            $aircraftType = AircraftType::factory()->create([
+                'airline_id' => $route->airline_id
+            ]);
+        }
 
         return [
-            'airline_id' => $airline->id,
-            'aircraft_id' => $aircraft?->id,
+            'airline_id' => $route->airline_id,
+            'route_id' => $route->id,
             'flight_number' => $flightNumber,
-            'departure_airport' => $departureAirport,
-            'arrival_airport' => $arrivalAirport,
-            'departure_time' => $departureTime,
-            'arrival_time' => $arrivalTime,
+            'days_of_week' => $daysOfWeek,
             'start_date' => $startDate,
             'end_date' => $endDate,
-            'days_of_week' => $daysOfWeek,
-            'is_active' => fake()->boolean(80), // 80% chance of being active
+            'scheduled_departure_time' => $departureTime,
+            'scheduled_arrival_time' => $arrivalTime,
+            'aircraft_type_id' => $aircraftType->id,
+            'is_active' => true,
         ];
     }
 
-    public function active()
+    /**
+     * Configure the factory to create a schedule for a specific airline.
+     */
+    public function forAirline(Airline $airline)
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function (array $attributes) use ($airline) {
+            // Try to get a route for this specific airline
+            $route = $this->getRandomRouteForAirline($airline->id);
+
+            // If no routes exist for this airline, create one
+            if (!$route) {
+                $route = Route::factory()->create([
+                    'airline_id' => $airline->id
+                ]);
+            }
+
+            // Get a random aircraft type for this airline
+            $aircraftType = AircraftType::where('airline_id', $airline->id)->inRandomOrder()->first();
+
+            // If no aircraft type exists, create one
+            if (!$aircraftType) {
+                $aircraftType = AircraftType::factory()->create([
+                    'airline_id' => $airline->id
+                ]);
+            }
+
             return [
-                'is_active' => true,
+                'airline_id' => $airline->id,
+                'route_id' => $route->id,
+                'aircraft_type_id' => $aircraftType->id,
             ];
         });
     }
 
-    public function inactive()
+    /**
+     * Configure the factory to create a schedule for a specific route.
+     */
+    public function forRoute(Route $route)
     {
-        return $this->state(function (array $attributes) {
+        return $this->state(function (array $attributes) use ($route) {
+            // Get a random aircraft type for this airline
+            $aircraftType = AircraftType::where('airline_id', $route->airline_id)->inRandomOrder()->first();
+
+            // If no aircraft type exists, create one
+            if (!$aircraftType) {
+                $aircraftType = AircraftType::factory()->create([
+                    'airline_id' => $route->airline_id
+                ]);
+            }
+
+            // Generate departure and arrival times
+            $departureTime = fake()->dateTimeBetween('08:00', '20:00');
+
+            // Calculate arrival time based on flight time from route
+            $flightTimeMinutes = $route->flight_time;
+            $arrivalTime = (clone $departureTime)->modify("+{$flightTimeMinutes} minutes");
+
             return [
-                'is_active' => false,
+                'airline_id' => $route->airline_id,
+                'route_id' => $route->id,
+                'scheduled_departure_time' => $departureTime,
+                'scheduled_arrival_time' => $arrivalTime,
+                'aircraft_type_id' => $aircraftType->id,
             ];
         });
     }
 
-    public function onDays(array $days)
+    /**
+     * Get a random route from the database.
+     */
+    private function getRandomRoute()
     {
-        return $this->state(function (array $attributes) use ($days) {
-            return [
-                'days_of_week' => $days,
-            ];
-        });
+        return Route::with(['departureStation', 'arrivalStation'])
+            ->inRandomOrder()
+            ->first();
     }
 
-    public function weekdaysOnly()
+    /**
+     * Get a random route for a specific airline.
+     */
+    private function getRandomRouteForAirline($airlineId)
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'days_of_week' => [1, 2, 3, 4, 5],
-            ];
-        });
-    }
-
-    public function weekendsOnly()
-    {
-        return $this->state(function (array $attributes) {
-            return [
-                'days_of_week' => [0, 6],
-            ];
-        });
-    }
-
-    public function daily()
-    {
-        return $this->state(function (array $attributes) {
-            return [
-                'days_of_week' => [0, 1, 2, 3, 4, 5, 6],
-            ];
-        });
-    }
-
-    public function forAirline($airline)
-    {
-        $airlineId = $airline instanceof Airline ? $airline->id : $airline;
-
-        return $this->state(function (array $attributes) use ($airlineId) {
-            return [
-                'airline_id' => $airlineId,
-            ];
-        });
-    }
-
-    public function withAircraft($aircraft)
-    {
-        $aircraftId = $aircraft instanceof Aircraft ? $aircraft->id : $aircraft;
-
-        return $this->state(function (array $attributes) use ($aircraftId) {
-            return [
-                'aircraft_id' => $aircraftId,
-            ];
-        });
-    }
-
-    public function withoutAircraft()
-    {
-        return $this->state(function (array $attributes) {
-            return [
-                'aircraft_id' => null,
-            ];
-        });
+        return Route::with(['departureStation', 'arrivalStation'])
+            ->where('airline_id', $airlineId)
+            ->inRandomOrder()
+            ->first();
     }
 }

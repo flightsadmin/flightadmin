@@ -25,27 +25,34 @@ class FlightFactory extends Factory
         // Try to get a valid route from the database
         $route = $this->getRandomRoute();
 
-        // If no routes exist, use default values
-        $departureAirport = $route ? $route->departureStation->code : 'NBO';
-        $arrivalAirport = $route ? $route->arrivalStation->code : 'MBA';
-        $airlineId = $route ? $route->airline_id : Airline::inRandomOrder()->first()->id;
+        // If no routes exist, we need to create one
+        if (!$route) {
+            $airline = Airline::inRandomOrder()->first();
+            if (!$airline) {
+                $airline = Airline::factory()->create();
+            }
+
+            // Create a route if none exists
+            $route = Route::factory()->create([
+                'airline_id' => $airline->id
+            ]);
+        }
 
         // Generate a random flight number
-        $flightNumber = fake()->numberBetween(100, 999);
+        $flightNumber = $route->airline->iata_code . fake()->numberBetween(100, 999);
 
         // Generate scheduled times
         $scheduledDeparture = fake()->dateTimeBetween('+1 day', '+1 month');
 
-        // Calculate scheduled arrival based on flight time from route or default to 1 hour
-        $flightTimeMinutes = $route ? $route->flight_time : 60;
+        // Calculate scheduled arrival based on flight time from route
+        $flightTimeMinutes = $route->flight_time;
         $scheduledArrival = (clone $scheduledDeparture)->modify("+{$flightTimeMinutes} minutes");
 
         return [
-            'airline_id' => $airlineId,
+            'airline_id' => $route->airline_id,
             'aircraft_id' => null, // Will be set by the caller
+            'route_id' => $route->id,
             'flight_number' => $flightNumber,
-            'departure_airport' => $departureAirport,
-            'arrival_airport' => $arrivalAirport,
             'scheduled_departure_time' => $scheduledDeparture,
             'scheduled_arrival_time' => $scheduledArrival,
             'status' => fake()->randomElement(['scheduled', 'boarding', 'departed', 'arrived', 'delayed', 'cancelled']),
@@ -61,21 +68,23 @@ class FlightFactory extends Factory
             // Try to get a route for this specific airline
             $route = $this->getRandomRouteForAirline($airline->id);
 
-            // If no routes exist for this airline, use default values
-            $departureAirport = $route ? $route->departureStation->code : 'NBO';
-            $arrivalAirport = $route ? $route->arrivalStation->code : 'MBA';
+            // If no routes exist for this airline, create one
+            if (!$route) {
+                $route = Route::factory()->create([
+                    'airline_id' => $airline->id
+                ]);
+            }
 
             // Generate scheduled times
             $scheduledDeparture = fake()->dateTimeBetween('+1 day', '+1 month');
 
-            // Calculate scheduled arrival based on flight time from route or default to 1 hour
-            $flightTimeMinutes = $route ? $route->flight_time : 60;
+            // Calculate scheduled arrival based on flight time from route
+            $flightTimeMinutes = $route->flight_time;
             $scheduledArrival = (clone $scheduledDeparture)->modify("+{$flightTimeMinutes} minutes");
 
             return [
                 'airline_id' => $airline->id,
-                'departure_airport' => $departureAirport,
-                'arrival_airport' => $arrivalAirport,
+                'route_id' => $route->id,
                 'scheduled_departure_time' => $scheduledDeparture,
                 'scheduled_arrival_time' => $scheduledArrival,
             ];
@@ -97,8 +106,6 @@ class FlightFactory extends Factory
 
             return [
                 'airline_id' => $route->airline_id,
-                'departure_airport' => $route->departureStation->code,
-                'arrival_airport' => $route->arrivalStation->code,
                 'route_id' => $route->id,
                 'scheduled_departure_time' => $scheduledDeparture,
                 'scheduled_arrival_time' => $scheduledArrival,

@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -18,8 +17,6 @@ return new class extends Migration
             $table->foreignId('schedule_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('route_id')->nullable()->constrained()->nullOnDelete();
             $table->string('flight_number');
-            $table->string('departure_airport');
-            $table->string('arrival_airport');
             $table->dateTime('scheduled_departure_time');
             $table->dateTime('scheduled_arrival_time');
             $table->dateTime('actual_departure_time')->nullable();
