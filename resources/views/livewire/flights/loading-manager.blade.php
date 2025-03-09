@@ -15,8 +15,7 @@
                     <i class="bi bi-clipboard-data"></i> Weight Summary
                 </button>
                 <button class="btn btn-sm btn-outline-success"
-                    wire:click="finalizeLoadplan"
-                    @disabled($loadplan && $loadplan->status !== 'released')>
+                    wire:click="finalizeLoadplan">
                     <i class="bi bi-check-circle"></i> Finalize Load Plan
                 </button>
                 <button class="btn btn-sm btn-outline-primary" wire:click="previewLIRF"
@@ -447,30 +446,41 @@
     </script>
     @script
         <script>
-            // Listen for container position updates
             $wire.on('container_position_updated', () => {
                 $wire.refreshContainers();
             });
 
-            // Listen for container attachment
             $wire.on('container-attached', () => {
                 $wire.refreshContainers();
             });
 
-            // Listen for unplanned items selection
             document.addEventListener('unplanned-items-selected', (event) => {
                 $wire.handleUnplannedItemsSelected(event.detail.type);
             });
 
-            // Listen for unplanned items deselection
             document.addEventListener('unplanned-items-deselected', () => {
                 $wire.handleUnplannedItemsDeselected();
             });
 
-            // Listen for open-pieces-modal event from bulk positions
             $wire.on('open-pieces-modal', (data) => {
-                // Forward the event to the UnplannedManager component
                 Livewire.dispatch('open-pieces-modal', data);
+            });
+
+            $wire.on('swal:confirm', (data) => {
+                Swal.fire({
+                    title: 'Empty Load Plan',
+                    text: 'You are about to finalize an empty load plan. No items have been placed in any holds. Do you want to continue?',
+                    width: 400,
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonText: 'Go Ahead',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $wire.finalizeLoadplanAction();
+                    }
+                });
             });
         </script>
     @endscript

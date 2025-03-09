@@ -660,6 +660,21 @@ class LoadingManager extends Component
 
     public function finalizeLoadplan()
     {
+        $positionedContainers = collect($this->containers)
+            ->filter(fn($container) => !empty($container['position']))
+            ->count();
+
+        if ($positionedContainers === 0) {
+            $this->dispatch('swal:confirm');
+            return;
+        }
+
+        $this->finalizeLoadplanAction();
+    }
+
+
+    public function finalizeLoadplanAction()
+    {
         $loadplan = $this->flight->loadplans()->latest()->first();
 
         if (!$loadplan) {

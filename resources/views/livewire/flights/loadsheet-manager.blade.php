@@ -17,24 +17,25 @@
                             </button>
                         @elseif (!$loadsheet || $loadsheet->status === 'revoked' || $loadsheet->status === 'draft')
                             <button class="btn btn-primary btn-sm mb-0" wire:click="generateLoadsheet"
-                                wire:loading.attr="disabled" @disabled(!$flight->fuel || !$loadplan || $loadplan->status !== 'released')>
+                                wire:loading.attr="disabled"
+                                @disabled(!$flight->fuel || !$loadplan || $loadplan->status !== 'released')>
                                 <i class="bi bi-plus-circle"></i> Generate Loadsheet
                             </button>
                         @endif
                     </div>
                 </div>
                 @if ($loadsheet)
-                                @php
-                                    $distribution = $loadsheet->distribution;
-                                    $pax = $distribution['load_data'];
-                                    $totalPax = array_sum(
-                                        array_column(
-                                            array_filter($pax['pax_by_type'], fn($data, $type) => $type !== 'infant', ARRAY_FILTER_USE_BOTH),
-                                            'count',
-                                        ),
-                                    );
-                                @endphp
-                                @include('livewire.flights.partials.loadsheet')
+                    @php
+                        $distribution = $loadsheet->distribution;
+                        $pax = $distribution['load_data'];
+                        $totalPax = array_sum(
+                            array_column(
+                                array_filter($pax['pax_by_type'], fn($data, $type) => $type !== 'infant', ARRAY_FILTER_USE_BOTH),
+                                'count',
+                            ),
+                        );
+                    @endphp
+                    @include('livewire.flights.partials.loadsheet')
                 @else
                     <div class="card-body">
                         <div class="text-center py-4">
@@ -157,8 +158,8 @@
                                             <td>{{ array_sum(array_column($paxDistribution, 'infant')) }}</td>
                                             <td colspan="2">
                                                 {{ array_sum(
-    array_map(fn($zone) => array_sum(array_intersect_key($zone, array_flip(['male', 'female', 'child', 'infant']))), $paxDistribution),
-) }}
+                                                    array_map(fn($zone) => array_sum(array_intersect_key($zone, array_flip(['male', 'female', 'child', 'infant']))), $paxDistribution),
+                                                ) }}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -174,54 +175,54 @@
         </div>
     </div>
     <script>
-        document.addEventListener('livewire:initialized', function () {
+        document.addEventListener('livewire:initialized', function() {
             const chartValues = @json($distribution['trim_data'] ?? []);
             const ctx = document.getElementById('trimSheetChart').getContext('2d');
             const trimSheetChart = new Chart(ctx, {
                 type: 'scatter',
                 data: {
                     datasets: [{
-                        label: 'ZFW Envelope',
-                        data: chartValues.zfwEnvelope || [],
-                        borderColor: 'red',
-                        showLine: true,
-                        pointRadius: 0,
-                        fill: false,
-                    },
-                    {
-                        label: 'TOW Envelope',
-                        data: chartValues.towEnvelope || [],
-                        borderColor: 'blue',
-                        showLine: true,
-                        pointRadius: 0,
-                        fill: false,
-                    },
-                    {
-                        label: 'LDW Envelope',
-                        data: chartValues.ldwEnvelope || [],
-                        borderColor: 'green',
-                        showLine: true,
-                        pointRadius: 0,
-                        fill: false,
-                    },
-                    {
-                        label: 'ZFW',
-                        data: [{
-                            x: {{ $distribution['indices']['lizfw'] ?? 0 }},
-                            y: {{ $distribution['weights']['zero_fuel_weight'] ?? 0 }}
+                            label: 'ZFW Envelope',
+                            data: chartValues.zfwEnvelope || [],
+                            borderColor: 'red',
+                            showLine: true,
+                            pointRadius: 0,
+                            fill: false,
+                        },
+                        {
+                            label: 'TOW Envelope',
+                            data: chartValues.towEnvelope || [],
+                            borderColor: 'blue',
+                            showLine: true,
+                            pointRadius: 0,
+                            fill: false,
+                        },
+                        {
+                            label: 'LDW Envelope',
+                            data: chartValues.ldwEnvelope || [],
+                            borderColor: 'green',
+                            showLine: true,
+                            pointRadius: 0,
+                            fill: false,
+                        },
+                        {
+                            label: 'ZFW',
+                            data: [{
+                                x: {{ $distribution['indices']['lizfw'] ?? 0 }},
+                                y: {{ $distribution['weights']['zero_fuel_weight'] ?? 0 }}
                             }],
-                        backgroundColor: 'red',
-                        pointRadius: 4
-                    },
-                    {
-                        label: 'TOW',
-                        data: [{
-                            x: {{ $distribution['indices']['litow'] ?? 0 }},
-                            y: {{ $distribution['weights']['takeoff_weight'] ?? 0 }}
+                            backgroundColor: 'red',
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'TOW',
+                            data: [{
+                                x: {{ $distribution['indices']['litow'] ?? 0 }},
+                                y: {{ $distribution['weights']['takeoff_weight'] ?? 0 }}
                             }],
-                        backgroundColor: 'blue',
-                        pointRadius: 4
-                    }
+                            backgroundColor: 'blue',
+                            pointRadius: 4
+                        }
                     ]
                 },
                 options: {
@@ -252,7 +253,7 @@
                         },
                         tooltip: {
                             callbacks: {
-                                label: function (context) {
+                                label: function(context) {
                                     let label = context.dataset.label || '';
                                     if (label) {
                                         label += ': ';
