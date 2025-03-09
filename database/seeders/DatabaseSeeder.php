@@ -74,6 +74,7 @@ class DatabaseSeeder extends Seeder
             UldSeeder::class,
             ScheduleSeeder::class,
             EmailTemplateSeeder::class,
+            AirlineNetworkSeeder::class,
         ]);
     }
 }

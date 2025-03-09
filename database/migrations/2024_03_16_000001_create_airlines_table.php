@@ -26,7 +26,7 @@ return new class extends Migration {
 
         Schema::create('stations', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 3)->unique()->comment('IATA airport code');
+            $table->string('code', 3)->unique();
             $table->string('name');
             $table->string('country')->nullable();
             $table->string('timezone')->nullable();
@@ -52,8 +52,8 @@ return new class extends Migration {
             $table->foreignId('airline_id')->constrained()->onDelete('cascade');
             $table->foreignId('departure_station_id')->constrained('stations')->onDelete('cascade');
             $table->foreignId('arrival_station_id')->constrained('stations')->onDelete('cascade');
-            $table->integer('flight_time')->nullable()->comment('Flight time in minutes');
-            $table->integer('distance')->nullable()->comment('Distance in kilometers');
+            $table->integer('flight_time')->nullable();
+            $table->integer('distance')->nullable();
             $table->boolean('is_active')->default(true);
             $table->text('notes')->nullable();
             $table->timestamps();
@@ -72,7 +72,6 @@ return new class extends Migration {
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            // Ensure we don't have duplicate configurations
             $table->unique(['airline_id', 'station_id', 'route_id', 'document_type'], 'unique_notification_config');
         });
     }
@@ -83,5 +82,9 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::dropIfExists('airlines');
+        Schema::dropIfExists('stations');
+        Schema::dropIfExists('airline_station');
+        Schema::dropIfExists('routes');
+        Schema::dropIfExists('email_notifications');
     }
 };
