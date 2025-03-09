@@ -142,7 +142,7 @@ class LoadsheetManager extends Component
             [
                 'value' => json_encode($this->paxDistribution),
                 'type' => 'json',
-                'description' => 'Actual PAX distribution - '.$this->flight->flight_number,
+                'description' => 'Actual PAX distribution - ' . $this->flight->flight_number,
             ]
         );
 
@@ -216,7 +216,7 @@ class LoadsheetManager extends Component
 
     private function calculatePantryIndex()
     {
-        if (! $this->flight->fuel?->pantry) {
+        if (!$this->flight->fuel?->pantry) {
             $this->dispatch('alert', icon: 'error', message: 'No pantry code found.');
 
             return;
@@ -238,7 +238,7 @@ class LoadsheetManager extends Component
 
     public function finalizeLoadsheet()
     {
-        if (! $this->loadsheet) {
+        if (!$this->loadsheet) {
             $this->dispatch('alert', icon: 'error', message: 'No loadsheet found to finalize.');
 
             return;
@@ -274,15 +274,14 @@ class LoadsheetManager extends Component
         ]);
 
         $tempPath = storage_path('app/loadsheet');
-        if (! file_exists($tempPath)) {
+        if (!file_exists($tempPath)) {
             mkdir($tempPath, 0755, true);
         }
 
         $filename = "loadsheet_{$this->flight->flight_number}_edition_{$loadsheet->edition}.pdf";
-        $fullPath = $tempPath.DIRECTORY_SEPARATOR.$filename;
+        $fullPath = $tempPath . DIRECTORY_SEPARATOR . $filename;
         $pdf->save($fullPath);
 
-        return;
         foreach ($recipients as $user) {
             $user->notify(new GeneralNotification('load-sheet-released', [
                 'name' => $user->name,
@@ -308,13 +307,13 @@ class LoadsheetManager extends Component
 
     public function revokeLoadsheet()
     {
-        if (! $this->loadsheet) {
+        if (!$this->loadsheet) {
             $this->dispatch('alert', icon: 'error', message: 'No loadsheet found to revoke.');
 
             return;
         }
 
-        if (! $this->loadsheet->final) {
+        if (!$this->loadsheet->final) {
             $this->dispatch('alert', icon: 'error', message: 'Only finalized loadsheets can be revoked.');
 
             return;
@@ -382,7 +381,7 @@ class LoadsheetManager extends Component
             }
         }
 
-        $orderedWeightsUsed = collect($pax)->mapWithKeys(fn ($type) => [
+        $orderedWeightsUsed = collect($pax)->mapWithKeys(fn($type) => [
             $type => $this->flight->airline->getStandardPassengerWeight($type),
         ])->toArray();
 
@@ -401,7 +400,7 @@ class LoadsheetManager extends Component
                     'weight' => $weight,
                     'index' => round($weight * $hold->index, 2),
                 ];
-            })->filter(fn ($hold) => $hold['weight'] > 0)->values()->toArray();
+            })->filter(fn($hold) => $hold['weight'] > 0)->values()->toArray();
 
         return [
             'pax_by_zone' => $paxDistribution,
@@ -448,7 +447,7 @@ class LoadsheetManager extends Component
                     ];
                 })->values()->toArray();
 
-                return [strtolower($envelope->name).'Envelope' => $points];
+                return [strtolower($envelope->name) . 'Envelope' => $points];
             })
             ->toArray();
 
@@ -457,13 +456,13 @@ class LoadsheetManager extends Component
 
     public function generateLoadsheet()
     {
-        if (! $this->flight->fuel) {
+        if (!$this->flight->fuel) {
             $this->dispatch('alert', icon: 'error', message: 'Fuel data must be added before generating loadsheet.');
 
             return;
         }
 
-        if (! $this->loadplan || $this->loadplan->status !== 'released') {
+        if (!$this->loadplan || $this->loadplan->status !== 'released') {
             $this->dispatch('alert', icon: 'error', message: 'Load plan must be released before generating loadsheet.');
 
             return;
@@ -502,7 +501,7 @@ class LoadsheetManager extends Component
             'short_flight_date' => $this->flight->scheduled_departure_time?->format('d'),
             'registration' => $this->flight->aircraft->registration_number,
             'destination' => $this->flight->arrival_airport,
-            'sector' => $this->flight->departure_airport.'/'.$this->flight->arrival_airport,
+            'sector' => $this->flight->departure_airport . '/' . $this->flight->arrival_airport,
             'version' => $this->flight->aircraft->type->code,
             'release_time' => now('Asia/Qatar')->format('Hi'),
             'underload' => $this->calculateUnderload(),
@@ -556,7 +555,7 @@ class LoadsheetManager extends Component
     public function calculateCrewIndexes()
     {
         $crewConfig = $this->flight->fuel->crew;
-        if (! $crewConfig) {
+        if (!$crewConfig) {
             $this->dispatch('alert', icon: 'error', message: 'No crew configuration found.');
 
             return ['index' => 0, 'weight' => 0];

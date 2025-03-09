@@ -21,7 +21,7 @@
                 <li class="nav-item">
                     <button class="nav-link {{ $tab === 'templates' ? 'active' : '' }}"
                         wire:click="setTab('templates')">
-                        <i class="bi bi-house-lock-fill"></i> Email Templates
+                        <i class="bi bi-envelope-paper-fill"></i> Email Templates
                     </button>
                 </li>
             </ul>

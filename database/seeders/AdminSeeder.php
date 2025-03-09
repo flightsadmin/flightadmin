@@ -21,7 +21,7 @@ class AdminSeeder extends Seeder
 
         foreach ($models as $model) {
             foreach ($actions as $action) {
-                $methodName = $action.ucfirst($model);
+                $methodName = $action . ucfirst($model);
                 Permission::create(['name' => $methodName]);
             }
         }
@@ -33,7 +33,9 @@ class AdminSeeder extends Seeder
             ],
             [
                 'name' => 'admin',
-                'permissions' => ['viewUser', 'createUser', 'editUser', 'deleteUser', 'viewRole', 'createRole', 'editRole', 'deleteRole', 'viewPermission', 'createPermission', 'editPermission', 'deletePermission'],
+                'permissions' => Permission::where(function ($query) {
+                    $query->where('name', 'like', 'view%');
+                })->pluck('name')->toArray(),
             ],
             [
                 'name' => 'super-admin',
@@ -46,8 +48,8 @@ class AdminSeeder extends Seeder
             $role->givePermissionTo($roleData['permissions']);
 
             User::create([
-                'name' => ucwords(explode('-', $roleData['name'])[0]).' User',
-                'email' => $roleData['name'].'@flightadmin.info',
+                'name' => ucwords(explode('-', $roleData['name'])[0]) . ' User',
+                'email' => $roleData['name'] . '@flightadmin.info',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
                 'remember_token' => Str::random(30),
@@ -58,5 +60,10 @@ class AdminSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ])->assignRole('user');
+
+        User::factory()->create([
+            'name' => 'Wab Admin',
+            'email' => 'wab@flightadmin.info',
+        ])->assignRole('super-admin');
     }
 }
