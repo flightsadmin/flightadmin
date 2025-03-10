@@ -14,23 +14,24 @@ class Schedule extends Model
 
     protected $fillable = [
         'airline_id',
+        'aircraft_type_id',
         'route_id',
         'flight_number',
         'scheduled_departure_time',
         'scheduled_arrival_time',
-        'days_of_week',
         'start_date',
         'end_date',
-        'aircraft_type_id',
-        'status',
+        'days_of_week',
+        'is_active',
     ];
 
     protected $casts = [
-        'days_of_week' => 'array',
-        'start_date' => 'date',
-        'end_date' => 'date',
         'scheduled_departure_time' => 'datetime',
         'scheduled_arrival_time' => 'datetime',
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'days_of_week' => 'array',
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -42,14 +43,6 @@ class Schedule extends Model
     }
 
     /**
-     * Get the route associated with the schedule.
-     */
-    public function route(): BelongsTo
-    {
-        return $this->belongsTo(Route::class);
-    }
-
-    /**
      * Get the aircraft type for this schedule.
      */
     public function aircraftType(): BelongsTo
@@ -58,11 +51,69 @@ class Schedule extends Model
     }
 
     /**
+     * Get the route for this schedule.
+     */
+    public function route(): BelongsTo
+    {
+        return $this->belongsTo(Route::class);
+    }
+
+    /**
      * Get the flights for this schedule.
      */
     public function flights(): HasMany
     {
         return $this->hasMany(Flight::class);
+    }
+
+    /**
+     * Generate flights based on this schedule.
+     */
+    public function generateFlights()
+    {
+        $createdFlights = [];
+        $startDate = Carbon::parse($this->start_date);
+        $endDate = Carbon::parse($this->end_date);
+        $currentDate = $startDate->copy();
+
+        while ($currentDate->lte($endDate)) {
+            $dayOfWeek = (int) $currentDate->format('w'); // 0 (Sunday) to 6 (Saturday)
+
+            if (in_array($dayOfWeek, $this->days_of_week)) {
+                // Create a flight for this day
+                $departureTime = Carbon::parse($currentDate->format('Y-m-d') . ' ' . $this->scheduled_departure_time->format('H:i:s'));
+                $arrivalTime = Carbon::parse($currentDate->format('Y-m-d') . ' ' . $this->scheduled_arrival_time->format('H:i:s'));
+
+                // Handle overnight flights
+                if ($arrivalTime->lt($departureTime)) {
+                    $arrivalTime->addDay();
+                }
+
+                // Check if flight already exists
+                $existingFlight = Flight::where('schedule_id', $this->id)
+                    ->whereDate('scheduled_departure_time', $currentDate)
+                    ->first();
+
+                if (!$existingFlight) {
+                    $flight = Flight::create([
+                        'airline_id' => $this->airline_id,
+                        'aircraft_type_id' => $this->aircraft_type_id,
+                        'route_id' => $this->route_id,
+                        'schedule_id' => $this->id,
+                        'flight_number' => $this->flight_number,
+                        'scheduled_departure_time' => $departureTime,
+                        'scheduled_arrival_time' => $arrivalTime,
+                        'status' => 'scheduled',
+                    ]);
+
+                    $createdFlights[] = $flight;
+                }
+            }
+
+            $currentDate->addDay();
+        }
+
+        return $createdFlights;
     }
 
     /**
@@ -83,54 +134,6 @@ class Schedule extends Model
     public function getArrivalAirportAttribute()
     {
         return $this->route ? $this->route->arrivalStation->code : null;
-    }
-
-    public function generateFlights(?Carbon $startDate = null, ?Carbon $endDate = null): array
-    {
-        if (!$this->route) {
-            throw new \Exception('Cannot generate flights without a route');
-        }
-
-        $startDate = $startDate ?? $this->start_date;
-        $endDate = $endDate ?? $this->end_date;
-
-        $createdFlightIds = [];
-        $currentDate = Carbon::parse($startDate);
-
-        while ($currentDate->lte($endDate)) {
-            // Check if current day of week is in the schedule
-            if (in_array($currentDate->dayOfWeek, $this->days_of_week)) {
-                // Create departure and arrival datetime by combining current date with schedule times
-                $departureDateTime = Carbon::parse($currentDate->format('Y-m-d') . ' ' . $this->scheduled_departure_time->format('H:i:s'));
-                $arrivalDateTime = Carbon::parse($currentDate->format('Y-m-d') . ' ' . $this->scheduled_arrival_time->format('H:i:s'));
-
-                // If arrival is before departure, it means it's the next day
-                if ($arrivalDateTime->lt($departureDateTime)) {
-                    $arrivalDateTime->addDay();
-                }
-
-                // Create the flight
-                $flight = Flight::updateOrCreate(
-                    [
-                        'airline_id' => $this->airline_id,
-                        'flight_number' => $this->flight_number,
-                        'scheduled_departure_time' => $departureDateTime,
-                    ],
-                    [
-                        'aircraft_id' => $this->aircraft_id,
-                        'route_id' => $this->route_id,
-                        'scheduled_arrival_time' => $arrivalDateTime,
-                        'schedule_id' => $this->id,
-                    ]
-                );
-
-                $createdFlightIds[] = $flight->id;
-            }
-
-            $currentDate->addDay();
-        }
-
-        return $createdFlightIds;
     }
 
     public function getDaysOfWeekNamesAttribute(): array

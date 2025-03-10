@@ -5,7 +5,8 @@
             <div class="d-flex justify-content-between align-items-center gap-2">
                 <div class="d-flex justify-content-between align-items-center gap-2">
                     <input wire:model.live="date" type="date" class="form-control form-control-sm" placeholder="Date">
-                    <input wire:model.live="search" type="text" class="form-control form-control-sm" placeholder="Search...">
+                    <input wire:model.live="search" type="text" class="form-control form-control-sm"
+                        placeholder="Search...">
                     <select wire:model.live="airline_id" class="form-select form-select-sm">
                         <option value="">All Airlines</option>
                         @foreach ($airlines as $airline)
@@ -61,7 +62,9 @@
                                         {{ $flight->flight_number }}
                                     </a>
                                 </td>
-                                <td>{{ $flight->departure_airport }} → {{ $flight->arrival_airport }}</td>
+                                <td>{{ $flight->route->departure_station->code ?? $flight->departure_airport }} →
+                                    {{ $flight->route->arrival_station->code ?? $flight->arrival_airport }}
+                                </td>
                                 <td>{{ $flight->aircraft->registration_number ?? 'Not assigned' }}</td>
                                 <td>
                                     @if ($flight->schedule)
@@ -111,8 +114,7 @@
                                         data-bs-target="#flightFormModal">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <a href="{{ route('flights.show', $flight) }}"
-                                        class="btn btn-sm btn-outline-secondary">
+                                    <a href="{{ route('flights.show', $flight) }}" class="btn btn-sm btn-outline-secondary">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                 </td>
@@ -158,7 +160,7 @@
                                     <label class="form-label">Aircraft</label>
                                     <select class="form-select" wire:model="aircraft_id">
                                         <option value="">Select Aircraft</option>
-                                        @foreach ($aircraft as $ac)
+                                        @foreach ($aircraft->where('airline_id', $airline_id) as $ac)
                                             <option value="{{ $ac->id }}">
                                                 {{ $ac->airline->name }} - {{ $ac->registration_number }}
                                             </option>
@@ -172,7 +174,7 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Airline</label>
-                                    <select class="form-select" wire:model="airline_id">
+                                    <select class="form-select" wire:model.live="airline_id">
                                         <option value="">Select Airline</option>
                                         @foreach ($airlines as $airline)
                                             <option value="{{ $airline->id }}">
@@ -188,11 +190,39 @@
                         </div>
 
                         <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Route</label>
+                                    <select class="form-select" wire:model="route_id"
+                                        wire:change="onRouteChange($event.target.value)">
+                                        <option value="">Select Route</option>
+                                        @foreach ($routes as $route)
+                                            <option value="{{ $route->id }}">
+                                                {{ $route->departureStation->code }} - {{ $route->arrivalStation->code }}
+                                                ({{ $route->airline->name }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('route_id')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Departure Airport</label>
-                                    <input type="text" class="form-control" wire:model="departure_airport">
-                                    @error('departure_airport')
+                                    <select class="form-select" wire:model="departure_station_id" {{ $route_id ? 'disabled' : '' }}>
+                                        <option value="">Select Departure Airport</option>
+                                        @foreach ($stations as $station)
+                                            <option value="{{ $station->id }}">
+                                                {{ $station->code }} - {{ $station->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('departure_station_id')
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -200,8 +230,15 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Arrival Airport</label>
-                                    <input type="text" class="form-control" wire:model="arrival_airport">
-                                    @error('arrival_airport')
+                                    <select class="form-select" wire:model="arrival_station_id" {{ $route_id ? 'disabled' : '' }}>
+                                        <option value="">Select Arrival Airport</option>
+                                        @foreach ($stations as $station)
+                                            <option value="{{ $station->id }}">
+                                                {{ $station->code }} - {{ $station->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('arrival_station_id')
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -246,10 +283,10 @@
     </div>
 
     @script
-        <script>
-            $wire.on('flight-saved', () => {
-                bootstrap.Modal.getInstance(document.getElementById('flightFormModal')).hide();
-            });
-        </script>
+    <script>
+        $wire.on('flight-saved', () => {
+            bootstrap.Modal.getInstance(document.getElementById('flightFormModal')).hide();
+        });
+    </script>
     @endscript
 </div>

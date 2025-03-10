@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Schedule;
 
-use App\Models\Aircraft;
-use App\Models\Airline;
-use App\Models\Schedule;
 use Carbon\Carbon;
+use App\Models\Route;
+use App\Models\Airline;
 use Livewire\Component;
+use App\Models\Aircraft;
+use App\Models\Schedule;
 use Livewire\WithPagination;
 
 class ScheduleManager extends Component
@@ -32,7 +33,9 @@ class ScheduleManager extends Component
 
     public $flight_number = '';
 
-    public $aircraft_id = null;
+    public $aircraft_type_id = null;
+
+    public $route_id = null;
 
     public $departure_airport = '';
 
@@ -68,10 +71,9 @@ class ScheduleManager extends Component
 
     protected $rules = [
         'flight_number' => 'required|string|max:10',
-        'aircraft_id' => 'nullable|exists:aircraft,id',
+        'aircraft_type_id' => 'nullable|exists:aircraft_types,id',
         'airline_id' => 'required|exists:airlines,id',
-        'departure_airport' => 'required|string|size:3',
-        'arrival_airport' => 'required|string|size:3',
+        'route_id' => 'required|exists:routes,id',
         'departure_time' => 'required',
         'arrival_time' => 'required',
         'start_date' => 'required|date',
@@ -97,12 +99,11 @@ class ScheduleManager extends Component
     {
         $this->schedule = $schedule;
         $this->flight_number = $schedule->flight_number;
-        $this->aircraft_id = $schedule->aircraft_id;
+        $this->aircraft_type_id = $schedule->aircraft_type_id;
         $this->airline_id = $schedule->airline_id;
-        $this->departure_airport = $schedule->departure_airport;
-        $this->arrival_airport = $schedule->arrival_airport;
-        $this->departure_time = $schedule->departure_time->format('H:i');
-        $this->arrival_time = $schedule->arrival_time->format('H:i');
+        $this->route_id = $schedule->route_id;
+        $this->departure_time = $schedule->scheduled_departure_time->format('H:i');
+        $this->arrival_time = $schedule->scheduled_arrival_time->format('H:i');
         $this->start_date = $schedule->start_date->format('Y-m-d');
         $this->end_date = $schedule->end_date->format('Y-m-d');
         $this->days_of_week = $schedule->days_of_week;
@@ -117,8 +118,12 @@ class ScheduleManager extends Component
         $validated = $this->validate();
 
         // Convert time strings to proper format
-        $validated['departure_time'] = Carbon::parse($validated['departure_time'])->format('H:i:s');
-        $validated['arrival_time'] = Carbon::parse($validated['arrival_time'])->format('H:i:s');
+        $validated['scheduled_departure_time'] = Carbon::parse($validated['departure_time'])->format('H:i:s');
+        $validated['scheduled_arrival_time'] = Carbon::parse($validated['arrival_time'])->format('H:i:s');
+
+        // Remove the old time fields that aren't in the database
+        unset($validated['departure_time']);
+        unset($validated['arrival_time']);
 
         if ($this->editMode) {
             $this->schedule->update($validated);
@@ -144,7 +149,7 @@ class ScheduleManager extends Component
 
     public function toggleStatus(Schedule $schedule)
     {
-        $schedule->update(['is_active' => ! $schedule->is_active]);
+        $schedule->update(['is_active' => !$schedule->is_active]);
 
         $status = $schedule->is_active ? 'activated' : 'deactivated';
         $this->dispatch('alert', icon: 'success', message: "Schedule {$status} successfully.");
@@ -154,7 +159,7 @@ class ScheduleManager extends Component
     {
         $this->selectedSchedule = $schedule;
         $this->scheduleFlights = $schedule->flights()
-            ->with(['aircraft'])
+            ->with(['aircraftType'])
             ->orderBy('scheduled_departure_time')
             ->take(10)
             ->get();
@@ -166,10 +171,9 @@ class ScheduleManager extends Component
         $this->reset([
             'schedule',
             'flight_number',
-            'aircraft_id',
+            'aircraft_type_id',
             'airline_id',
-            'departure_airport',
-            'arrival_airport',
+            'route_id',
             'departure_time',
             'arrival_time',
             'start_date',
@@ -182,11 +186,19 @@ class ScheduleManager extends Component
     public function render()
     {
         $schedules = Schedule::query()
-            ->with(['airline', 'aircraft.type'])
+            ->with(['airline', 'aircraftType', 'route.departureStation', 'route.arrivalStation'])
             ->when($this->search, function ($query) {
-                $query->whereAny(['flight_number', 'departure_airport', 'arrival_airport'], 'like', '%'.$this->search.'%');
+                $query->where(function ($q) {
+                    $q->where('flight_number', 'like', '%' . $this->search . '%')
+                        ->orWhereHas('route.departureStation', function ($sq) {
+                            $sq->where('code', 'like', '%' . $this->search . '%');
+                        })
+                        ->orWhereHas('route.arrivalStation', function ($sq) {
+                            $sq->where('code', 'like', '%' . $this->search . '%');
+                        });
+                });
             })
-            ->when($this->airline_id, fn ($query) => $query->where('airline_id', $this->airline_id))
+            ->when($this->airline_id, fn($query) => $query->where('airline_id', $this->airline_id))
             ->when($this->status !== '', function ($query) {
                 $status = $this->status === 'active';
                 $query->where('is_active', $status);
@@ -197,7 +209,27 @@ class ScheduleManager extends Component
         return view('livewire.schedule.schedule-manager', [
             'schedules' => $schedules,
             'airlines' => Airline::orderBy('name')->get(),
-            'aircraft' => Aircraft::with('airline')->orderBy('registration_number')->get(),
+            'aircraft_types' => \App\Models\AircraftType::orderBy('code')->get(),
+            'routes' => Route::with(['departureStation', 'arrivalStation', 'airline'])
+                ->orderBy('departure_station_id')
+                ->get(),
         ]);
+    }
+
+    public function onRouteChange($routeId)
+    {
+        if (!empty($routeId)) {
+            $route = Route::with(['departureStation', 'arrivalStation'])->find($routeId);
+            if ($route) {
+                // You can set additional properties based on the route if needed
+                // For example, you could calculate estimated flight duration
+                // based on the route's flight_time property
+
+                // If you want to update the airline based on the route
+                if ($route->airline_id != $this->airline_id) {
+                    $this->airline_id = $route->airline_id;
+                }
+            }
+        }
     }
 }
