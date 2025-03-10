@@ -23,9 +23,6 @@ class Station extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Get the airlines that operate at this station.
-     */
     public function airlines(): BelongsToMany
     {
         return $this->belongsToMany(Airline::class, 'airline_station')
@@ -33,25 +30,16 @@ class Station extends Model
             ->withTimestamps();
     }
 
-    /**
-     * Get the routes that originate from this station.
-     */
     public function departureRoutes(): HasMany
     {
         return $this->hasMany(Route::class, 'departure_station_id');
     }
 
-    /**
-     * Get the routes that arrive at this station.
-     */
     public function arrivalRoutes(): HasMany
     {
         return $this->hasMany(Route::class, 'arrival_station_id');
     }
 
-    /**
-     * Get the email notifications for this station.
-     */
     public function emailNotifications(): HasMany
     {
         return $this->hasMany(EmailNotification::class);

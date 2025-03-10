@@ -14,7 +14,7 @@ class EmailNotification extends Model
         'airline_id',
         'station_id',
         'route_id',
-        'document_type', // loadsheet, lirf, notoc, etc.
+        'document_type',
         'email_addresses',
         'sita_addresses',
         'is_active',
@@ -26,33 +26,21 @@ class EmailNotification extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Get the airline associated with this notification.
-     */
     public function airline(): BelongsTo
     {
         return $this->belongsTo(Airline::class);
     }
 
-    /**
-     * Get the station associated with this notification.
-     */
     public function station(): BelongsTo
     {
         return $this->belongsTo(Station::class);
     }
 
-    /**
-     * Get the route associated with this notification.
-     */
     public function route(): BelongsTo
     {
         return $this->belongsTo(Route::class);
     }
 
-    /**
-     * Get email recipients for a specific flight and document type.
-     */
     public static function getRecipientsForFlight(Flight $flight, string $documentType)
     {
         // Start with a base query for the document type and airline
