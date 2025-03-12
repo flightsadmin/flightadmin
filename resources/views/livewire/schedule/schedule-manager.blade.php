@@ -97,9 +97,13 @@
                                                                 <i class="bi bi-database-add"></i>
                                                             </button>
                                                             <button wire:click="toggleStatus({{ $schedule->id }})"
-                                                                class="btn btn-sm btn-{{ $schedule->is_active ? 'danger' : 'success' }}"
+                                                                class="btn btn-sm btn-{{ $schedule->is_active ? 'warning' : 'success' }}"
                                                                 title="{{ $schedule->is_active ? 'Deactivate' : 'Activate' }}">
                                                                 <i class="bi bi-{{ $schedule->is_active ? 'ban' : 'check-circle-fill' }}"></i>
+                                                            </button>
+                                                            <button wire:click="confirmDelete({{ $schedule->id }})"
+                                                                class="btn btn-sm btn-danger" title="Delete Schedule">
+                                                                <i class="bi bi-trash"></i>
                                                             </button>
                                                         </div>
                                                     </td>
@@ -372,6 +376,7 @@
     <script>
         const scheduleModal = new bootstrap.Modal('#scheduleModal');
         const flightsModal = new bootstrap.Modal('#flightsModal');
+        const deleteModal = new bootstrap.Modal('#deleteModal');
 
         $wire.on('schedule-saved', () => {
             scheduleModal.hide();
@@ -393,6 +398,14 @@
             }
         });
 
+        $wire.$watch('showDeleteModal', (value) => {
+            if (value) {
+                deleteModal.show();
+            } else {
+                deleteModal.hide();
+            }
+        });
+
         document.getElementById('flightsModal').addEventListener('hidden.bs.modal', () => {
             $wire.set('showFlightsModal', false);
         });
@@ -400,6 +413,48 @@
         document.getElementById('scheduleModal').addEventListener('hidden.bs.modal', () => {
             $wire.set('showModal', false);
         });
+
+        document.getElementById('deleteModal').addEventListener('hidden.bs.modal', () => {
+            $wire.set('showDeleteModal', false);
+        });
     </script>
     @endscript
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" wire:ignore.self id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this schedule?</p>
+
+                    <div class="form-check mb-3">
+                        <input wire:model="deleteAllFlights" class="form-check-input" type="checkbox"
+                            id="deleteAllFlightsCheck">
+                        <label class="form-check-label" for="deleteAllFlightsCheck">
+                            Delete all flights (including past flights)
+                        </label>
+                        <div class="text-muted small">
+                            If unchecked, only future flights will be deleted and past flights will be preserved.
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill"></i> This action cannot be undone.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                    <button wire:click="deleteSchedule" class="btn btn-sm btn-danger">
+                        <i class="bi bi-trash"></i> Delete Schedule
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

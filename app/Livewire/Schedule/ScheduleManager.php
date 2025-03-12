@@ -20,6 +20,8 @@ class ScheduleManager extends Component
 
     public $showFlightsModal = false;
 
+    public $showDeleteModal = false;
+
     public $editMode = false;
 
     public $search = '';
@@ -27,6 +29,10 @@ class ScheduleManager extends Component
     public $airline_id = '';
 
     public $status = '';
+
+    // For delete confirmation
+    public $scheduleToDelete = null;
+    public $deleteAllFlights = false;
 
     // Form fields
     public $schedule;
@@ -164,6 +170,33 @@ class ScheduleManager extends Component
             ->take(10)
             ->get();
         $this->showFlightsModal = true;
+    }
+
+    public function confirmDelete(Schedule $schedule)
+    {
+        $this->scheduleToDelete = $schedule;
+        $this->deleteAllFlights = false;
+        $this->showDeleteModal = true;
+    }
+
+    public function deleteSchedule()
+    {
+        if (!$this->scheduleToDelete) {
+            return;
+        }
+
+        $result = $this->scheduleToDelete->deleteWithFlights($this->deleteAllFlights);
+
+        $this->showDeleteModal = false;
+
+        if ($result['success']) {
+            $this->dispatch('alert', icon: 'success', message: $result['message']);
+        } else {
+            $this->dispatch('alert', icon: 'error', message: $result['message']);
+        }
+
+        // Reset the schedule to delete
+        $this->scheduleToDelete = null;
     }
 
     private function resetForm()

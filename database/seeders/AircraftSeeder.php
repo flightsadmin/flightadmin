@@ -12,9 +12,30 @@ class AircraftSeeder extends Seeder
 {
     public function run(): void
     {
-        $aircraftType = AircraftType::with(['aircraft.flights.passengers', 'cabinZones', 'seats'])->inRandomOrder()->first();
-        $airline = Airline::inRandomOrder()->first();
+        $airlines = Airline::all();
+        $aircraftTypes = AircraftType::with(['aircraft.flights.passengers', 'cabinZones', 'seats'])->get();
 
+        $this->command->info("Configuring settings for aircraft types");
+        foreach ($aircraftTypes as $aircraftType) {
+
+            // Apply settings for each airline
+            foreach ($airlines as $airline) {
+                $this->applyAircraftTypeSettings($aircraftType, $airline);
+            }
+
+            // Create cabin zones and seats
+            $this->createCabinZonesAndSeats($aircraftType);
+
+            // Create holds and positions
+            $this->createHoldsAndPositions($aircraftType);
+        }
+
+        $this->command->info("Aircraft seeding completed successfully!");
+    }
+
+    private function applyAircraftTypeSettings(AircraftType $aircraftType, Airline $airline): void
+    {
+        // MAC Settings
         $macSettings = [
             'k_constant' => 50,
             'c_constant' => 1000,
@@ -32,6 +53,7 @@ class AircraftSeeder extends Seeder
             ]
         );
 
+        // Pantry Settings
         $pantries = [
             'A' => ['name' => 'Pantry A', 'code' => 'A', 'weight' => 497, 'index' => +1.59],
             'E' => ['name' => 'Pantry E', 'code' => 'E', 'weight' => 45, 'index' => +0.18],
@@ -43,6 +65,7 @@ class AircraftSeeder extends Seeder
             ['value' => json_encode($pantries), 'type' => 'json', 'description' => 'Aircraft Type Pantry Configurations']
         );
 
+        // Airline Settings
         $settings = [
             'general' => [
                 'standard_passenger_weight' => 84,
@@ -83,7 +106,10 @@ class AircraftSeeder extends Seeder
                 'description' => 'Airline Configuration Settings',
             ]
         );
+    }
 
+    private function createCabinZonesAndSeats(AircraftType $aircraftType): void
+    {
         $zones = [
             ['name' => 'A', 'max_capacity' => 54, 'arm' => -6.971, 'index' => -0.00697],
             ['name' => 'B', 'max_capacity' => 60, 'arm' => +0.281, 'index' => +0.00028],
@@ -113,7 +139,7 @@ class AircraftSeeder extends Seeder
                         'cabin_zone_id' => $zone->id,
                         'row' => $actualRow,
                         'column' => $column,
-                        'designation' => $actualRow.$column,
+                        'designation' => $actualRow . $column,
                         'type' => 'economy',
                         'is_exit' => in_array($actualRow, [5, 13]),
                         'created_at' => now(),
@@ -125,6 +151,7 @@ class AircraftSeeder extends Seeder
             $lastRowNumber += $rows;
         }
 
+        // Update seat assignments for existing flights
         foreach ($aircraftType->aircraft as $aircraft) {
             foreach ($aircraft->flights as $flight) {
                 $exitRowSeats = $aircraftType->seats()
@@ -132,7 +159,7 @@ class AircraftSeeder extends Seeder
                     ->get();
 
                 foreach ($exitRowSeats as $seat) {
-                    if (! $flight->seats()->where('seat_id', $seat->id)->exists()) {
+                    if (!$flight->seats()->where('seat_id', $seat->id)->exists()) {
                         $flight->seats()->attach($seat->id, [
                             'is_blocked' => true,
                             'blocked_reason' => 'Exit Row',
@@ -157,7 +184,7 @@ class AircraftSeeder extends Seeder
                     $seatId = $availableSeats[$randomIndex];
                     unset($availableSeats[$randomIndex]);
 
-                    if (! $flight->seats()->where('seat_id', $seatId)->exists()) {
+                    if (!$flight->seats()->where('seat_id', $seatId)->exists()) {
                         $flight->seats()->attach($seatId, [
                             'is_blocked' => false,
                             'created_at' => now(),
@@ -169,7 +196,10 @@ class AircraftSeeder extends Seeder
                 });
             }
         }
+    }
 
+    private function createHoldsAndPositions(AircraftType $aircraftType): void
+    {
         $holds = [
             [
                 'name' => 'Forward Hold',

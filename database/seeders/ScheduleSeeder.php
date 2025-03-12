@@ -28,27 +28,20 @@ class ScheduleSeeder extends Seeder
                 continue;
             }
 
-            // Create 3-5 schedules for each airline
-            $scheduleCount = rand(3, 5);
+            // Create 2-4 schedules for each airline
+            $scheduleCount = rand(2, 4);
 
             for ($i = 0; $i < $scheduleCount; $i++) {
                 // Get a random route
                 $route = $routes->random();
 
                 // Create a schedule using this route
-                Schedule::factory()
-                    ->forRoute($route)
-                    ->create();
+                Schedule::factory()->forRoute($route)->create();
             }
-
-            $this->command->info("Created {$scheduleCount} schedules for {$airline->name}.");
         }
 
         // Generate flights for some of the schedules
-        $schedules = Schedule::where('is_active', true)
-            ->inRandomOrder()
-            ->limit(5)
-            ->get();
+        $schedules = Schedule::where('is_active', true)->inRandomOrder()->limit(5)->get();
 
         foreach ($schedules as $schedule) {
             $flightIds = $schedule->generateFlights();
@@ -56,17 +49,13 @@ class ScheduleSeeder extends Seeder
             foreach ($flightIds as $flightId) {
                 $flight = $schedule->flights()->find($flightId);
 
-                Container::factory()->forAirline($schedule->airline)->create()->flights()->attach($flight->id, [
-                    'type' => 'baggage',
-                    'weight' => 70,
-                    'status' => 'unloaded'
-                ]);
-
-                Container::factory()->forAirline($schedule->airline)->create()->flights()->attach($flight->id, [
-                    'type' => 'cargo',
-                    'weight' => 80,
-                    'status' => 'unloaded'
-                ]);
+                foreach (['baggage', 'cargo'] as $type) {
+                    Container::factory()->forAirline($schedule->airline)->create()->flights()->attach($flight->id, [
+                        'type' => $type,
+                        'weight' => 70,
+                        'status' => 'unloaded'
+                    ]);
+                }
             }
         }
     }

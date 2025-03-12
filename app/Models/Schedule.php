@@ -144,4 +144,57 @@ class Schedule extends Model
 
         return array_map(fn($day) => $dayNames[$day], $this->days_of_week);
     }
+
+    public function deleteWithFlights(bool $deleteAllFlights = false): array
+    {
+        $result = [
+            'success' => true,
+            'message' => '',
+            'deleted_flights' => 0,
+            'preserved_flights' => 0,
+        ];
+
+        try {
+            \DB::beginTransaction();
+
+            // Get flights associated with this schedule
+            $flights = $this->flights();
+
+            // If not deleting all flights, only delete future flights
+            if (!$deleteAllFlights) {
+                $flights = $flights->where('scheduled_departure_time', '>', now());
+            }
+
+            // Count flights that will be deleted
+            $flightsToDelete = $flights->count();
+            $result['deleted_flights'] = $flightsToDelete;
+
+            // Count flights that will be preserved (if not deleting all)
+            if (!$deleteAllFlights) {
+                $result['preserved_flights'] = $this->flights()->where('scheduled_departure_time', '<=', now())->count();
+            }
+
+            // Delete the flights
+            $flights->delete();
+
+            // Delete the schedule
+            $this->delete();
+
+            // Commit the transaction
+            \DB::commit();
+
+            $result['message'] = "Schedule deleted successfully with {$result['deleted_flights']} flights.";
+            if ($result['preserved_flights'] > 0) {
+                $result['message'] .= " {$result['preserved_flights']} past flights were preserved.";
+            }
+        } catch (\Exception $e) {
+            // Rollback the transaction in case of error
+            \DB::rollBack();
+
+            $result['success'] = false;
+            $result['message'] = "Failed to delete schedule: {$e->getMessage()}";
+        }
+
+        return $result;
+    }
 }
