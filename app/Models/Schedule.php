@@ -95,18 +95,20 @@ class Schedule extends Model
                     ->first();
 
                 if (!$existingFlight) {
-                    $flight = Flight::create([
+                    // Create flight data without aircraft_type_id since it doesn't exist in the flights table
+                    $flightData = [
                         'airline_id' => $this->airline_id,
-                        'aircraft_type_id' => $this->aircraft_type_id,
+                        'aircraft_id' => null, // Explicitly set to null since aircraft is not known yet
                         'route_id' => $this->route_id,
                         'schedule_id' => $this->id,
                         'flight_number' => $this->flight_number,
                         'scheduled_departure_time' => $departureTime,
                         'scheduled_arrival_time' => $arrivalTime,
                         'status' => 'scheduled',
-                    ]);
+                    ];
 
-                    $createdFlights[] = $flight;
+                    $flight = Flight::create($flightData);
+                    $createdFlights[] = $flight->id;
                 }
             }
 
