@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Airline;
 use App\Models\Route;
 use App\Models\Schedule;
-use App\Models\Container;
 use Illuminate\Database\Seeder;
 
 class ScheduleSeeder extends Seeder
@@ -37,25 +36,6 @@ class ScheduleSeeder extends Seeder
 
                 // Create a schedule using this route
                 Schedule::factory()->forRoute($route)->create();
-            }
-        }
-
-        // Generate flights for some of the schedules
-        $schedules = Schedule::where('is_active', true)->inRandomOrder()->limit(5)->get();
-
-        foreach ($schedules as $schedule) {
-            $flightIds = $schedule->generateFlights();
-
-            foreach ($flightIds as $flightId) {
-                $flight = $schedule->flights()->find($flightId);
-
-                foreach (['baggage', 'cargo'] as $type) {
-                    Container::factory()->forAirline($schedule->airline)->create()->flights()->attach($flight->id, [
-                        'type' => $type,
-                        'weight' => 70,
-                        'status' => 'unloaded'
-                    ]);
-                }
             }
         }
     }
