@@ -93,11 +93,7 @@ After seeding the database, the following users will be available:
 
 | User Type | Email | Password |
 |-----------|-------|----------|
-| Super Admin | super-admin@flightadmin.info | password |
-| Admin | admin@flightadmin.info | password |
-| User | user@flightadmin.info | password |
 | Test User | test@example.com | password |
-| Wab Admin | wab@flightadmin.info | password |
 
 ## Data Structure
 
