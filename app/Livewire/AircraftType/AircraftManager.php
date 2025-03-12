@@ -11,6 +11,7 @@ class AircraftManager extends Component
 {
     use WithPagination;
 
+    public $paginationTheme = 'bootstrap';
     public AircraftType $aircraftType;
 
     public $showAircraftModal = false;

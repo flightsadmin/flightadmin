@@ -60,7 +60,7 @@ class AircraftType extends Model
     {
         return $this->holds
             ->where('is_active', true)
-            ->flatMap(fn ($hold) => $hold->getPositions())
+            ->flatMap(fn($hold) => $hold->getPositions())
             ->values();
     }
 
@@ -90,16 +90,6 @@ class AircraftType extends Model
     public function cabinZones(): HasMany
     {
         return $this->hasMany(CabinZone::class)->orderBy('index');
-    }
-
-    public function crewSeating(): HasMany
-    {
-        return $this->hasMany(CrewSeating::class);
-    }
-
-    public function crewDistributions(): HasMany
-    {
-        return $this->hasMany(CrewDistribution::class);
     }
 
     public function envelopes(): HasMany
@@ -134,7 +124,7 @@ class AircraftType extends Model
     {
         $envelope = $this->envelopes()->where('name', 'FUEL')->first();
 
-        if (! $envelope || ! $envelope->points) {
+        if (!$envelope || !$envelope->points) {
             return 0;
         }
 
@@ -222,7 +212,7 @@ class AircraftType extends Model
 
         // Get cabin crew distribution for the given count
         $distribution = $settings['distributions'][$cabinCrewCount] ?? null;
-        if (! $distribution) {
+        if (!$distribution) {
             return [
                 'index' => $deckCrewIndex,
                 'weight' => $deckCrewWeight,
