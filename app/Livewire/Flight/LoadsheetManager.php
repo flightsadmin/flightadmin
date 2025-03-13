@@ -265,12 +265,10 @@ class LoadsheetManager extends Component
 
             $pdf = $this->generateLoadsheetPdf($this->loadsheet);
 
-            $airline = $this->flight->airline->name;
             $flightNumber = $this->flight->flight_number;
-            $departure = $this->flight->departure_airport;
-            $arrival = $this->flight->arrival_airport;
-            $date = $this->flight->scheduled_departure_time->format('d M Y');
-            $filename = "Loadsheet_{$flightNumber}_{$departure}_{$arrival}_{$date}.pdf";
+            $edition = $this->loadsheet->edition;
+            $date = $this->flight->scheduled_departure_time->format('d-M-Y');
+            $filename = strtolower("loadsheet_{$flightNumber}_{$edition}_{$date}.pdf");
 
             if (!empty($notification->email_addresses)) {
                 $this->sendEmailNotification($notification, $pdf, $filename);
@@ -296,7 +294,7 @@ class LoadsheetManager extends Component
             $variables = [
                 'name' => $this->flight->airline->name,
                 'flight_number' => $this->flight->flight_number,
-                'date' => $this->flight->scheduled_departure_time->format('d M Y'),
+                'date' => $this->flight->scheduled_departure_time->format('d-M-Y'),
             ];
 
             foreach ($notification->email_addresses as $email) {
