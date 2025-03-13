@@ -317,7 +317,7 @@ class LoadsheetManager extends Component
                 $message->subject("[$airline] Loadsheet for $flightNumber $departure-$arrival $date");
 
                 // Set recipients
-                $message->to($notification->email_addresses ?? ['wab@flightadmin.info']);
+                $message->to($notification->email_addresses);
 
                 // Attach the PDF
                 $message->attachData($pdf, $filename, [

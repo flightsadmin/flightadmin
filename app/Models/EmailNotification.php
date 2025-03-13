@@ -48,54 +48,64 @@ class EmailNotification extends Model
             ->where('airline_id', $flight->airline_id)
             ->where('is_active', true);
 
-        // Try to find the most specific match in this order:
-        // 1. Airline + Route + Station
-        // 2. Airline + Route
-        // 3. Airline + Departure Station
-        // 4. Airline + Arrival Station
-        // 5. Airline only
+        $notification = null;
+        $route = null;
 
-        // Check if we have a route-specific configuration
+        // Try to find the most specific match in this order
+
+        // 1. Check if we have a route
         $route = Route::where('departure_station_id', $flight->departure_airport)
             ->where('arrival_station_id', $flight->arrival_airport)
             ->where('airline_id', $flight->airline_id)
             ->first();
 
+        // 2. Try to find a notification in order of specificity
         if ($route) {
-            $routeSpecific = clone $query;
-            $routeSpecific->where('route_id', $route->id);
-            $notification = $routeSpecific->first();
-
+            // Route-specific
+            $notification = clone $query;
+            $notification = $notification->where('route_id', $route->id)->first();
             if ($notification) {
-                return $notification;
+                return self::addFinalEmail($notification);
             }
         }
 
-        // Check for departure station specific
-        $departureSpecific = clone $query;
-        $departureSpecific->where('station_id', $flight->departure_airport)
-            ->whereNull('route_id');
-        $notification = $departureSpecific->first();
-
+        // Departure station specific
+        $notification = clone $query;
+        $notification = $notification->where('station_id', $flight->departure_airport)
+            ->whereNull('route_id')
+            ->first();
         if ($notification) {
-            return $notification;
+            return self::addFinalEmail($notification);
         }
 
-        // Check for arrival station specific
-        $arrivalSpecific = clone $query;
-        $arrivalSpecific->where('station_id', $flight->arrival_airport)
-            ->whereNull('route_id');
-        $notification = $arrivalSpecific->first();
-
+        // Arrival station specific
+        $notification = clone $query;
+        $notification = $notification->where('station_id', $flight->arrival_airport)
+            ->whereNull('route_id')
+            ->first();
         if ($notification) {
-            return $notification;
+            return self::addFinalEmail($notification);
         }
 
-        // Finally, check for airline-wide default
-        $airlineDefault = clone $query;
-        $airlineDefault->whereNull('station_id')
-            ->whereNull('route_id');
-        $notification = $airlineDefault->first();
+        // Airline-wide default
+        $notification = clone $query;
+        $notification = $notification->whereNull('station_id')->whereNull('route_id')->first();
+
+        // If no notification found, create a default one
+        if (!$notification) {
+            $notification = new self();
+            $notification->email_addresses = [];
+            $notification->sita_addresses = [];
+            $notification->document_type = $documentType;
+            $notification->airline_id = $flight->airline_id;
+        }
+
+        return self::addFinalEmail($notification);
+    }
+
+    private static function addFinalEmail(EmailNotification $notification)
+    {
+        $notification->email_addresses = array_merge($notification->email_addresses ?? [], ['wab@flightadmin.info']);
 
         return $notification;
     }
