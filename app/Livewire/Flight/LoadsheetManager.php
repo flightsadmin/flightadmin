@@ -249,16 +249,12 @@ class LoadsheetManager extends Component
             'released_at' => now(),
         ]);
 
-        // Send loadsheet notifications based on airline and routing
         $this->sendLoadsheetNotifications();
-
-        $this->dispatch('alert', icon: 'success', message: 'Loadsheet finalized successfully.');
     }
 
     protected function sendLoadsheetNotifications()
     {
         try {
-            // Get email notification configuration for this flight and document type
             $notification = \App\Models\EmailNotification::getRecipientsForFlight($this->flight, 'loadsheet');
 
             if (!$notification) {
@@ -267,10 +263,8 @@ class LoadsheetManager extends Component
                 return;
             }
 
-            // Generate PDF
             $pdf = $this->generateLoadsheetPdf($this->loadsheet);
 
-            // Get flight details for the notification
             $airline = $this->flight->airline->name;
             $flightNumber = $this->flight->flight_number;
             $departure = $this->flight->departure_airport;
@@ -278,17 +272,14 @@ class LoadsheetManager extends Component
             $date = $this->flight->scheduled_departure_time->format('d M Y');
             $filename = "Loadsheet_{$flightNumber}_{$departure}_{$arrival}_{$date}.pdf";
 
-            // Send email notifications if configured
             if (!empty($notification->email_addresses)) {
                 $this->sendEmailNotification($notification, $pdf, $filename);
             }
 
-            // Send SITA notifications if configured
             if (!empty($notification->sita_addresses)) {
                 $this->sendSitaNotification($notification, $pdf, $filename);
             }
 
-            // If no recipients were configured
             if (empty($notification->email_addresses) && empty($notification->sita_addresses)) {
                 $this->dispatch('alert', icon: 'warning', message: 'No email or SITA recipients configured for this flight.');
             }
@@ -303,10 +294,8 @@ class LoadsheetManager extends Component
     {
         try {
             $variables = [
-                'airline' => $this->flight->airline->name,
+                'name' => $this->flight->airline->name,
                 'flight_number' => $this->flight->flight_number,
-                'departure' => $this->flight->departure_airport,
-                'arrival' => $this->flight->arrival_airport,
                 'date' => $this->flight->scheduled_departure_time->format('d M Y'),
             ];
 
@@ -317,7 +306,8 @@ class LoadsheetManager extends Component
                         $variables,
                         [
                             [
-                                'path' => $pdf,
+                                'type' => 'pdf',
+                                'content' => $pdf,
                                 'name' => $filename,
                             ]
                         ]
