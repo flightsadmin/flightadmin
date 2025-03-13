@@ -115,7 +115,7 @@ class RouteFactory extends Factory
         // Sort regions alphabetically to ensure consistent key lookup
         $regionPair = [$departureRegion, $arrivalRegion];
         sort($regionPair);
-        $regionKey = $regionPair[0] . '-' . $regionPair[1];
+        $regionKey = $regionPair[0].'-'.$regionPair[1];
 
         // If same airport, return 0
         if ($departureStation->id === $arrivalStation->id) {

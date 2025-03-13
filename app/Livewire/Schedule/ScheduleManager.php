@@ -2,12 +2,11 @@
 
 namespace App\Livewire\Schedule;
 
-use Carbon\Carbon;
-use App\Models\Route;
 use App\Models\Airline;
-use Livewire\Component;
-use App\Models\Aircraft;
+use App\Models\Route;
 use App\Models\Schedule;
+use Carbon\Carbon;
+use Livewire\Component;
 use Livewire\WithPagination;
 
 class ScheduleManager extends Component
@@ -32,6 +31,7 @@ class ScheduleManager extends Component
 
     // For delete confirmation
     public $scheduleToDelete = null;
+
     public $deleteAllFlights = false;
 
     // Form fields
@@ -155,7 +155,7 @@ class ScheduleManager extends Component
 
     public function toggleStatus(Schedule $schedule)
     {
-        $schedule->update(['is_active' => !$schedule->is_active]);
+        $schedule->update(['is_active' => ! $schedule->is_active]);
 
         $status = $schedule->is_active ? 'activated' : 'deactivated';
         $this->dispatch('alert', icon: 'success', message: "Schedule {$status} successfully.");
@@ -177,7 +177,7 @@ class ScheduleManager extends Component
 
     public function deleteSchedule()
     {
-        if (!$this->scheduleToDelete) {
+        if (! $this->scheduleToDelete) {
             return;
         }
 
@@ -218,16 +218,16 @@ class ScheduleManager extends Component
             ->with(['airline', 'aircraftType', 'route.departureStation', 'route.arrivalStation'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('flight_number', 'like', '%' . $this->search . '%')
+                    $q->where('flight_number', 'like', '%'.$this->search.'%')
                         ->orWhereHas('route.departureStation', function ($sq) {
-                            $sq->where('code', 'like', '%' . $this->search . '%');
+                            $sq->where('code', 'like', '%'.$this->search.'%');
                         })
                         ->orWhereHas('route.arrivalStation', function ($sq) {
-                            $sq->where('code', 'like', '%' . $this->search . '%');
+                            $sq->where('code', 'like', '%'.$this->search.'%');
                         });
                 });
             })
-            ->when($this->airline_id, fn($query) => $query->where('airline_id', $this->airline_id))
+            ->when($this->airline_id, fn ($query) => $query->where('airline_id', $this->airline_id))
             ->when($this->status !== '', function ($query) {
                 $status = $this->status === 'active';
                 $query->where('is_active', $status);
@@ -247,7 +247,7 @@ class ScheduleManager extends Component
 
     public function onRouteChange($routeId)
     {
-        if (!empty($routeId)) {
+        if (! empty($routeId)) {
             $route = Route::with(['departureStation', 'arrivalStation'])->find($routeId);
             if ($route) {
                 // You can set additional properties based on the route if needed

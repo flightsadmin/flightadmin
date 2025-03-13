@@ -3,9 +3,9 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Station;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\On;
 
 class StationManager extends Component
 {
@@ -14,15 +14,22 @@ class StationManager extends Component
     protected $paginationTheme = 'bootstrap';
 
     public $search = '';
+
     public $showModal = false;
+
     public $editMode = false;
 
     // Form fields
     public $stationId;
+
     public $code;
+
     public $name;
+
     public $country;
+
     public $timezone;
+
     public $is_active = true;
 
     protected $rules = [
@@ -64,7 +71,7 @@ class StationManager extends Component
     public function save()
     {
         if ($this->editMode) {
-            $this->rules['code'] = 'required|string|size:3|unique:stations,code,' . $this->stationId;
+            $this->rules['code'] = 'required|string|size:3|unique:stations,code,'.$this->stationId;
         }
 
         $this->validate();
@@ -93,7 +100,7 @@ class StationManager extends Component
     public function toggleActive($id)
     {
         $station = Station::findOrFail($id);
-        $station->update(['is_active' => !$station->is_active]);
+        $station->update(['is_active' => ! $station->is_active]);
 
         $status = $station->is_active ? 'activated' : 'deactivated';
         $this->dispatch('alert', icon: 'success', message: "Station {$status} successfully");
@@ -108,7 +115,7 @@ class StationManager extends Component
     public function render()
     {
         $stations = Station::when($this->search, function ($query) {
-            $query->whereAny(['code', 'name', 'country'], 'like', '%' . $this->search . '%');
+            $query->whereAny(['code', 'name', 'country'], 'like', '%'.$this->search.'%');
         })->orderBy('code')->paginate(10);
 
         return view('livewire.admin.station-manager', [

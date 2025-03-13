@@ -92,7 +92,7 @@ class UldSeeder extends Seeder
 
             foreach ($uldTypes as $key => $type) {
                 for ($i = 1; $i <= 5; $i++) {
-                    $containerNumber = $type['code'] . str_pad($i, 5, '0', STR_PAD_LEFT) . $airline->iata_code;
+                    $containerNumber = $type['code'].str_pad($i, 5, '0', STR_PAD_LEFT).$airline->iata_code;
 
                     $airline->containers()->updateOrCreate(
                         ['container_number' => $containerNumber],

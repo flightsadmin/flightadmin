@@ -13,7 +13,7 @@ class ContainerFactory extends Factory
 
         return [
             'airline_id' => null,
-            'container_number' => $uld . strtoupper(fake()->randomNumber(5)),
+            'container_number' => $uld.strtoupper(fake()->randomNumber(5)),
             'tare_weight' => fake()->numberBetween(60, 85),
             'max_weight' => 2000,
         ];
@@ -26,7 +26,7 @@ class ContainerFactory extends Factory
         return $this->state(function (array $attributes) use ($airline, $uld) {
             return [
                 'airline_id' => $airline->id,
-                'container_number' => $uld . strtoupper(fake()->randomNumber(5)) . $airline->iata_code,
+                'container_number' => $uld.strtoupper(fake()->randomNumber(5)).$airline->iata_code,
             ];
         });
     }

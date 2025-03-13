@@ -21,7 +21,7 @@ class AdminSeeder extends Seeder
 
         foreach ($models as $model) {
             foreach ($actions as $action) {
-                $methodName = $action . ucfirst($model);
+                $methodName = $action.ucfirst($model);
                 Permission::create(['name' => $methodName]);
             }
         }
@@ -48,8 +48,8 @@ class AdminSeeder extends Seeder
             $role->givePermissionTo($roleData['permissions']);
 
             User::create([
-                'name' => ucwords(explode('-', $roleData['name'])[0]) . ' User',
-                'email' => $roleData['name'] . '@flightadmin.info',
+                'name' => ucwords(explode('-', $roleData['name'])[0]).' User',
+                'email' => $roleData['name'].'@flightadmin.info',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
                 'remember_token' => Str::random(30),

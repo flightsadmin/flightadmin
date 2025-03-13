@@ -81,8 +81,8 @@ class Schedule extends Model
 
             if (in_array($dayOfWeek, $this->days_of_week)) {
                 // Create a flight for this day
-                $departureTime = Carbon::parse($currentDate->format('Y-m-d') . ' ' . $this->scheduled_departure_time->format('H:i:s'));
-                $arrivalTime = Carbon::parse($currentDate->format('Y-m-d') . ' ' . $this->scheduled_arrival_time->format('H:i:s'));
+                $departureTime = Carbon::parse($currentDate->format('Y-m-d').' '.$this->scheduled_departure_time->format('H:i:s'));
+                $arrivalTime = Carbon::parse($currentDate->format('Y-m-d').' '.$this->scheduled_arrival_time->format('H:i:s'));
 
                 // Handle overnight flights
                 if ($arrivalTime->lt($departureTime)) {
@@ -94,7 +94,7 @@ class Schedule extends Model
                     ->whereDate('scheduled_departure_time', $currentDate)
                     ->first();
 
-                if (!$existingFlight) {
+                if (! $existingFlight) {
                     // Create flight data without aircraft_type_id since it doesn't exist in the flights table
                     $flightData = [
                         'airline_id' => $this->airline_id,
@@ -120,7 +120,7 @@ class Schedule extends Model
 
     /**
      * Get the departure airport code.
-     * 
+     *
      * @return string|null
      */
     public function getDepartureAirportAttribute()
@@ -130,7 +130,7 @@ class Schedule extends Model
 
     /**
      * Get the arrival airport code.
-     * 
+     *
      * @return string|null
      */
     public function getArrivalAirportAttribute()
@@ -142,7 +142,7 @@ class Schedule extends Model
     {
         $dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-        return array_map(fn($day) => $dayNames[$day], $this->days_of_week);
+        return array_map(fn ($day) => $dayNames[$day], $this->days_of_week);
     }
 
     public function deleteWithFlights(bool $deleteAllFlights = false): array
@@ -161,7 +161,7 @@ class Schedule extends Model
             $flights = $this->flights();
 
             // If not deleting all flights, only delete future flights
-            if (!$deleteAllFlights) {
+            if (! $deleteAllFlights) {
                 $flights = $flights->where('scheduled_departure_time', '>', now());
             }
 
@@ -170,7 +170,7 @@ class Schedule extends Model
             $result['deleted_flights'] = $flightsToDelete;
 
             // Count flights that will be preserved (if not deleting all)
-            if (!$deleteAllFlights) {
+            if (! $deleteAllFlights) {
                 $result['preserved_flights'] = $this->flights()->where('scheduled_departure_time', '<=', now())->count();
             }
 

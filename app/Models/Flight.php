@@ -5,8 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Flight extends Model
@@ -37,7 +35,7 @@ class Flight extends Model
 
     /**
      * Get the departure airport code.
-     * 
+     *
      * @return string|null
      */
     public function getDepartureAirportAttribute()
@@ -47,7 +45,7 @@ class Flight extends Model
 
     /**
      * Get the arrival airport code.
-     * 
+     *
      * @return string|null
      */
     public function getArrivalAirportAttribute()

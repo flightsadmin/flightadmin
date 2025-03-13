@@ -106,7 +106,7 @@ class PassengerFactory extends Factory
                     ->inRandomOrder()
                     ->first();
 
-                if (!$adult) {
+                if (! $adult) {
                     $adult = Passenger::factory()->state([
                         'flight_id' => $passenger->flight_id,
                         'type' => fake()->randomElement(['male', 'female']),
@@ -118,7 +118,7 @@ class PassengerFactory extends Factory
                 $attributes['infant_name'] = $passenger->name;
                 $adult->update(['special_requirements' => $attributes]);
             } elseif (in_array($passenger->type, ['male', 'female']) && fake()->boolean(20)) {
-                if (!($passenger->special_requirements['infant'] ?? false)) {
+                if (! ($passenger->special_requirements['infant'] ?? false)) {
                     Passenger::factory()->infant()->create([
                         'flight_id' => $passenger->flight_id,
                     ]);

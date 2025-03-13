@@ -28,7 +28,7 @@ class FlightFactory extends Factory
             'airline_id' => $airline->id,
             'aircraft_id' => null,
             'route_id' => null,
-            'flight_number' => $airline->iata_code . rand(100, 999),
+            'flight_number' => $airline->iata_code.rand(100, 999),
             'scheduled_departure_time' => $departureTime,
             'scheduled_arrival_time' => $arrivalTime,
             'actual_departure_time' => null,
@@ -42,7 +42,7 @@ class FlightFactory extends Factory
         return $this->state(function (array $attributes) use ($airline) {
             return [
                 'airline_id' => $airline->id,
-                'flight_number' => $airline->iata_code . rand(100, 999),
+                'flight_number' => $airline->iata_code.rand(100, 999),
             ];
         });
     }
@@ -53,7 +53,7 @@ class FlightFactory extends Factory
             return [
                 'airline_id' => $route->airline_id,
                 'route_id' => $route->id,
-                'flight_number' => $route->airline->iata_code . rand(100, 999),
+                'flight_number' => $route->airline->iata_code.rand(100, 999),
             ];
         });
     }
@@ -64,7 +64,7 @@ class FlightFactory extends Factory
             return [
                 'airline_id' => $aircraft->airline_id,
                 'aircraft_id' => $aircraft->id,
-                'flight_number' => $aircraft->airline->iata_code . rand(100, 999),
+                'flight_number' => $aircraft->airline->iata_code.rand(100, 999),
             ];
         });
     }
@@ -82,6 +82,7 @@ class FlightFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $departureTime = Carbon::now()->subHours(rand(1, 5));
+
             return [
                 'status' => 'departed',
                 'scheduled_departure_time' => $departureTime,
@@ -95,6 +96,7 @@ class FlightFactory extends Factory
         return $this->state(function (array $attributes) {
             $departureTime = Carbon::now()->subHours(rand(6, 12));
             $arrivalTime = (clone $departureTime)->addHours(rand(1, 8));
+
             return [
                 'status' => 'arrived',
                 'scheduled_departure_time' => $departureTime,

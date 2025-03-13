@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Airline;
 use App\Models\AircraftType;
+use App\Models\Airline;
 use App\Models\Route;
 use App\Models\Schedule;
 use Carbon\Carbon;
@@ -41,7 +41,7 @@ class ScheduleFactory extends Factory
             'airline_id' => $airline->id,
             'aircraft_type_id' => AircraftType::where('airline_id', $airline->id)->inRandomOrder()->first()?->id,
             'route_id' => null,
-            'flight_number' => $airline->iata_code . rand(100, 999),
+            'flight_number' => $airline->iata_code.rand(100, 999),
             'scheduled_departure_time' => $departureTime,
             'scheduled_arrival_time' => $arrivalTime,
             'start_date' => $startDate,
@@ -60,7 +60,7 @@ class ScheduleFactory extends Factory
             return [
                 'airline_id' => $airline->id,
                 'aircraft_type_id' => AircraftType::where('airline_id', $airline->id)->inRandomOrder()->first()?->id,
-                'flight_number' => $airline->iata_code . rand(100, 999),
+                'flight_number' => $airline->iata_code.rand(100, 999),
             ];
         });
     }
@@ -74,7 +74,7 @@ class ScheduleFactory extends Factory
             return [
                 'airline_id' => $route->airline_id,
                 'route_id' => $route->id,
-                'flight_number' => $route->airline->iata_code . rand(100, 999),
+                'flight_number' => $route->airline->iata_code.rand(100, 999),
             ];
         });
     }

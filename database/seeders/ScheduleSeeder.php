@@ -18,6 +18,7 @@ class ScheduleSeeder extends Seeder
 
             if ($routes->isEmpty()) {
                 $this->command->info("No routes found for {$airline->name}, skipping schedule creation.");
+
                 continue;
             }
 
@@ -25,7 +26,7 @@ class ScheduleSeeder extends Seeder
                 $route = $routes->random();
 
                 Schedule::factory()->forRoute($route)->create([
-                    'flight_number' => $airline->iata_code . rand(100, 999)
+                    'flight_number' => $airline->iata_code.rand(100, 999),
                 ]);
             }
         }

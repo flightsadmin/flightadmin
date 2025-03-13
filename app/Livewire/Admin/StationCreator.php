@@ -8,14 +8,20 @@ use Livewire\Component;
 class StationCreator extends Component
 {
     public $showModal = false;
+
     public $editMode = false;
 
     // Form fields
     public $stationId;
+
     public $code;
+
     public $name;
+
     public $country;
+
     public $timezone;
+
     public $is_active = true;
 
     // Optional callback event to dispatch after saving
@@ -55,7 +61,7 @@ class StationCreator extends Component
     public function save()
     {
         if ($this->editMode) {
-            $this->rules['code'] = 'required|string|size:3|unique:stations,code,' . $this->stationId;
+            $this->rules['code'] = 'required|string|size:3|unique:stations,code,'.$this->stationId;
         }
 
         $this->validate();

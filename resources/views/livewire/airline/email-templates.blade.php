@@ -61,7 +61,7 @@
                                 <div class="card-body">
                                     <div><i class="bi bi-tag"></i> {{ $template->slug }}</div>
                                     <h6><i class="bi bi-chat-square-text"></i> {{ Str::limit($template->subject, 80) }}</h6>
-                                    
+
                                     <div class="my-2">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <small class="text-muted fw-bold">
@@ -106,7 +106,7 @@
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <form wire:submit="save">
-                    <div class="modal-header bg-light sticky-top">
+                    <div class="modal-header bg-light">
                         <h5 class="modal-title d-flex align-items-center">
                             <i class="bi bi-{{ $editingId ? 'pencil-square' : 'plus-circle' }} me-2 text-primary"></i>
                             {{ $editingId ? 'Edit' : 'Create' }} Email Template
@@ -133,17 +133,11 @@
                                     <i class="bi bi-file-text me-2"></i>Content
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ $activeTab === 'preview' ? 'active' : '' }}"
-                                    wire:click="setActiveTab('preview')" role="tab" href="#preview">
-                                    <i class="bi bi-eye me-2"></i>Preview
-                                </a>
-                            </li>
                         </ul>
 
                         <div class="tab-content">
                             <div class="tab-pane fade {{ $activeTab === 'basic' ? 'show active' : '' }}" id="basic">
-                                <div class="row g-3">
+                                <div class="row">
                                     <div class="col-md-6">
                                         <label class="form-label fw-medium">Template Name <span
                                                 class="text-danger">*</span></label>
@@ -152,7 +146,7 @@
                                             <input type="text" wire:model="name" class="form-control"
                                                 placeholder="Enter template name">
                                         </div>
-                                        @error('name')                                        
+                                        @error('name')
                                             <div class="text-danger small mt-1">{{ $message }}</div>
                                         @enderror
                                     </div>
@@ -160,12 +154,12 @@
                                         <label class="form-label fw-medium">Email Subject <span
                                                 class="text-danger">*</span></label>
                                         <div class="input-group">
-                                            <span class="input-group-text bg-light"><i
-                                                    class="bi bi-chat-square-text"></i></span>
+                                            <span class="input-group-text">
+                                                <i class="bi bi-chat-square-text"></i></span>
                                             <input type="text" wire:model="subject" class="form-control"
                                                 placeholder="Enter email subject">
                                         </div>
-                                        @error('subject')  
+                                        @error('subject')
                                             <div class="text-danger small mt-1">{{ $message }}</div>
                                         @enderror
                                     </div>
@@ -237,7 +231,7 @@
                                             <i class="bi bi-pencil-square me-1"></i> Edit Variables
                                         </button>
                                     </label>
-                                    <div class="card border shadow-sm p-3 mb-3">
+                                    <div class="card border shadow-sm p-3">
                                         <div class="d-flex flex-wrap gap-2">
                                             @foreach($templateVariables as $variable)
                                                 @if($variable['key'])
@@ -261,61 +255,21 @@
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-medium">Email Body <span
-                                            class="text-danger">*</span></label>
-                                    <div class="alert alert-light border small mb-2">
+                                    <label class="form-label fw-medium">Email Body <span class="text-danger">*</span>
                                         <i class="bi bi-lightbulb me-1"></i>
                                         <strong>Tip:</strong> Click on a variable above to insert it at the cursor
-                                        position. Use line breaks for paragraphs.
-                                    </div>
+                                        position.
+                                    </label>
                                     <textarea wire:model="body" class="form-control" rows="12" id="bodyTextarea"
                                         placeholder="Enter your email content here..."></textarea>
-                                    @error('body')                                    
+                                    @error('body')
                                         <div class="text-danger small mt-1">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
-
-                            <div class="tab-pane fade {{ $activeTab === 'preview' ? 'show active' : '' }}" id="preview">
-                                <div class="card border shadow-sm">
-                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                                        <h6 class="mb-0">Email Preview</h6>
-                                        <span class="badge bg-secondary">Template Preview</span>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <label class="form-label small text-muted">Subject:</label>
-                                            <div class="p-2 border rounded bg-light">
-                                                {{ $subject ?: 'No subject defined' }}
-                                            </div>
-                                        </div>
-
-                                        <label class="form-label small text-muted">Body:</label>
-                                        <div class="p-3 border rounded bg-white overflow-auto"
-                                            style="min-height: 200px; max-height: 400px; white-space: pre-line;">
-                                            @if($body)
-                                                {!! $body !!}
-                                            @else
-                                                <div class="text-muted text-center py-5">
-                                                    <i class="bi bi-envelope-paper display-6 mb-3"></i>
-                                                    <p>No content defined yet</p>
-                                                </div>
-                                            @endif
-                                        </div>
-
-                                        <div class="alert alert-warning mt-3 d-flex align-items-center">
-                                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                            <div>
-                                                <strong>Note:</strong> Variables (like <code>{name}</code>) will be
-                                                replaced with actual values when the email is sent.
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
-                    <div class="modal-footer bg-light sticky-bottom">
+                    <div class="modal-footer bg-light">
                         <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
                             <i class="bi bi-x-lg me-2"></i>Cancel
                         </button>
@@ -332,7 +286,7 @@
     <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-header bg-light sticky-top">
+                <div class="modal-header bg-light">
                     <h5 class="modal-title d-flex align-items-center">
                         <i class="bi bi-eye me-2 text-primary"></i>
                         Template Preview
@@ -352,12 +306,14 @@
 
                     <label class="form-label fw-medium">Email Body:</label>
                     <div class="py-0 px-2 border rounded bg-white overflow-auto"
-                        style="min-height: 200px; max-height: 400px; white-space: pre-line;">
+                        style="min-height: 200px; max-height: 300px; white-space: pre-line;">
                         <div id="preview-body"></div>
                     </div>
                 </div>
-                <div class="modal-footer sticky-bottom">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg me-2"></i> Close
+                    </button>
                 </div>
             </div>
         </div>
@@ -374,10 +330,9 @@
         function previewTemplate(name, subject, body) {
             document.getElementById('preview-name').textContent = name;
             document.getElementById('preview-subject').textContent = subject;
-            document.getElementById('preview-body').innerHTML = body.replace(/\n/g, '<br>');
+            document.getElementById('preview-body').innerHTML = body;
 
-            const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
-            previewModal.show();
+            new bootstrap.Modal(document.getElementById('previewModal')).show();
         }
 
         // Function to insert variable at cursor position

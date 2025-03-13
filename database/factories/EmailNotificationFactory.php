@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\Airline;
 use App\Models\EmailNotification;
-use App\Models\Route;
 use App\Models\Station;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -14,7 +13,7 @@ class EmailNotificationFactory extends Factory
 
     public function definition(): array
     {
-        $documentTypes = ['loadsheet', 'flightplan', 'notoc', 'gendec', 'fueling', 'delay'];
+        $documentTypes = ['loadsheet', 'loadinginstructions', 'notoc', 'flightplan'];
         $airline = Airline::inRandomOrder()->first();
 
         $emailDomain = $this->generateEmailDomain($airline->name);
@@ -63,11 +62,11 @@ class EmailNotificationFactory extends Factory
             $emailDomain = $this->generateEmailDomain($airline->name);
 
             $emailAddresses = [
-                strtolower($station->code) . '@' . $emailDomain,
-                'ops.' . strtolower($station->code) . '@' . $emailDomain,
+                strtolower($station->code).'@'.$emailDomain,
+                'ops.'.strtolower($station->code).'@'.$emailDomain,
             ];
 
-            $sitaAddresses = [strtoupper($station->code) . 'XX' . $airline->iata_code];
+            $sitaAddresses = [strtoupper($station->code).'XX'.$airline->iata_code];
 
             return [
                 'station_id' => $station->id,
@@ -81,7 +80,8 @@ class EmailNotificationFactory extends Factory
     private function generateEmailDomain($airlineName)
     {
         $domain = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $airlineName));
-        return $domain . '.test';
+
+        return $domain.'.test';
     }
 
     private function generateEmailAddresses($domain)
@@ -92,7 +92,7 @@ class EmailNotificationFactory extends Factory
 
         for ($i = 0; $i < $emailCount; $i++) {
             $department = fake()->randomElement($departments);
-            $emails[] = strtolower($department) . '@' . $domain;
+            $emails[] = strtolower($department).'@'.$domain;
         }
 
         return $emails;
@@ -103,7 +103,7 @@ class EmailNotificationFactory extends Factory
         $sitaAddresses = [];
 
         for ($i = 0; $i < fake()->numberBetween(1, 2); $i++) {
-            $sitaAddresses[] = strtoupper($airline->icao_code) . 'XX' . $airline->iata_code;
+            $sitaAddresses[] = strtoupper($airline->icao_code).'XX'.$airline->iata_code;
         }
 
         return $sitaAddresses;

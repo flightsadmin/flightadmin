@@ -15,23 +15,37 @@ class EmailNotificationManager extends Component
     use WithPagination;
 
     protected $paginationTheme = 'bootstrap';
+
     public Airline $airline;
+
     public $search = '';
+
     public $documentTypeFilter = '';
+
     public $stationFilter = '';
+
     public $showModal = false;
+
     public $editMode = false;
+
     public $notification_id = null;
 
     public $document_type = '';
+
     public $station_id = null;
+
     public $route_id = null;
+
     public $email_addresses = [];
+
     public $sita_addresses = [];
+
     public $notes = '';
+
     public $is_active = true;
 
     public $newEmail = '';
+
     public $newSita = '';
 
     public $documentTypes = [
@@ -111,6 +125,7 @@ class EmailNotificationManager extends Component
         // Validate that at least one recipient is provided
         if (empty($this->email_addresses) && empty($this->sita_addresses)) {
             $this->addError('email_addresses', 'At least one email or SITA address is required');
+
             return;
         }
 
@@ -155,7 +170,7 @@ class EmailNotificationManager extends Component
     public function toggleActive($id)
     {
         $notification = EmailNotification::findOrFail($id);
-        $notification->update(['is_active' => !$notification->is_active]);
+        $notification->update(['is_active' => ! $notification->is_active]);
 
         $status = $notification->is_active ? 'activated' : 'deactivated';
         $this->dispatch('notify', ['message' => "Notification {$status} successfully", 'type' => 'success']);
@@ -174,10 +189,11 @@ class EmailNotificationManager extends Component
 
         if ($validator->fails()) {
             $this->addError('newEmail', 'Please enter a valid email address');
+
             return;
         }
 
-        if (!in_array($this->newEmail, $this->email_addresses)) {
+        if (! in_array($this->newEmail, $this->email_addresses)) {
             $this->email_addresses[] = $this->newEmail;
         }
 
@@ -205,10 +221,11 @@ class EmailNotificationManager extends Component
 
         if ($validator->fails()) {
             $this->addError('newSita', 'Please enter a valid 7-character SITA address');
+
             return;
         }
 
-        if (!in_array($this->newSita, $this->sita_addresses)) {
+        if (! in_array($this->newSita, $this->sita_addresses)) {
             $this->sita_addresses[] = strtoupper($this->newSita);
         }
 
@@ -262,10 +279,10 @@ class EmailNotificationManager extends Component
                     $q->whereJsonContains('email_addresses', $this->search)
                         ->orWhereJsonContains('sita_addresses', $this->search)
                         ->orWhereHas('station', function ($sq) {
-                            $sq->where('name', 'like', '%' . $this->search . '%')
-                                ->orWhere('code', 'like', '%' . $this->search . '%');
+                            $sq->where('name', 'like', '%'.$this->search.'%')
+                                ->orWhere('code', 'like', '%'.$this->search.'%');
                         })
-                        ->orWhere('document_type', 'like', '%' . $this->search . '%');
+                        ->orWhere('document_type', 'like', '%'.$this->search.'%');
                 });
             })
             ->when($this->documentTypeFilter, function ($query) {

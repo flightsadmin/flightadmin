@@ -132,7 +132,7 @@ class AircraftSeeder extends Seeder
                         'cabin_zone_id' => $zone->id,
                         'row' => $actualRow,
                         'column' => $column,
-                        'designation' => $actualRow . $column,
+                        'designation' => $actualRow.$column,
                         'type' => 'economy',
                         'is_exit' => in_array($actualRow, [5, 13]),
                         'created_at' => now(),
@@ -152,7 +152,7 @@ class AircraftSeeder extends Seeder
                     ->get();
 
                 foreach ($exitRowSeats as $seat) {
-                    if (!$flight->seats()->where('seat_id', $seat->id)->exists()) {
+                    if (! $flight->seats()->where('seat_id', $seat->id)->exists()) {
                         $flight->seats()->attach($seat->id, [
                             'is_blocked' => true,
                             'blocked_reason' => 'Exit Row',
@@ -177,7 +177,7 @@ class AircraftSeeder extends Seeder
                     $seatId = $availableSeats[$randomIndex];
                     unset($availableSeats[$randomIndex]);
 
-                    if (!$flight->seats()->where('seat_id', $seatId)->exists()) {
+                    if (! $flight->seats()->where('seat_id', $seatId)->exists()) {
                         $flight->seats()->attach($seatId, [
                             'is_blocked' => false,
                             'created_at' => now(),

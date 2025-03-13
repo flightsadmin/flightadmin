@@ -4,9 +4,9 @@ namespace App\Livewire\Airline;
 
 use App\Models\Airline;
 use App\Models\Station;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\On;
 
 class StationManager extends Component
 {
@@ -15,15 +15,22 @@ class StationManager extends Component
     protected $paginationTheme = 'bootstrap';
 
     public Airline $airline;
+
     public $search = '';
+
     public $showModal = false;
+
     public $showAssignModal = false;
 
     // Form fields for station assignment
     public $station_id;
+
     public $is_hub = false;
+
     public $contact_email;
+
     public $contact_phone;
+
     public $notes;
 
     protected $rules = [
@@ -106,10 +113,10 @@ class StationManager extends Component
     {
         $station = $this->airline->stations()->where('station_id', $stationId)->first();
         $this->airline->stations()->updateExistingPivot($stationId, [
-            'is_hub' => !$station->pivot->is_hub
+            'is_hub' => ! $station->pivot->is_hub,
         ]);
 
-        $status = !$station->pivot->is_hub ? 'set as hub' : 'removed as hub';
+        $status = ! $station->pivot->is_hub ? 'set as hub' : 'removed as hub';
         $this->dispatch('alert', icon: 'success', message: "Station {$status} successfully");
     }
 
@@ -132,9 +139,9 @@ class StationManager extends Component
         $assignedStations = $this->airline->stations()
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('code', 'like', '%' . $this->search . '%')
-                        ->orWhere('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('country', 'like', '%' . $this->search . '%');
+                    $q->where('code', 'like', '%'.$this->search.'%')
+                        ->orWhere('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('country', 'like', '%'.$this->search.'%');
                 });
             })
             ->orderBy('is_hub', 'desc')

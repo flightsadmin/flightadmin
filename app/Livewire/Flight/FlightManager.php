@@ -2,12 +2,12 @@
 
 namespace App\Livewire\Flight;
 
-use App\Models\Route;
-use App\Models\Flight;
+use App\Models\Aircraft;
 use App\Models\Airline;
+use App\Models\Flight;
+use App\Models\Route;
 use App\Models\Station;
 use Livewire\Component;
-use App\Models\Aircraft;
 use Livewire\WithPagination;
 
 class FlightManager extends Component
@@ -97,7 +97,7 @@ class FlightManager extends Component
         $validated = $this->validate();
 
         // If route is selected, get departure and arrival stations from route
-        if (!empty($validated['route_id'])) {
+        if (! empty($validated['route_id'])) {
             $route = Route::findOrFail($validated['route_id']);
             $validated['departure_station_id'] = $route->departure_station_id;
             $validated['arrival_station_id'] = $route->arrival_station_id;
@@ -167,12 +167,12 @@ class FlightManager extends Component
         $flights = Flight::query()
             ->with(['aircraft.airline', 'aircraft.type', 'schedule'])
             ->when($this->search, function ($query) {
-                $query->whereAny(['flight_number', 'departure_airport', 'arrival_airport'], 'like', '%' . $this->search . '%');
+                $query->whereAny(['flight_number', 'departure_airport', 'arrival_airport'], 'like', '%'.$this->search.'%');
             })
-            ->when($this->status, fn($query) => $query->where('status', $this->status))
-            ->when($this->airline_id, fn($query) => $query->where('airline_id', $this->airline_id))
-            ->when($this->date, fn($query) => $query->whereDate('scheduled_departure_time', $this->date))
-            ->when($this->schedule_id, fn($query) => $query->where('schedule_id', $this->schedule_id))
+            ->when($this->status, fn ($query) => $query->where('status', $this->status))
+            ->when($this->airline_id, fn ($query) => $query->where('airline_id', $this->airline_id))
+            ->when($this->date, fn ($query) => $query->whereDate('scheduled_departure_time', $this->date))
+            ->when($this->schedule_id, fn ($query) => $query->where('schedule_id', $this->schedule_id))
             ->orderBy('scheduled_departure_time')
             ->paginate(10);
 
@@ -188,7 +188,7 @@ class FlightManager extends Component
 
     public function onRouteChange($routeId)
     {
-        if (!empty($routeId)) {
+        if (! empty($routeId)) {
             $route = Route::find($routeId);
             if ($route) {
                 $this->departure_station_id = $route->departure_station_id;

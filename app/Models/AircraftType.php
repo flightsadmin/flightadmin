@@ -60,7 +60,7 @@ class AircraftType extends Model
     {
         return $this->holds
             ->where('is_active', true)
-            ->flatMap(fn($hold) => $hold->getPositions())
+            ->flatMap(fn ($hold) => $hold->getPositions())
             ->values();
     }
 
@@ -124,7 +124,7 @@ class AircraftType extends Model
     {
         $envelope = $this->envelopes()->where('name', 'FUEL')->first();
 
-        if (!$envelope || !$envelope->points) {
+        if (! $envelope || ! $envelope->points) {
             return 0;
         }
 
@@ -212,7 +212,7 @@ class AircraftType extends Model
 
         // Get cabin crew distribution for the given count
         $distribution = $settings['distributions'][$cabinCrewCount] ?? null;
-        if (!$distribution) {
+        if (! $distribution) {
             return [
                 'index' => $deckCrewIndex,
                 'weight' => $deckCrewWeight,

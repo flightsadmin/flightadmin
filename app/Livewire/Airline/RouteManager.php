@@ -4,7 +4,6 @@ namespace App\Livewire\Airline;
 
 use App\Models\Airline;
 use App\Models\Route;
-use App\Models\Station;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -15,18 +14,28 @@ class RouteManager extends Component
     protected $paginationTheme = 'bootstrap';
 
     public Airline $airline;
+
     public $search = '';
+
     public $departureFilter = '';
+
     public $arrivalFilter = '';
+
     public $showModal = false;
+
     public $editMode = false;
 
     // Form fields
     public $routeId;
+
     public $departure_station_id;
+
     public $arrival_station_id;
+
     public $flight_time;
+
     public $distance;
+
     public $is_active = true;
 
     protected $rules = [
@@ -97,6 +106,7 @@ class RouteManager extends Component
 
         if ($exists) {
             $this->addError('departure_station_id', 'This route already exists for this airline.');
+
             return;
         }
 
@@ -125,7 +135,7 @@ class RouteManager extends Component
     public function toggleActive($id)
     {
         $route = Route::findOrFail($id);
-        $route->update(['is_active' => !$route->is_active]);
+        $route->update(['is_active' => ! $route->is_active]);
 
         $status = $route->is_active ? 'activated' : 'deactivated';
         $this->dispatch('alert', icon: 'success', message: "Route {$status} successfully");
@@ -146,7 +156,7 @@ class RouteManager extends Component
             'flight_time',
             'distance',
             'is_active',
-            'editMode'
+            'editMode',
         ]);
         $this->resetValidation();
     }
@@ -158,12 +168,12 @@ class RouteManager extends Component
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->whereHas('departureStation', function ($sq) {
-                        $sq->where('code', 'like', '%' . $this->search . '%')
-                            ->orWhere('name', 'like', '%' . $this->search . '%');
+                        $sq->where('code', 'like', '%'.$this->search.'%')
+                            ->orWhere('name', 'like', '%'.$this->search.'%');
                     })
                         ->orWhereHas('arrivalStation', function ($sq) {
-                            $sq->where('code', 'like', '%' . $this->search . '%')
-                                ->orWhere('name', 'like', '%' . $this->search . '%');
+                            $sq->where('code', 'like', '%'.$this->search.'%')
+                                ->orWhere('name', 'like', '%'.$this->search.'%');
                         });
                 });
             })

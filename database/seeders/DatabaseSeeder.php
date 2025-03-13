@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
                     $route = $routes->random();
 
                     Flight::factory()->forAircraft($aircraft)->forRoute($route)->create([
-                        'flight_number' => $airline->iata_code . rand(100, 999)
+                        'flight_number' => $airline->iata_code.rand(100, 999),
                     ])->each(function ($flight) use ($airline) {
                         $flight->crew()->attach(Crew::factory()->captain()->create()->id);
                         $flight->crew()->attach(Crew::factory()->firstOfficer()->create()->id);
