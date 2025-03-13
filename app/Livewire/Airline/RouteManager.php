@@ -28,7 +28,6 @@ class RouteManager extends Component
     public $flight_time;
     public $distance;
     public $is_active = true;
-    public $notes;
 
     protected $rules = [
         'departure_station_id' => 'required|exists:stations,id',
@@ -36,7 +35,6 @@ class RouteManager extends Component
         'flight_time' => 'nullable|integer|min:1',
         'distance' => 'nullable|integer|min:1',
         'is_active' => 'boolean',
-        'notes' => 'nullable|string',
     ];
 
     public function mount(Airline $airline)
@@ -78,7 +76,6 @@ class RouteManager extends Component
         $this->flight_time = $route->flight_time;
         $this->distance = $route->distance;
         $this->is_active = $route->is_active;
-        $this->notes = $route->notes;
 
         $this->showModal = true;
     }
@@ -110,7 +107,6 @@ class RouteManager extends Component
             'flight_time' => $this->flight_time,
             'distance' => $this->distance,
             'is_active' => $this->is_active,
-            'notes' => $this->notes,
         ];
 
         if ($this->editMode) {
@@ -150,7 +146,6 @@ class RouteManager extends Component
             'flight_time',
             'distance',
             'is_active',
-            'notes',
             'editMode'
         ]);
         $this->resetValidation();
@@ -158,7 +153,6 @@ class RouteManager extends Component
 
     public function render()
     {
-        // Get all routes for this airline
         $routes = $this->airline->routes()
             ->with(['departureStation', 'arrivalStation'])
             ->when($this->search, function ($query) {

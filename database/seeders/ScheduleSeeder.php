@@ -34,8 +34,10 @@ class ScheduleSeeder extends Seeder
                 // Get a random route
                 $route = $routes->random();
 
-                // Create a schedule using this route
-                Schedule::factory()->forRoute($route)->create();
+                // Create a schedule using this route with airline IATA code in flight number
+                Schedule::factory()->forRoute($route)->create([
+                    'flight_number' => $airline->iata_code . rand(100, 999)
+                ]);
             }
         }
     }

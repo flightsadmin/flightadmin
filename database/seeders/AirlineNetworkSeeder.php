@@ -97,17 +97,12 @@ class AirlineNetworkSeeder extends Seeder
                 // Generate contact information
                 $contactEmail = null;
                 $contactPhone = null;
-                $notes = null;
 
                 if (fake()->boolean(70)) { // 70% chance to have contact info
                     // Use a clearly fake email domain
                     $emailDomain = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $airline->name)) . '.example.org';
                     $contactEmail = 'test-' . strtolower($station->code) . '@' . $emailDomain;
                     $contactPhone = '+' . fake()->numberBetween(1, 999) . ' ' . fake()->numberBetween(100, 999) . ' ' . fake()->numberBetween(1000, 9999);
-
-                    if (fake()->boolean(30)) { // 30% chance to have notes
-                        $notes = fake()->sentence();
-                    }
                 }
 
                 // Attach station with pivot data
@@ -115,7 +110,6 @@ class AirlineNetworkSeeder extends Seeder
                     'is_hub' => $isHub,
                     'contact_email' => $contactEmail,
                     'contact_phone' => $contactPhone,
-                    'notes' => $notes,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -208,7 +202,6 @@ class AirlineNetworkSeeder extends Seeder
                             }
                         }
                     } catch (\Exception $e) {
-                        // Log the error but continue with other routes
                         $this->command->warn("Failed to create route: {$pair['departure']->code} to {$pair['arrival']->code} for {$airline->name}");
                         $this->command->warn($e->getMessage());
                     }
@@ -219,9 +212,6 @@ class AirlineNetworkSeeder extends Seeder
         return $routes;
     }
 
-    /**
-     * Create email notifications for airlines, stations, and routes.
-     */
     private function createEmailNotifications(array $airlines, array $routes): void
     {
         $documentTypes = ['loadsheet', 'flightplan', 'notoc', 'gendec', 'fueling', 'delay'];

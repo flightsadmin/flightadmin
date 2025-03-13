@@ -100,9 +100,6 @@ class EmailNotificationFactory extends Factory
         });
     }
 
-    /**
-     * Configure the factory to create a route-specific notification.
-     */
     public function forRoute(Route $route)
     {
         return $this->state(function (array $attributes) use ($route) {

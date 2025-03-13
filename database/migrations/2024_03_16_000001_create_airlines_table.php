@@ -41,7 +41,6 @@ return new class extends Migration {
             $table->boolean('is_hub')->default(false);
             $table->string('contact_email')->nullable();
             $table->string('contact_phone')->nullable();
-            $table->text('notes')->nullable();
             $table->timestamps();
 
             $table->unique(['airline_id', 'station_id']);
@@ -55,7 +54,6 @@ return new class extends Migration {
             $table->integer('flight_time')->nullable();
             $table->integer('distance')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->text('notes')->nullable();
             $table->timestamps();
 
             $table->unique(['airline_id', 'departure_station_id', 'arrival_station_id']);

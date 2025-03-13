@@ -6,6 +6,7 @@ use App\Models\Airline;
 use App\Models\AircraftType;
 use App\Models\Route;
 use App\Models\Schedule;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,103 +23,44 @@ class ScheduleFactory extends Factory
      */
     public function definition(): array
     {
-        // Try to get a valid route from the database
-        $route = $this->getRandomRoute();
+        $departureTime = Carbon::createFromTime(rand(0, 23), rand(0, 59), 0);
+        $arrivalTime = (clone $departureTime)->addHours(rand(1, 8))->addMinutes(rand(0, 59));
 
-        // If no routes exist, we need to create one
-        if (!$route) {
-            $airline = Airline::inRandomOrder()->first();
-            if (!$airline) {
-                $airline = Airline::factory()->create();
-            }
+        $startDate = Carbon::now()->addDays(rand(1, 30));
+        $endDate = (clone $startDate)->addMonths(rand(1, 6));
 
-            // Create a route if none exists
-            $route = Route::factory()->create([
-                'airline_id' => $airline->id
-            ]);
-        }
+        // Get a random airline if not specified through relationships
+        $airline = Airline::inRandomOrder()->first();
 
-        // Generate a random flight number
-        $flightNumber = $route->airline->iata_code . fake()->numberBetween(100, 999);
-
-        // Generate random days of week (1-7, where 1 is Monday)
-        $daysOfWeek = [];
-        for ($i = 1; $i <= 7; $i++) {
-            if (fake()->boolean(70)) { // 70% chance to include each day
-                $daysOfWeek[] = $i;
-            }
-        }
-
-        // Ensure at least one day is selected
-        if (empty($daysOfWeek)) {
-            $daysOfWeek[] = fake()->numberBetween(1, 7);
-        }
-
-        // Generate start and end dates
-        $startDate = fake()->dateTimeBetween('now', '+1 month');
-        $endDate = fake()->dateTimeBetween('+1 months', '+3 months');
-
-        // Generate departure and arrival times
-        $departureTime = fake()->dateTimeBetween('08:00', '20:00');
-
-        // Calculate arrival time based on flight time from route
-        $flightTimeMinutes = $route->flight_time;
-        $arrivalTime = (clone $departureTime)->modify("+{$flightTimeMinutes} minutes");
-
-        // Get a random aircraft type for this airline
-        $aircraftType = AircraftType::where('airline_id', $route->airline_id)->inRandomOrder()->first();
-
-        // If no aircraft type exists, create one
-        if (!$aircraftType) {
-            $aircraftType = AircraftType::factory()->create([
-                'airline_id' => $route->airline_id
-            ]);
-        }
+        // Generate days of week (1-7 days)
+        $daysCount = rand(1, 7);
+        $days = array_slice(range(0, 6), 0, $daysCount);
+        shuffle($days);
 
         return [
-            'airline_id' => $route->airline_id,
-            'route_id' => $route->id,
-            'flight_number' => $flightNumber,
-            'days_of_week' => $daysOfWeek,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
+            'airline_id' => $airline->id,
+            'aircraft_type_id' => AircraftType::where('airline_id', $airline->id)->inRandomOrder()->first()?->id,
+            'route_id' => null,
+            'flight_number' => $airline->iata_code . rand(100, 999),
             'scheduled_departure_time' => $departureTime,
             'scheduled_arrival_time' => $arrivalTime,
-            'aircraft_type_id' => $aircraftType->id,
-            'is_active' => true,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'days_of_week' => $days,
+            'is_active' => $this->faker->boolean(80),
         ];
     }
 
     /**
      * Configure the factory to create a schedule for a specific airline.
      */
-    public function forAirline(Airline $airline)
+    public function forAirline(Airline $airline): self
     {
         return $this->state(function (array $attributes) use ($airline) {
-            // Try to get a route for this specific airline
-            $route = $this->getRandomRouteForAirline($airline->id);
-
-            // If no routes exist for this airline, create one
-            if (!$route) {
-                $route = Route::factory()->create([
-                    'airline_id' => $airline->id
-                ]);
-            }
-
-            // Get a random aircraft type for this airline
-            $aircraftType = AircraftType::where('airline_id', $airline->id)->inRandomOrder()->first();
-
-            // If no aircraft type exists, create one
-            if (!$aircraftType) {
-                $aircraftType = AircraftType::factory()->create([
-                    'airline_id' => $airline->id
-                ]);
-            }
-
             return [
                 'airline_id' => $airline->id,
-                'route_id' => $route->id,
-                'aircraft_type_id' => $aircraftType->id,
+                'aircraft_type_id' => AircraftType::where('airline_id', $airline->id)->inRandomOrder()->first()?->id,
+                'flight_number' => $airline->iata_code . rand(100, 999),
             ];
         });
     }
@@ -126,54 +68,32 @@ class ScheduleFactory extends Factory
     /**
      * Configure the factory to create a schedule for a specific route.
      */
-    public function forRoute(Route $route)
+    public function forRoute(Route $route): self
     {
         return $this->state(function (array $attributes) use ($route) {
-            // Get a random aircraft type for this airline
-            $aircraftType = AircraftType::where('airline_id', $route->airline_id)->inRandomOrder()->first();
-
-            // If no aircraft type exists, create one
-            if (!$aircraftType) {
-                $aircraftType = AircraftType::factory()->create([
-                    'airline_id' => $route->airline_id
-                ]);
-            }
-
-            // Generate departure and arrival times
-            $departureTime = fake()->dateTimeBetween('08:00', '20:00');
-
-            // Calculate arrival time based on flight time from route
-            $flightTimeMinutes = $route->flight_time;
-            $arrivalTime = (clone $departureTime)->modify("+{$flightTimeMinutes} minutes");
-
             return [
                 'airline_id' => $route->airline_id,
                 'route_id' => $route->id,
-                'scheduled_departure_time' => $departureTime,
-                'scheduled_arrival_time' => $arrivalTime,
-                'aircraft_type_id' => $aircraftType->id,
+                'flight_number' => $route->airline->iata_code . rand(100, 999),
             ];
         });
     }
 
-    /**
-     * Get a random route from the database.
-     */
-    private function getRandomRoute()
+    public function active(): self
     {
-        return Route::with(['departureStation', 'arrivalStation'])
-            ->inRandomOrder()
-            ->first();
+        return $this->state(function (array $attributes) {
+            return [
+                'is_active' => true,
+            ];
+        });
     }
 
-    /**
-     * Get a random route for a specific airline.
-     */
-    private function getRandomRouteForAirline($airlineId)
+    public function inactive(): self
     {
-        return Route::with(['departureStation', 'arrivalStation'])
-            ->where('airline_id', $airlineId)
-            ->inRandomOrder()
-            ->first();
+        return $this->state(function (array $attributes) {
+            return [
+                'is_active' => false,
+            ];
+        });
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Flight;
 use App\Models\Route;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -15,135 +16,101 @@ class FlightFactory extends Factory
 {
     protected $model = Flight::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
-        // Try to get a valid route from the database
-        $route = $this->getRandomRoute();
+        $departureTime = Carbon::now()->addDays(rand(1, 30))->setTime(rand(0, 23), rand(0, 59), 0);
+        $arrivalTime = (clone $departureTime)->addHours(rand(1, 8))->addMinutes(rand(0, 59));
 
-        // If no routes exist, we need to create one
-        if (!$route) {
-            $airline = Airline::inRandomOrder()->first();
-            if (!$airline) {
-                $airline = Airline::factory()->create();
-            }
-
-            // Create a route if none exists
-            $route = Route::factory()->create([
-                'airline_id' => $airline->id
-            ]);
-        }
-
-        // Generate a random flight number
-        $flightNumber = $route->airline->iata_code . fake()->numberBetween(100, 999);
-
-        // Generate scheduled times
-        $scheduledDeparture = fake()->dateTimeBetween('+1 day', '+1 month');
-
-        // Calculate scheduled arrival based on flight time from route
-        $flightTimeMinutes = $route->flight_time;
-        $scheduledArrival = (clone $scheduledDeparture)->modify("+{$flightTimeMinutes} minutes");
+        // Get a random airline if not specified through relationships
+        $airline = Airline::inRandomOrder()->first();
 
         return [
-            'airline_id' => $route->airline_id,
-            'aircraft_id' => null, // Will be set by the caller
-            'route_id' => $route->id,
-            'flight_number' => $flightNumber,
-            'scheduled_departure_time' => $scheduledDeparture,
-            'scheduled_arrival_time' => $scheduledArrival,
-            'status' => fake()->randomElement(['scheduled', 'boarding', 'departed', 'arrived', 'delayed', 'cancelled']),
+            'airline_id' => $airline->id,
+            'aircraft_id' => null,
+            'route_id' => null,
+            'flight_number' => $airline->iata_code . rand(100, 999),
+            'scheduled_departure_time' => $departureTime,
+            'scheduled_arrival_time' => $arrivalTime,
+            'actual_departure_time' => null,
+            'actual_arrival_time' => null,
+            'status' => $this->faker->randomElement(['scheduled', 'boarding', 'departed', 'arrived', 'cancelled']),
         ];
     }
 
-    /**
-     * Configure the factory to create a flight for a specific airline.
-     */
-    public function forAirline(Airline $airline)
+    public function forAirline(Airline $airline): self
     {
         return $this->state(function (array $attributes) use ($airline) {
-            // Try to get a route for this specific airline
-            $route = $this->getRandomRouteForAirline($airline->id);
-
-            // If no routes exist for this airline, create one
-            if (!$route) {
-                $route = Route::factory()->create([
-                    'airline_id' => $airline->id
-                ]);
-            }
-
-            // Generate scheduled times
-            $scheduledDeparture = fake()->dateTimeBetween('+1 day', '+1 month');
-
-            // Calculate scheduled arrival based on flight time from route
-            $flightTimeMinutes = $route->flight_time;
-            $scheduledArrival = (clone $scheduledDeparture)->modify("+{$flightTimeMinutes} minutes");
-
             return [
                 'airline_id' => $airline->id,
-                'route_id' => $route->id,
-                'scheduled_departure_time' => $scheduledDeparture,
-                'scheduled_arrival_time' => $scheduledArrival,
+                'flight_number' => $airline->iata_code . rand(100, 999),
             ];
         });
     }
 
-    /**
-     * Configure the factory to create a flight for a specific route.
-     */
-    public function forRoute(Route $route)
+    public function forRoute(Route $route): self
     {
         return $this->state(function (array $attributes) use ($route) {
-            // Generate scheduled times
-            $scheduledDeparture = fake()->dateTimeBetween('+1 day', '+1 month');
-
-            // Calculate scheduled arrival based on flight time from route
-            $flightTimeMinutes = $route->flight_time;
-            $scheduledArrival = (clone $scheduledDeparture)->modify("+{$flightTimeMinutes} minutes");
-
             return [
                 'airline_id' => $route->airline_id,
                 'route_id' => $route->id,
-                'scheduled_departure_time' => $scheduledDeparture,
-                'scheduled_arrival_time' => $scheduledArrival,
+                'flight_number' => $route->airline->iata_code . rand(100, 999),
             ];
         });
     }
 
-    /**
-     * Configure the factory to create a flight for a specific aircraft.
-     */
-    public function forAircraft(Aircraft $aircraft)
+    public function forAircraft(Aircraft $aircraft): self
     {
         return $this->state(function (array $attributes) use ($aircraft) {
             return [
-                'aircraft_id' => $aircraft->id,
                 'airline_id' => $aircraft->airline_id,
+                'aircraft_id' => $aircraft->id,
+                'flight_number' => $aircraft->airline->iata_code . rand(100, 999),
             ];
         });
     }
 
-    /**
-     * Get a random route from the database.
-     */
-    private function getRandomRoute()
+    public function scheduled(): self
     {
-        return Route::with(['departureStation', 'arrivalStation'])
-            ->inRandomOrder()
-            ->first();
+        return $this->state(function (array $attributes) {
+            return [
+                'status' => 'scheduled',
+            ];
+        });
     }
 
-    /**
-     * Get a random route for a specific airline.
-     */
-    private function getRandomRouteForAirline($airlineId)
+    public function departed(): self
     {
-        return Route::with(['departureStation', 'arrivalStation'])
-            ->where('airline_id', $airlineId)
-            ->inRandomOrder()
-            ->first();
+        return $this->state(function (array $attributes) {
+            $departureTime = Carbon::now()->subHours(rand(1, 5));
+            return [
+                'status' => 'departed',
+                'scheduled_departure_time' => $departureTime,
+                'actual_departure_time' => (clone $departureTime)->addMinutes(rand(-30, 60)),
+            ];
+        });
+    }
+
+    public function arrived(): self
+    {
+        return $this->state(function (array $attributes) {
+            $departureTime = Carbon::now()->subHours(rand(6, 12));
+            $arrivalTime = (clone $departureTime)->addHours(rand(1, 8));
+            return [
+                'status' => 'arrived',
+                'scheduled_departure_time' => $departureTime,
+                'scheduled_arrival_time' => $arrivalTime,
+                'actual_departure_time' => (clone $departureTime)->addMinutes(rand(-30, 60)),
+                'actual_arrival_time' => (clone $arrivalTime)->addMinutes(rand(-30, 60)),
+            ];
+        });
+    }
+
+    public function cancelled(): self
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'status' => 'cancelled',
+            ];
+        });
     }
 }

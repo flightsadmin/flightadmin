@@ -6,18 +6,10 @@ use App\Models\Aircraft;
 use App\Models\Airline;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Aircraft>
- */
 class AircraftFactory extends Factory
 {
     protected $model = Aircraft::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         $registrationNumbers = [
