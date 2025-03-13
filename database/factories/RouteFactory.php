@@ -14,22 +14,14 @@ class RouteFactory extends Factory
 {
     protected $model = Route::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
-        // Get random departure and arrival stations
         $departureStation = Station::inRandomOrder()->first();
 
-        // Get a different station for arrival
         $arrivalStation = Station::where('id', '!=', $departureStation->id)
             ->inRandomOrder()
             ->first();
 
-        // Calculate approximate flight time and distance
         $distance = $this->calculateDistance($departureStation, $arrivalStation);
         $flightTime = $this->calculateFlightTime($distance);
 
@@ -40,13 +32,9 @@ class RouteFactory extends Factory
             'flight_time' => $flightTime,
             'distance' => $distance,
             'is_active' => true,
-            'notes' => fake()->optional(0.3)->sentence(),
         ];
     }
 
-    /**
-     * Configure the factory to create a route for a specific airline.
-     */
     public function forAirline(Airline $airline)
     {
         return $this->state(function (array $attributes) use ($airline) {
@@ -56,13 +44,9 @@ class RouteFactory extends Factory
         });
     }
 
-    /**
-     * Configure the factory to create a route between specific stations.
-     */
     public function betweenStations(Station $departure, Station $arrival)
     {
         return $this->state(function (array $attributes) use ($departure, $arrival) {
-            // Calculate distance and flight time
             $distance = $this->calculateDistance($departure, $arrival);
             $flightTime = $this->calculateFlightTime($distance);
 
@@ -75,13 +59,8 @@ class RouteFactory extends Factory
         });
     }
 
-    /**
-     * Calculate approximate distance between two stations in kilometers.
-     * This is a simplified calculation based on airport codes and regions.
-     */
     private function calculateDistance($departureStation, $arrivalStation)
     {
-        // Define regions and their approximate coordinates
         $regions = [
             'East Africa' => ['countries' => ['Kenya', 'Uganda', 'Tanzania', 'Rwanda', 'Burundi', 'Ethiopia']],
             'Southern Africa' => ['countries' => ['South Africa', 'Zimbabwe', 'Zambia', 'Mozambique']],
@@ -92,7 +71,6 @@ class RouteFactory extends Factory
             'North America' => ['countries' => ['United States']],
         ];
 
-        // Predefined distances between regions (in km)
         $regionDistances = [
             'East Africa-East Africa' => [500, 1500],
             'East Africa-Southern Africa' => [2500, 3500],
@@ -172,13 +150,8 @@ class RouteFactory extends Factory
         return 'Other';
     }
 
-    /**
-     * Calculate flight time based on distance.
-     * Returns flight time in minutes.
-     */
     private function calculateFlightTime($distance)
     {
-        // Average cruising speed of ~800 km/h plus time for takeoff, landing, and taxiing
         $cruisingTimeMinutes = ($distance / 800) * 60;
         $taxiAndProceduresMinutes = 40; // 20 minutes for takeoff, 20 for landing
 

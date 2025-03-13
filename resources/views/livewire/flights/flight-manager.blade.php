@@ -43,6 +43,7 @@
                 <table class="table table-hover table-sm">
                     <thead>
                         <tr>
+                            <th>Airline</th>
                             <th>Flight</th>
                             <th>Route</th>
                             <th>Aircraft</th>
@@ -56,6 +57,7 @@
                     <tbody>
                         @forelse ($flights as $flight)
                             <tr>
+                                <td>{{ $flight->airline->name }}</td>
                                 <td>
                                     <a wire:navigate href="{{ route('flights.show', $flight) }}"
                                         class="text-decoration-none">
@@ -157,22 +159,6 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label">Aircraft</label>
-                                    <select class="form-select" wire:model="aircraft_id">
-                                        <option value="">Select Aircraft</option>
-                                        @foreach ($aircraft->where('airline_id', $airline_id) as $ac)
-                                            <option value="{{ $ac->id }}">
-                                                {{ $ac->airline->name }} - {{ $ac->registration_number }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('aircraft_id')
-                                        <div class="text-danger small">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
                                     <label class="form-label">Airline</label>
                                     <select class="form-select" wire:model.live="airline_id">
                                         <option value="">Select Airline</option>
@@ -183,6 +169,22 @@
                                         @endforeach
                                     </select>
                                     @error('airline_id')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Aircraft</label>
+                                    <select class="form-select" wire:model="aircraft_id">
+                                        <option value="">Select Aircraft</option>
+                                        @foreach ($aircraft->where('airline_id', $airline_id) as $ac)
+                                            <option value="{{ $ac->id }}">
+                                                {{ $ac->registration_number }} - ({{ $ac->airline->name }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('aircraft_id')
                                         <div class="text-danger small">{{ $message }}</div>
                                     @enderror
                                 </div>

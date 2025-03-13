@@ -56,7 +56,7 @@ class UldSeeder extends Seeder
                 'code' => 'PLA',
                 'name' => 'LD11 Pallet',
                 'tare_weight' => 90,
-                'max_gross_weight' => 10900,
+                'max_gross_weight' => 2300,
                 'positions_required' => 2,
                 'color' => '#fd7e14',
                 'icon' => 'box-seam',
@@ -92,12 +92,10 @@ class UldSeeder extends Seeder
 
             foreach ($uldTypes as $key => $type) {
                 for ($i = 1; $i <= 5; $i++) {
-                    $containerNumber = $type['code'].str_pad($i, 5, '0', STR_PAD_LEFT).$airline->iata_code;
+                    $containerNumber = $type['code'] . str_pad($i, 5, '0', STR_PAD_LEFT) . $airline->iata_code;
 
                     $airline->containers()->updateOrCreate(
-                        [
-                            'container_number' => $containerNumber,
-                        ],
+                        ['container_number' => $containerNumber],
                         [
                             'tare_weight' => $type['tare_weight'],
                             'max_weight' => $type['max_gross_weight'],
