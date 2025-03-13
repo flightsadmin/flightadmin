@@ -372,11 +372,9 @@ class LoadsheetManager extends Component
 
     protected function generateLoadsheetPdf($loadsheet)
     {
-        // Generate PDF using Laravel DomPDF
-        $pdf = Pdf::loadView('pdfs.loadsheet', [
+        $pdf = Pdf::loadView('emails.loadsheet', [
             'flight' => $this->flight,
             'loadsheet' => $loadsheet,
-            'distribution' => $loadsheet->distribution,
         ]);
 
         return $pdf->output();

@@ -51,6 +51,10 @@ class GeneralNotification extends Notification
                     'as' => $attachment['name'],
                     'mime' => 'application/pdf',
                 ]);
+            } elseif (isset($attachment['content']) && isset($attachment['name'])) {
+                $mail->attachData($attachment['content'], $attachment['name'], [
+                    'mime' => $attachment['type'] === 'pdf' ? 'application/pdf' : 'application/octet-stream',
+                ]);
             }
         }
 
