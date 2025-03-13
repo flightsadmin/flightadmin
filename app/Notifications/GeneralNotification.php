@@ -38,6 +38,7 @@ class GeneralNotification extends Notification
             throw new \Exception("Email template not found: {$this->templateName}");
         }
 
+        $this->variables = $template->variables;
         $subject = $this->replaceVariables($template->subject);
         $body = $this->replaceVariables($template->body);
 

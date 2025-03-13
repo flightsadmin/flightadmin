@@ -308,8 +308,6 @@ class LoadsheetManager extends Component
                 'departure' => $this->flight->departure_airport,
                 'arrival' => $this->flight->arrival_airport,
                 'date' => $this->flight->scheduled_departure_time->format('d M Y'),
-                'flight' => $this->flight,
-                'loadsheet' => $this->loadsheet,
             ];
 
             foreach ($notification->email_addresses as $email) {
