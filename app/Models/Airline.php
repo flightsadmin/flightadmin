@@ -43,12 +43,12 @@ class Airline extends Model
     }
 
     /**
-     * Get the stations where this airline operates.
+     * Get the stations associated with this airline.
      */
-    public function stations(): BelongsToMany
+    public function stations()
     {
-        return $this->belongsToMany(Station::class, 'airline_station')
-            ->withPivot(['is_hub', 'contact_email', 'contact_phone', 'notes'])
+        return $this->belongsToMany(Station::class)
+            ->withPivot('is_hub', 'contact_email', 'contact_phone')
             ->withTimestamps();
     }
 

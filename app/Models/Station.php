@@ -23,10 +23,13 @@ class Station extends Model
         'is_active' => 'boolean',
     ];
 
-    public function airlines(): BelongsToMany
+    /**
+     * Get the airlines associated with this station.
+     */
+    public function airlines()
     {
-        return $this->belongsToMany(Airline::class, 'airline_station')
-            ->withPivot(['is_hub', 'contact_email', 'contact_phone', 'notes'])
+        return $this->belongsToMany(Airline::class)
+            ->withPivot('is_hub', 'contact_email', 'contact_phone')
             ->withTimestamps();
     }
 
