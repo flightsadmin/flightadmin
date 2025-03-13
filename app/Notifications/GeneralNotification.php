@@ -34,7 +34,7 @@ class GeneralNotification extends Notification
     {
         $template = EmailTemplate::where('slug', Str::slug($this->templateName))->first();
 
-        if (! $template) {
+        if (!$template) {
             throw new \Exception("Email template not found: {$this->templateName}");
         }
 
@@ -60,7 +60,7 @@ class GeneralNotification extends Notification
     protected function replaceVariables($content)
     {
         foreach ($this->variables as $key => $value) {
-            $content = str_replace('{'.$key.'}', $value, $content);
+            $content = str_replace('{' . $key . '}', $value, $content);
         }
 
         return $content;

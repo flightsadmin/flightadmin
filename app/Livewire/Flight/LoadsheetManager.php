@@ -302,28 +302,30 @@ class LoadsheetManager extends Component
     protected function sendEmailNotification($notification, $pdf, $filename)
     {
         try {
-            // Get the airline and flight details for the email
-            $airline = $this->flight->airline->name;
-            $flightNumber = $this->flight->flight_number;
-            $departure = $this->flight->departure_airport;
-            $arrival = $this->flight->arrival_airport;
-            $date = $this->flight->scheduled_departure_time->format('d M Y');
-
-            // Send the email with the PDF attachment
-            \Mail::send('emails.loadsheet', [
+            $variables = [
+                'airline' => $this->flight->airline->name,
+                'flight_number' => $this->flight->flight_number,
+                'departure' => $this->flight->departure_airport,
+                'arrival' => $this->flight->arrival_airport,
+                'date' => $this->flight->scheduled_departure_time->format('d M Y'),
                 'flight' => $this->flight,
                 'loadsheet' => $this->loadsheet,
-            ], function ($message) use ($notification, $pdf, $airline, $flightNumber, $departure, $arrival, $date, $filename) {
-                $message->subject("[$airline] Loadsheet for $flightNumber $departure-$arrival $date");
+            ];
 
-                // Set recipients
-                $message->to($notification->email_addresses);
-
-                // Attach the PDF
-                $message->attachData($pdf, $filename, [
-                    'mime' => 'application/pdf',
-                ]);
-            });
+            foreach ($notification->email_addresses as $email) {
+                \Notification::route('mail', $email)->notify(
+                    new \App\Notifications\GeneralNotification(
+                        'load-sheet-released',
+                        $variables,
+                        [
+                            [
+                                'path' => $pdf,
+                                'name' => $filename,
+                            ]
+                        ]
+                    )
+                );
+            }
 
             $this->dispatch('alert', icon: 'success', message: 'Loadsheet emailed successfully to ' . count($notification->email_addresses) . ' recipients.');
         } catch (\Exception $e) {
