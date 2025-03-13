@@ -49,12 +49,12 @@
                             <tr>
                                 <td class="ps-3">
                                     <div class="d-flex align-items-center">
-                                        <span class="badge bg-primary me-2">{{ $route->departureStation->code }}</span>
-                                        <i class="bi bi-arrow-right text-muted mx-1"></i>
-                                        <span class="badge bg-success">{{ $route->arrivalStation->code }}</span>
-                                    </div>
-                                    <div class="small text-muted mt-1">
-                                        {{ $route->departureStation->name }} to {{ $route->arrivalStation->name }}
+                                        <span class="badge bg-primary me-2"
+                                            title="{{ $route->departureStation->name }}">{{ $route->departureStation->code }}</span>
+                                        <i class="bi bi-arrow-left text-muted"></i>
+                                        <i class="bi bi-arrow-right text-muted"></i>
+                                        <span class="badge bg-success ms-2"
+                                            title="{{ $route->arrivalStation->name }}">{{ $route->arrivalStation->code }}</span>
                                     </div>
                                 </td>
                                 <td>
@@ -116,11 +116,9 @@
                 </table>
             </div>
 
-            @if ($routes->hasPages())
-                <div class="px-3 py-2 border-top">
-                    {{ $routes->links() }}
-                </div>
-            @endif
+            <div class="px-3 py-2 border-top">
+                {{ $routes->links() }}
+            </div>
         </div>
     </div>
 
@@ -207,20 +205,10 @@
                                 </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="notes" class="form-label fw-medium">Notes</label>
-                                <textarea class="form-control" id="notes" wire:model="notes" rows="3"
-                                    placeholder="Additional information about this route"></textarea>
-                                @error('notes')
-                                    <div class="text-danger small mt-1">{{ $message ?? 'Invalid notes format' }}</div>
-                                @enderror
-                            </div>
-
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="is_active" wire:model="is_active">
                                 <label class="form-check-label" for="is_active">Active</label>
-                                <div class="form-text text-muted"><small>Inactive routes won't be available for
-                                        scheduling</small></div>
+                                <div class="form-text text-muted"><small>Inactive routes won't be available for scheduling</small></div>
                             </div>
 
                             <div class="d-flex justify-content-end gap-2">

@@ -18,7 +18,7 @@
                     @forelse ($templates as $template)
                         <div class="col-md-6 col-xl-4">
                             <div class="card h-100 border shadow-sm">
-                                <div class="card-header bg-light border-bottom-0 py-3">
+                                <div class="card-header bg-light border-bottom-1">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h5 class="card-title mb-0 text-primary">
                                             {{ $template->name }}
@@ -59,17 +59,10 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    <div class="d-flex flex-column justify-content-start mb-3">
-                                        <div class="badge bg-light text-dark">
-                                            <i class="bi bi-tag me-1"></i> {{ $template->slug }}
-                                        </div>
-                                        <h6 class="text-muted mb-0 small">
-                                            <i class="bi bi-chat-square-text me-1"></i>
-                                            {{ Str::limit($template->subject, 80) }}
-                                        </h6>
-                                    </div>
-
-                                    <div class="mb-0">
+                                    <div><i class="bi bi-tag"></i> {{ $template->slug }}</div>
+                                    <h6><i class="bi bi-chat-square-text"></i> {{ Str::limit($template->subject, 80) }}</h6>
+                                    
+                                    <div class="my-2">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <small class="text-muted fw-bold">
                                                 { Variables: }
@@ -323,10 +316,10 @@
                         </div>
                     </div>
                     <div class="modal-footer bg-light sticky-bottom">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
                             <i class="bi bi-x-lg me-2"></i>Cancel
                         </button>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-sm btn-primary">
                             <i class="bi bi-check-lg me-2"></i>Save Template
                         </button>
                     </div>

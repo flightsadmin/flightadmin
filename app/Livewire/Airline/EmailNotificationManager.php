@@ -15,7 +15,6 @@ class EmailNotificationManager extends Component
     use WithPagination;
 
     protected $paginationTheme = 'bootstrap';
-
     public Airline $airline;
     public $search = '';
     public $documentTypeFilter = '';
@@ -24,7 +23,6 @@ class EmailNotificationManager extends Component
     public $editMode = false;
     public $notification_id = null;
 
-    // Form fields
     public $document_type = '';
     public $station_id = null;
     public $route_id = null;
@@ -33,11 +31,9 @@ class EmailNotificationManager extends Component
     public $notes = '';
     public $is_active = true;
 
-    // Temporary fields for email input
     public $newEmail = '';
     public $newSita = '';
 
-    // Available document types
     public $documentTypes = [
         'loadsheet' => 'Load Sheet',
         'loadinginstruction' => 'Loading Instructions',

@@ -44,70 +44,67 @@
                     </thead>
                     <tbody>
                         @forelse($schedules as $schedule)
-                                                <tr>
-                                                    <td>
-                                                        <span class="badge bg-primary">{{ $schedule->airline->iata_code }}</span>
-                                                        {{ $schedule->flight_number }}
-                                                    </td>
-                                                    <td>{{ $schedule->route->departure_station->code ?? $schedule->departure_airport }} -
-                                                        {{ $schedule->route->arrival_station->code ?? $schedule->arrival_airport }}
-                                                    </td>
-                                                    <td>
-                                                        @if ($schedule->aircraftType)
-                                                            {{ $schedule->aircraftType->code }}
-                                                        @else
-                                                            <div class="text-warning">Not assigned</div>
-                                                        @endif
-                                                    </td>
-                                                    <td>
-                                                        {{ $schedule->scheduled_departure_time->format('H:i') }} -
-                                                        {{ $schedule->scheduled_arrival_time->format('H:i') }}
-                                                    </td>
-                                                    <td>
-                                                        {{ $schedule->start_date->format('d M Y') }} -
-                                                        {{ $schedule->end_date->format('d M Y') }}
-                                                    </td>
-                                                    <td>
-                                                        <small>
-                                                            {{ implode(', ', array_map(
-                                fn($day) => substr($dayOptions[$day] ?? '', 0, 3),
-                                $schedule->days_of_week ?? []
-                            )) }}
-                                                        </small>
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge bg-{{ $schedule->is_active ? 'success' : 'danger' }}">
-                                                            {{ $schedule->is_active ? 'Active' : 'Inactive' }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <div class="btn-group">
-                                                            <button wire:click="editSchedule({{ $schedule->id }})"
-                                                                class="btn btn-sm btn-primary" title="Edit Schedule"
-                                                                @disabled(!$schedule->is_active)>
-                                                                <i class="bi bi-pencil-square"></i>
-                                                            </button>
-                                                            <button wire:click="showFlights({{ $schedule->id }})" class="btn btn-sm btn-info"
-                                                                title="View Flights" @disabled(!$schedule->is_active)>
-                                                                <i class="bi bi-airplane-engines"></i>
-                                                            </button>
-                                                            <button wire:click="generateFlights({{ $schedule->id }})"
-                                                                class="btn btn-sm btn-success" title="Generate Flights"
-                                                                @disabled(!$schedule->is_active)>
-                                                                <i class="bi bi-database-add"></i>
-                                                            </button>
-                                                            <button wire:click="toggleStatus({{ $schedule->id }})"
-                                                                class="btn btn-sm btn-{{ $schedule->is_active ? 'warning' : 'success' }}"
-                                                                title="{{ $schedule->is_active ? 'Deactivate' : 'Activate' }}">
-                                                                <i class="bi bi-{{ $schedule->is_active ? 'ban' : 'check-circle-fill' }}"></i>
-                                                            </button>
-                                                            <button wire:click="confirmDelete({{ $schedule->id }})"
-                                                                class="btn btn-sm btn-danger" title="Delete Schedule">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
+                            <tr>
+                                <td>
+                                    <span class="badge bg-primary">{{ $schedule->airline->iata_code }}</span>
+                                    {{ $schedule->flight_number }}
+                                </td>
+                                <td>{{ $schedule->route->departure_station->code ?? $schedule->departure_airport }} -
+                                    {{ $schedule->route->arrival_station->code ?? $schedule->arrival_airport }}
+                                </td>
+                                <td>
+                                    @if ($schedule->aircraftType)
+                                        {{ $schedule->aircraftType->code }}
+                                    @else
+                                        <div class="text-warning">Not assigned</div>
+                                    @endif
+                                </td>
+                                <td>
+                                    {{ $schedule->scheduled_departure_time->format('H:i') }} -
+                                    {{ $schedule->scheduled_arrival_time->format('H:i') }}
+                                </td>
+                                <td>
+                                    {{ $schedule->start_date->format('d M Y') }} -
+                                    {{ $schedule->end_date->format('d M Y') }}
+                                </td>
+                                <td>
+                                    <small>
+                                        {{ implode(', ', array_map(fn($day) => substr($dayOptions[$day] ?? '', 0, 3), $schedule->days_of_week ?? [])) }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ $schedule->is_active ? 'success' : 'danger' }}">
+                                        {{ $schedule->is_active ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button wire:click="editSchedule({{ $schedule->id }})"
+                                            class="btn btn-sm btn-primary" title="Edit Schedule"
+                                            @disabled(!$schedule->is_active)>
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                        <button wire:click="showFlights({{ $schedule->id }})" class="btn btn-sm btn-info"
+                                            title="View Flights" @disabled(!$schedule->is_active)>
+                                            <i class="bi bi-airplane-engines"></i>
+                                        </button>
+                                        <button wire:click="generateFlights({{ $schedule->id }})"
+                                            class="btn btn-sm btn-success" title="Generate Flights"
+                                            @disabled(!$schedule->is_active)>
+                                            <i class="bi bi-database-add"></i>
+                                        </button>
+                                        <button wire:click="toggleStatus({{ $schedule->id }})"
+                                            class="btn btn-sm btn-{{ $schedule->is_active ? 'warning' : 'success' }}"
+                                            title="{{ $schedule->is_active ? 'Deactivate' : 'Activate' }}">
+                                            <i class="bi bi-{{ $schedule->is_active ? 'ban' : 'check-circle-fill' }}"></i>
+                                        </button>
+                                        <button wire:click="confirmDelete({{ $schedule->id }})"
+                                            class="btn btn-sm btn-danger" title="Delete Schedule">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
                         @empty
                             <tr>
                                 <td colspan="8" class="text-center">No schedules found</td>
@@ -270,7 +267,7 @@
 
     <!-- Flights Modal -->
     <div class="modal fade" wire:ignore.self id="flightsModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
@@ -286,74 +283,66 @@
                 </div>
                 <div class="modal-body">
                     @if ($scheduleFlights && count($scheduleFlights) > 0)
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Flight</th>
-                                                <th>Date</th>
-                                                <th>Departure</th>
-                                                <th>Arrival</th>
-                                                <th>Aircraft</th>
-                                                <th>Status</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($scheduleFlights as $flight)
-                                                                    <tr>
-                                                                        <td>
-                                                                            <span class="badge bg-primary">{{ $flight->airline->iata_code }}</span>
-                                                                            {{ $flight->flight_number }}
-                                                                        </td>
-                                                                        <td>{{ $flight->scheduled_departure_time->format('d M Y') }}</td>
-                                                                        <td>
-                                                                            {{ $flight->route->departure_station->code ?? $flight->departure_airport }}
-                                                                            <span
-                                                                                class="small text-muted">({{ $flight->scheduled_departure_time->format('H:i') }})
-                                                                            </span>
-                                                                        </td>
-                                                                        <td>
-                                                                            {{ $flight->route->arrival_station->code ?? $flight->arrival_airport }}
-                                                                            <span
-                                                                                class="small text-muted">({{ $flight->scheduled_arrival_time->format('H:i') }})</span>
-                                                                        </td>
-                                                                        <td>
-                                                                            @if ($flight->aircraft)
-                                                                                {{ $flight->aircraft->registration_number }}
-                                                                            @else
-                                                                                <span class="text-muted">Not assigned</span>
-                                                                            @endif
-                                                                        </td>
-                                                                        <td>
-                                                                            <span class="badge bg-{{ $flight->status === 'scheduled'
-                                                ? 'secondary'
-                                                : ($flight->status === 'boarding'
-                                                    ? 'warning'
-                                                    : ($flight->status === 'departed'
-                                                        ? 'info'
-                                                        : ($flight->status === 'arrived'
-                                                            ? 'success'
-                                                            : 'danger'))) }}">
-                                                                                {{ ucfirst($flight->status) }}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td>
-                                                                            <a href="{{ route('flights.show', $flight->id) }}"
-                                                                                class="btn btn-sm btn-outline-primary">
-                                                                                <i class="bi bi-eye"></i> View
-                                                                            </a>
-                                                                        </td>
-                                                                    </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Flight</th>
+                                        <th>Date</th>
+                                        <th>Departure</th>
+                                        <th>Arrival</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($scheduleFlights as $flight)
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-primary">{{ $flight->airline->iata_code }}</span>
+                                                {{ $flight->flight_number }}
+                                            </td>
+                                            <td>{{ $flight->scheduled_departure_time->format('d M Y') }}</td>
+                                            <td>
+                                                {{ $flight->route->departure_station->code ?? $flight->departure_airport }}
+                                                <span
+                                                    class="small text-muted">({{ $flight->scheduled_departure_time->format('H:i') }})
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {{ $flight->route->arrival_station->code ?? $flight->arrival_airport }}
+                                                <span
+                                                    class="small text-muted">({{ $flight->scheduled_arrival_time->format('H:i') }})</span>
+                                            </td>
+                                            <td>
+                                                <span
+                                                    class="badge bg-{{ match ($flight->status) {
+                                                        'scheduled' => 'secondary',
+                                                        'boarding' => 'warning',
+                                                        'departed' => 'info',
+                                                        'arrived' => 'success',
+                                                        default => 'danger',
+                                                    } }}">
+                                                    {{ ucfirst($flight->status) }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ route('flights.show', $flight->id) }}"
+                                                    class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     @else
                         <div class="alert alert-info">
                             No flights have been generated for this schedule yet.
                             <button wire:click="generateFlights({{ $selectedSchedule ? $selectedSchedule->id : 0 }})"
-                                class="btn btn-sm btn-primary ms-2" {{ $selectedSchedule && $selectedSchedule->is_active ? '' : 'disabled' }}>
+                                class="btn btn-sm btn-primary ms-2"
+                                {{ $selectedSchedule && $selectedSchedule->is_active ? '' : 'disabled' }}>
                                 Generate Flights Now
                             </button>
                         </div>
@@ -371,54 +360,6 @@
             </div>
         </div>
     </div>
-
-    @script
-    <script>
-        const scheduleModal = new bootstrap.Modal('#scheduleModal');
-        const flightsModal = new bootstrap.Modal('#flightsModal');
-        const deleteModal = new bootstrap.Modal('#deleteModal');
-
-        $wire.on('schedule-saved', () => {
-            scheduleModal.hide();
-        });
-
-        $wire.$watch('showModal', (value) => {
-            if (value) {
-                scheduleModal.show();
-            } else {
-                scheduleModal.hide();
-            }
-        });
-
-        $wire.$watch('showFlightsModal', (value) => {
-            if (value) {
-                flightsModal.show();
-            } else {
-                flightsModal.hide();
-            }
-        });
-
-        $wire.$watch('showDeleteModal', (value) => {
-            if (value) {
-                deleteModal.show();
-            } else {
-                deleteModal.hide();
-            }
-        });
-
-        document.getElementById('flightsModal').addEventListener('hidden.bs.modal', () => {
-            $wire.set('showFlightsModal', false);
-        });
-
-        document.getElementById('scheduleModal').addEventListener('hidden.bs.modal', () => {
-            $wire.set('showModal', false);
-        });
-
-        document.getElementById('deleteModal').addEventListener('hidden.bs.modal', () => {
-            $wire.set('showDeleteModal', false);
-        });
-    </script>
-    @endscript
 
     <!-- Delete Confirmation Modal -->
     <div class="modal fade" wire:ignore.self id="deleteModal" tabindex="-1" aria-hidden="true">
@@ -457,4 +398,52 @@
             </div>
         </div>
     </div>
+
+    @script
+        <script>
+            const scheduleModal = new bootstrap.Modal('#scheduleModal');
+            const flightsModal = new bootstrap.Modal('#flightsModal');
+            const deleteModal = new bootstrap.Modal('#deleteModal');
+
+            $wire.on('schedule-saved', () => {
+                scheduleModal.hide();
+            });
+
+            $wire.$watch('showModal', (value) => {
+                if (value) {
+                    scheduleModal.show();
+                } else {
+                    scheduleModal.hide();
+                }
+            });
+
+            $wire.$watch('showFlightsModal', (value) => {
+                if (value) {
+                    flightsModal.show();
+                } else {
+                    flightsModal.hide();
+                }
+            });
+
+            $wire.$watch('showDeleteModal', (value) => {
+                if (value) {
+                    deleteModal.show();
+                } else {
+                    deleteModal.hide();
+                }
+            });
+
+            document.getElementById('flightsModal').addEventListener('hidden.bs.modal', () => {
+                $wire.set('showFlightsModal', false);
+            });
+
+            document.getElementById('scheduleModal').addEventListener('hidden.bs.modal', () => {
+                $wire.set('showModal', false);
+            });
+
+            document.getElementById('deleteModal').addEventListener('hidden.bs.modal', () => {
+                $wire.set('showDeleteModal', false);
+            });
+        </script>
+    @endscript
 </div>

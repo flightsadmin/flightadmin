@@ -3,7 +3,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="card-title m-0 d-flex align-items-center">
                 <i class="bi bi-envelope me-2 text-primary"></i>
-                {{ $airline->name }} Email Notifications
+                {{ $airline->iata_code }} Notifications
             </h4>
             <div class="d-flex gap-2">
                 <div class="input-group input-group-sm">

@@ -11,44 +11,18 @@ use Illuminate\Support\Facades\DB;
 
 class AirlineNetworkSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Clear existing data to avoid duplicates
         $this->truncateTables();
 
-        // Create airlines
-        $this->command->info('Creating airlines...');
         $airlines = $this->createAirlines();
-
-        // Create stations
-        $this->command->info('Creating stations...');
         $stations = $this->createStations();
-
-        // Assign stations to airlines
-        $this->command->info('Assigning stations to airlines...');
         $this->assignStationsToAirlines($airlines, $stations);
-
-        // Create routes
-        $this->command->info('Creating routes...');
         $routes = $this->createRoutes($airlines);
-
-        // Create email notifications
-        $this->command->info('Creating email notifications...');
         $this->createEmailNotifications($airlines, $routes);
-
-        $this->command->info('Airline network seeding completed successfully!');
     }
-
-    /**
-     * Truncate all related tables.
-     */
     private function truncateTables(): void
     {
-        $this->command->info('Clearing existing data...');
-
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         EmailNotification::truncate();
         Route::truncate();
@@ -58,54 +32,32 @@ class AirlineNetworkSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
     }
 
-    /**
-     * Create airlines using factory.
-     */
     private function createAirlines(int $count = 5): array
     {
         return Airline::factory()->count($count)->create()->all();
     }
 
-    /**
-     * Create stations using factory.
-     */
-    private function createStations(int $count = 20): array
+    private function createStations(int $count = 10): array
     {
         return Station::factory()->count($count)->create()->all();
     }
 
-    /**
-     * Assign stations to airlines with hub designation.
-     */
     private function assignStationsToAirlines(array $airlines, array $stations): void
     {
         foreach ($airlines as $airline) {
-            // Determine how many stations to assign to this airline (between 5 and 15)
-            $stationCount = min(count($stations), rand(5, 15));
+            $stationCount = min(count($stations), rand(5, 7));
 
-            // Randomly select stations for this airline
             $airlineStations = collect($stations)->random($stationCount);
 
-            // Designate 1-2 stations as hubs
-            $hubCount = min(2, $stationCount);
-            $hubs = $airlineStations->random($hubCount);
+            $hubs = $airlineStations->random(min(2, $stationCount));
 
-            // Attach stations to airline
             foreach ($airlineStations as $station) {
                 $isHub = $hubs->contains($station);
 
-                // Generate contact information
-                $contactEmail = null;
-                $contactPhone = null;
+                $emailDomain = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $airline->name)) . '.test';
+                $contactEmail = strtolower($station->code) . '@' . $emailDomain;
+                $contactPhone = '+' . fake()->numberBetween(1, 999) . ' ' . fake()->numberBetween(100, 999) . ' ' . fake()->numberBetween(1000, 9999);
 
-                if (fake()->boolean(70)) { // 70% chance to have contact info
-                    // Use a clearly fake email domain
-                    $emailDomain = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $airline->name)) . '.example.org';
-                    $contactEmail = 'test-' . strtolower($station->code) . '@' . $emailDomain;
-                    $contactPhone = '+' . fake()->numberBetween(1, 999) . ' ' . fake()->numberBetween(100, 999) . ' ' . fake()->numberBetween(1000, 9999);
-                }
-
-                // Attach station with pivot data
                 $airline->stations()->attach($station->id, [
                     'is_hub' => $isHub,
                     'contact_email' => $contactEmail,
@@ -117,16 +69,12 @@ class AirlineNetworkSeeder extends Seeder
         }
     }
 
-    /**
-     * Create routes for airlines.
-     */
     private function createRoutes(array $airlines): array
     {
         $routes = [];
-        $existingRoutes = []; // Track all created routes to avoid duplicates
+        $existingRoutes = [];
 
         foreach ($airlines as $airline) {
-            // Get stations for this airline
             $airlineStations = $airline->stations;
 
             // Skip if airline has less than 2 stations
@@ -217,9 +165,8 @@ class AirlineNetworkSeeder extends Seeder
         $documentTypes = ['loadsheet', 'flightplan', 'notoc', 'gendec', 'fueling', 'delay'];
 
         foreach ($airlines as $airline) {
-            // Create airline-wide notifications for different document types
             foreach ($documentTypes as $documentType) {
-                if (fake()->boolean(80)) { // 80% chance to create notification for each document type
+                if (fake()->boolean(80)) {
                     EmailNotification::factory()
                         ->forAirline($airline)
                         ->forDocumentType($documentType)
@@ -241,30 +188,6 @@ class AirlineNetworkSeeder extends Seeder
                         EmailNotification::factory()
                             ->forAirline($airline)
                             ->forStation($station)
-                            ->forDocumentType($documentType)
-                            ->create();
-                    }
-                }
-            }
-
-            // Create route-specific notifications for some routes
-            $airlineRoutes = collect($routes)->filter(function ($route) use ($airline) {
-                return $route->airline_id === $airline->id;
-            });
-
-            $routeCount = min(3, $airlineRoutes->count());
-            if ($routeCount > 0) {
-                $selectedRoutes = $airlineRoutes->random($routeCount);
-
-                foreach ($selectedRoutes as $route) {
-                    // Create notifications for 1-2 random document types
-                    $notificationCount = fake()->numberBetween(1, 2);
-                    $selectedDocTypes = collect($documentTypes)->random($notificationCount);
-
-                    foreach ($selectedDocTypes as $documentType) {
-                        EmailNotification::factory()
-                            ->forAirline($airline)
-                            ->forRoute($route)
                             ->forDocumentType($documentType)
                             ->create();
                     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Airline;
 
 use App\Models\EmailTemplate;
 use Illuminate\Support\Str;
@@ -9,19 +9,12 @@ use Livewire\Component;
 class EmailTemplates extends Component
 {
     public $templates;
-
     public $name;
-
     public $subject;
-
     public $body;
-
     public $templateVariables = [];
-
     public $editingId = null;
-
     public $activeTab = 'basic';
-
     public function mount()
     {
         $this->templates = EmailTemplate::all();
@@ -56,8 +49,8 @@ class EmailTemplates extends Component
         ]);
 
         $variables = collect($this->templateVariables)
-            ->filter(fn ($var) => ! empty($var['key']))
-            ->mapWithKeys(fn ($var) => [$var['key'] => $var['description']])
+            ->filter(fn($var) => !empty($var['key']))
+            ->mapWithKeys(fn($var) => [$var['key'] => $var['description']])
             ->toArray();
 
         try {
@@ -91,7 +84,7 @@ class EmailTemplates extends Component
         $this->body = $template->body;
 
         $this->templateVariables = collect($template->variables ?? [])
-            ->map(fn ($desc, $key) => ['key' => $key, 'description' => $desc])
+            ->map(fn($desc, $key) => ['key' => $key, 'description' => $desc])
             ->values()
             ->toArray();
 
@@ -110,6 +103,6 @@ class EmailTemplates extends Component
 
     public function render()
     {
-        return view('livewire.email-templates');
+        return view('livewire.airline.email-templates');
     }
 }

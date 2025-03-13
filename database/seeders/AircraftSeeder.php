@@ -15,22 +15,15 @@ class AircraftSeeder extends Seeder
         $airlines = Airline::all();
         $aircraftTypes = AircraftType::with(['aircraft.flights.passengers', 'cabinZones', 'seats'])->get();
 
-        $this->command->info("Configuring settings for aircraft types");
         foreach ($aircraftTypes as $aircraftType) {
-
-            // Apply settings for each airline
             foreach ($airlines as $airline) {
                 $this->applyAircraftTypeSettings($aircraftType, $airline);
             }
 
-            // Create cabin zones and seats
             $this->createCabinZonesAndSeats($aircraftType);
 
-            // Create holds and positions
             $this->createHoldsAndPositions($aircraftType);
         }
-
-        $this->command->info("Aircraft seeding completed successfully!");
     }
 
     private function applyAircraftTypeSettings(AircraftType $aircraftType, Airline $airline): void

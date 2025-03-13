@@ -308,7 +308,7 @@
             @elseif ($activeTab === 'email_notifications')
                 <livewire:airline.email-notification-manager :airline="$airline" />
             @elseif ($activeTab === 'email_templates')
-                <livewire:email-templates />
+                <livewire:airline.email-templates />
             @endif
         </div>
     </div>

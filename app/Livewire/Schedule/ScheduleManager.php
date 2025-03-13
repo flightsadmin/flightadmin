@@ -164,11 +164,7 @@ class ScheduleManager extends Component
     public function showFlights(Schedule $schedule)
     {
         $this->selectedSchedule = $schedule;
-        $this->scheduleFlights = $schedule->flights()
-            ->with(['aircraftType'])
-            ->orderBy('scheduled_departure_time')
-            ->take(10)
-            ->get();
+        $this->scheduleFlights = $schedule->flights()->orderBy('scheduled_departure_time')->take(10)->get();
         $this->showFlightsModal = true;
     }
 

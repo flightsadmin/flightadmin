@@ -19,32 +19,23 @@ class Airline extends Model
         'icao_code',
         'logo',
         'country',
-        'is_active',
+        'active',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'active' => 'boolean',
     ];
 
-    /**
-     * Get the aircraft for this airline.
-     */
     public function aircraft(): HasMany
     {
         return $this->hasMany(Aircraft::class);
     }
 
-    /**
-     * Get the flights for this airline.
-     */
     public function flights(): HasMany
     {
         return $this->hasMany(Flight::class);
     }
 
-    /**
-     * Get the stations associated with this airline.
-     */
     public function stations()
     {
         return $this->belongsToMany(Station::class)
@@ -52,17 +43,11 @@ class Airline extends Model
             ->withTimestamps();
     }
 
-    /**
-     * Get the routes operated by this airline.
-     */
     public function routes(): HasMany
     {
         return $this->hasMany(Route::class);
     }
 
-    /**
-     * Get the email notifications for this airline.
-     */
     public function emailNotifications(): HasMany
     {
         return $this->hasMany(EmailNotification::class);
@@ -85,7 +70,7 @@ class Airline extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('active', true);
     }
 
     public function getStandardPassengerWeight($type)

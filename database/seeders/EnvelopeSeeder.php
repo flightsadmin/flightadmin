@@ -14,10 +14,7 @@ class EnvelopeSeeder extends Seeder
 
         foreach ($aircraftTypes as $type) {
             Envelope::updateOrCreate(
-                [
-                    'aircraft_type_id' => $type->id,
-                    'name' => 'ZFW',
-                ],
+                ['aircraft_type_id' => $type->id, 'name' => 'ZFW'],
                 [
                     'points' => [
                         ['weight' => 40600, 'index' => 40.70],
@@ -46,10 +43,7 @@ class EnvelopeSeeder extends Seeder
             );
 
             Envelope::updateOrCreate(
-                [
-                    'aircraft_type_id' => $type->id,
-                    'name' => 'TOW',
-                ],
+                ['aircraft_type_id' => $type->id, 'name' => 'TOW'],
                 [
                     'points' => [
                         ['weight' => 40600, 'index' => 39.02],
@@ -75,10 +69,7 @@ class EnvelopeSeeder extends Seeder
             );
 
             Envelope::updateOrCreate(
-                [
-                    'aircraft_type_id' => $type->id,
-                    'name' => 'FUEL',
-                ],
+                ['aircraft_type_id' => $type->id, 'name' => 'FUEL'],
                 [
                     'points' => [
                         ['weight' => 0001, 'index' => +0.00],

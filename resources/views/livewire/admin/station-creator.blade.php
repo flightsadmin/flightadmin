@@ -1,7 +1,7 @@
 <div>
     <button wire:click="createStation" class="btn btn-sm btn-primary d-inline-flex align-items-center nowrap">
         <i class="bi bi-plus-circle"></i>
-        <span class="text-nowrap"> Create Station</span>
+        <span class="text-nowrap ms-2"> Create Station</span>
     </button>
 
     <!-- Station Modal -->
@@ -27,7 +27,7 @@
                                         placeholder="e.g. LHR" style="text-transform: uppercase;">
                                 </div>
                                 <div class="form-text text-muted"><small>3-letter IATA airport code</small></div>
-                                @error('code') 
+                                @error('code')
                                     <div class="text-danger small mt-1">{{ $message ?? 'Invalid code format' }}</div>
                                 @enderror
                             </div>
@@ -40,7 +40,7 @@
                                     <input type="text" class="form-control" id="name" wire:model="name"
                                         placeholder="e.g. London Heathrow">
                                 </div>
-                                @error('name') 
+                                @error('name')
                                     <div class="text-danger small mt-1">{{ $message ?? 'Station name is required' }}</div>
                                 @enderror
                             </div>
@@ -52,7 +52,7 @@
                                     <input type="text" class="form-control" id="country" wire:model="country"
                                         placeholder="e.g. United Kingdom">
                                 </div>
-                                @error('country') 
+                                @error('country')
                                     <div class="text-danger small mt-1">{{ $message ?? 'Invalid country format' }}</div>
                                 @enderror
                             </div>
@@ -66,7 +66,7 @@
                                 </div>
                                 <div class="form-text text-muted"><small>PHP timezone identifier (e.g. Europe/London,
                                         America/New_York)</small></div>
-                                @error('timezone') 
+                                @error('timezone')
                                     <div class="text-danger small mt-1">{{ $message ?? 'Invalid timezone format' }}</div>
                                 @enderror
                             </div>
@@ -79,11 +79,11 @@
                             </div>
 
                             <div class="d-flex justify-content-end gap-2">
-                                <button type="button" class="btn btn-outline-secondary"
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
                                     wire:click="$set('showModal', false)">
                                     <i class="bi bi-x-circle me-1"></i> Cancel
                                 </button>
-                                <button type="submit" class="btn btn-primary">
+                                <button type="submit" class="btn btn-sm btn-primary">
                                     <i class="bi bi-{{ $editMode ? 'check-circle' : 'plus-circle' }} me-1"></i>
                                     {{ $editMode ? 'Update' : 'Create' }} Station
                                 </button>
