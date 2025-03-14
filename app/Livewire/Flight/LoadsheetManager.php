@@ -268,7 +268,7 @@ class LoadsheetManager extends Component
             $flightNumber = $this->flight->flight_number;
             $edition = $this->loadsheet->edition;
             $date = $this->flight->scheduled_departure_time->format('d-M-Y');
-            $filename = strtolower("loadsheet_{$flightNumber}_{$edition}_{$date}.pdf");
+            $filename = strtoupper("loadsheet_{$flightNumber}_{$edition}_{$date}") . ".pdf";
 
             if (!empty($notification->email_addresses)) {
                 $this->sendEmailNotification($notification, $pdf, $filename);
