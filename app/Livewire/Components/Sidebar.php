@@ -4,6 +4,7 @@ namespace App\Livewire\Components;
 
 use App\Models\Flight;
 use Livewire\Component;
+use Livewire\Attributes\On;
 use Livewire\WithPagination;
 
 class Sidebar extends Component
@@ -31,6 +32,7 @@ class Sidebar extends Component
         $this->selectedFlight = Flight::findOrFail($id);
     }
 
+    #[On('schedule-saved')]
     public function render()
     {
         $flights = Flight::with('airline', 'baggage')

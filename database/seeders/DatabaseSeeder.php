@@ -19,15 +19,13 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Run these seeders first to set up airlines, stations, and routes
         $this->call([
             AdminSeeder::class,
             EmailTemplateSeeder::class,
             AirlineNetworkSeeder::class,
         ]);
 
-        // Now create flights based on the routes we've created
-        $airlines = Airline::inRandomOrder()->limit(1)->get();
+        $airlines = Airline::inRandomOrder()->limit(3)->get();
 
         foreach ($airlines as $airline) {
             AircraftType::factory()->forAirline($airline)->create()->each(function ($aircraftType) use ($airline) {
