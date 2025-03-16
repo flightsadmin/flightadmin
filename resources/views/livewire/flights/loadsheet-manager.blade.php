@@ -4,6 +4,15 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="card-title mb-0">Load Sheet</h4>
+                    <div wire:loading wire:target="generateLoadsheet, finalizeLoadsheet">
+                        <div class="custom-spin-overlay">
+                            <div class="position-absolute top-50 start-50 translate-middle d-flex justify-content-center">
+                                <div class="spinner-border" style="width: 4rem; height: 4rem; border-width: 0.5rem;" role="status">
+                                    <span class="visually-hidden">Loading ...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="d-flex gap-2 mb-0">
                         @if ($loadsheet && !$loadsheet->final && $loadsheet->status !== 'revoked')
                             <button class="btn btn-success btn-sm mb-0" wire:click="finalizeLoadsheet"
@@ -17,8 +26,7 @@
                             </button>
                         @elseif (!$loadsheet || $loadsheet->status === 'revoked' || $loadsheet->status === 'draft')
                             <button class="btn btn-primary btn-sm mb-0" wire:click="generateLoadsheet"
-                                wire:loading.attr="disabled"
-                                @disabled(!$flight->fuel || !$loadplan || $loadplan->status !== 'released')>
+                                wire:loading.attr="disabled" @disabled(!$flight->fuel || !$loadplan || $loadplan->status !== 'released')>
                                 <i class="bi bi-plus-circle"></i> Generate Loadsheet
                             </button>
                         @endif
