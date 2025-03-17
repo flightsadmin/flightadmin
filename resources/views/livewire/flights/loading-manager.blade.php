@@ -3,10 +3,8 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
                 <h4 class="card-title m-0">Load Plan</h4>
-                <span class="badge {{ $this->totalWeight > 0 ? 'bg-primary' : 'bg-secondary' }}">
-                    Total: {{ $this->totalWeight }}kg
-                </span>
             </div>
+
             <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-outline-success" wire:click="toggleAssignModal">
                     <i class="bi bi-plus-circle"></i> Manage Containers
@@ -19,7 +17,7 @@
                     <i class="bi bi-check-circle"></i> Finalize Load Plan
                 </button>
                 <button class="btn btn-sm btn-outline-primary" wire:click="previewLIRF"
-                    @disabled(!isset($loadplan))>
+                    @disabled(!isset($loadplan) || $loadplan->status !== 'released')>
                     <i class="bi bi-eye"></i> Preview LIRF
                 </button>
                 <button class="btn btn-sm btn-outline-danger" wire:click="resetLoadplan">
