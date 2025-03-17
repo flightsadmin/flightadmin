@@ -11,17 +11,17 @@ class Manager extends Component
 
     public $showModal = false;
 
-    public $block_fuel;
+    public $block_fuel = 10000;
 
     public $take_off_fuel;
 
-    public $taxi_fuel;
+    public $taxi_fuel = 200;
 
-    public $trip_fuel;
+    public $trip_fuel = 8000;
 
-    public $crew;
+    public $crew = '2/4';
 
-    public $pantry;
+    public $pantry = 'A';
 
     public function mount(Flight $flight)
     {
@@ -69,7 +69,7 @@ class Manager extends Component
 
     public function calculatePantryWeight()
     {
-        if (! $this->pantry) {
+        if (!$this->pantry) {
             return 0;
         }
 
@@ -80,7 +80,7 @@ class Manager extends Component
 
     public function calculatePantryIndex()
     {
-        if (! $this->pantry) {
+        if (!$this->pantry) {
             return 0;
         }
 
@@ -97,7 +97,7 @@ class Manager extends Component
         $crewOptions = [];
         for ($deck = 2; $deck <= $maxDeckCrew; $deck++) {
             for ($cabin = 1; $cabin <= $maxCabinCrew; $cabin++) {
-                $crewOptions[] = $deck.'/'.$cabin;
+                $crewOptions[] = $deck . '/' . $cabin;
             }
         }
 

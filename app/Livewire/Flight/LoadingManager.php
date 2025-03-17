@@ -143,6 +143,15 @@ class LoadingManager extends Component
 
         // If a container is selected, try to drop it here
         if ($this->selectedContainer) {
+            // Check if the clicked position contains the currently selected container
+            $containerInPosition = $this->getContainerInPosition($positionId);
+            if ($containerInPosition && $containerInPosition['id'] === $this->selectedContainer) {
+                // If clicking on the already selected container, deselect it
+                $this->selectedContainer = null;
+                return;
+            }
+
+            // Otherwise try to drop the selected container here
             if ($this->canDropHere($positionId)) {
                 $this->assignContainerToPosition($this->selectedContainer, $positionId);
                 $this->selectedContainer = null;
@@ -217,6 +226,12 @@ class LoadingManager extends Component
                 ]);
 
                 DB::commit();
+
+                // Clear selection if this was the selected container
+                if ($this->selectedContainer === $container['id']) {
+                    $this->selectedContainer = null;
+                }
+
                 $this->dispatch('container_position_updated');
                 $this->dispatch('alert', icon: 'success', message: 'Bulk container offloaded successfully');
 
@@ -237,7 +252,11 @@ class LoadingManager extends Component
 
         // For regular containers, use the existing logic
         $this->updateContainerPosition($container['id'], null);
-        $this->selectedContainer = null;
+
+        // Clear selection if this was the selected container
+        if ($this->selectedContainer === $container['id']) {
+            $this->selectedContainer = null;
+        }
 
         // Dispatch an event to refresh the UI
         $this->dispatch('container_position_updated');
