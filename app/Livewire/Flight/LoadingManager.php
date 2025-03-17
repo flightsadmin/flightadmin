@@ -389,12 +389,6 @@ class LoadingManager extends Component
             return false;
         }
 
-        // REMOVE OR MODIFY THIS RESTRICTION:
-        // Allow containers to be loaded into bulk positions
-        // Previously, this might have been checking if the hold name contains 'Bulk'
-        // and returning false for containers, but we want to allow it now
-
-        // Instead of restricting bulk positions, just check if the position is available
         return !$this->isPositionOccupied($positionId);
     }
 
