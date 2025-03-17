@@ -120,7 +120,9 @@
                                                                     <div class="container-id">{{ $container['uld_code'] }}</div>
                                                                     <div class="container-type">
                                                                         @if (isset($container['has_deadload']) && $container['has_deadload'])
-                                                                            DEADLOAD: {{ $container['deadload_types'] ?? 'Mixed' }}
+                                                                            <i class="bi bi-boxes">
+                                                                                {{ $container['deadload_types'] ?? 'Mixed' }}
+                                                                            </i>
                                                                         @else
                                                                             {{ $container['pieces'] > 0 ? $container['type'] . ' (' . $container['pieces'] . 'pcs)' : 'Empty' }}
                                                                         @endif
@@ -179,12 +181,14 @@
                                                     @foreach ($hold['positions'] as $position)
                                                         <div class="cargo-slot
                                                     {{ $this->isPositionOccupied($position['id']) ? 'occupied' : '' }}
-                                                    {{ !$selectedContainer && $unplannedType && !$this->isPositionOccupied($position['id']) ? 'drop-target' : '' }}
+                                                    {{ ($selectedContainer && $this->canDropHere($position['id'])) || (!$selectedContainer && $unplannedType && !$this->isPositionOccupied($position['id'])) ? 'drop-target' : '' }}
                                                     {{ $this->getContainerInPosition($position['id']) && $this->getContainerInPosition($position['id'])['id'] === $selectedContainer ? 'selected' : '' }}
                                                     {{ $this->getContainerInPosition($position['id'])['type'] ?? '' }}
                                                     {{ isset($this->getContainerInPosition($position['id'])['is_deadload']) ? 'deadload' : '' }}
                                                     {{ $unplannedType && !$this->isPositionOccupied($position['id']) ? 'hover-pointer' : '' }}"
-                                                            @if (!$this->isPositionOccupied($position['id']) && $unplannedType) wire:click="$dispatch('open-pieces-modal', { positionId: '{{ $position['id'] }}', type: '{{ $unplannedType }}' })" @endif>
+                                                            wire:click="handlePositionClick('{{ $position['id'] }}')"
+                                                            wire:dblclick="handleDoubleClick('{{ $position['id'] }}')"
+                                                            @if (!$this->isPositionOccupied($position['id']) && !$selectedContainer && $unplannedType) wire:click="$dispatch('open-pieces-modal', { positionId: '{{ $position['id'] }}', type: '{{ $unplannedType }}' })" @endif>
                                                             @if ($container = $this->getContainerInPosition($position['id']))
                                                                 <div class="container-info">
                                                                     <span class="position-number">{{ $position['designation'] }}</span>
@@ -192,7 +196,7 @@
                                                                         @if (isset($container['is_deadload']) && $container['is_deadload'])
                                                                             DEADLOAD
                                                                         @else
-                                                                            BULK
+                                                                            {{ $container['uld_code'] }}
                                                                         @endif
                                                                     </div>
                                                                     <div class="container-type">
@@ -298,7 +302,7 @@
                                     </div>
                                 </div>
                                 <div class="card-body p-2">
-                                    <livewire:flights.deadload-manager :flight="$flight" />
+                                    <livewire:flight.deadload-manager :flight="$flight" />
                                 </div>
                             </div>
                         </div>

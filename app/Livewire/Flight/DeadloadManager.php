@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Flights;
+namespace App\Livewire\Flight;
 
 use App\Models\Flight;
 use Livewire\Component;
@@ -20,7 +20,7 @@ class DeadloadManager extends Component
         'type' => 'cargo',
         'subtype' => 'local',
         'pieces' => 1,
-        'weight' => 0
+        'weight' => 10
     ];
     public $isEditing = false;
     public $editDeadloadId = null;
@@ -28,7 +28,7 @@ class DeadloadManager extends Component
         'name' => '',
         'type' => '',
         'pieces' => 1,
-        'weight' => 0
+        'weight' => 10
     ];
 
     public function mount(Flight $flight)
@@ -83,7 +83,7 @@ class DeadloadManager extends Component
             'type' => 'cargo',
             'subtype' => 'local',
             'pieces' => 1,
-            'weight' => 0
+            'weight' => 10
         ];
         $this->showDeadloadModal = true;
     }
@@ -131,6 +131,7 @@ class DeadloadManager extends Component
         if (!empty($this->newDeadload['subtype'])) {
             $displayName .= ' (' . ucfirst($this->newDeadload['subtype']) . ')';
         }
+
         $this->newDeadload['name'] = $displayName;
 
         $this->deadloadItems[] = $this->newDeadload;
@@ -413,29 +414,29 @@ class DeadloadManager extends Component
                 if ($index !== false) {
                     $oldItem = $this->deadloadItems[$index];
                     $weightDifference = $this->newDeadload['weight'] - $oldItem['weight'];
-                    
+
                     // Update the item
                     $this->deadloadItems[$index]['name'] = $this->newDeadload['name'];
                     $this->deadloadItems[$index]['type'] = $this->newDeadload['type'];
                     $this->deadloadItems[$index]['subtype'] = $this->newDeadload['subtype'];
                     $this->deadloadItems[$index]['pieces'] = $this->newDeadload['pieces'];
                     $this->deadloadItems[$index]['weight'] = $this->newDeadload['weight'];
-                    
+
                     // If the item is assigned to a container, update the container weight
                     if (!empty($oldItem['container_id'])) {
                         $containerId = $oldItem['container_id'];
-                        
+
                         // Only update real containers in the database (not virtual ones)
                         if (!str_starts_with($containerId, 'deadload_') && !str_starts_with($containerId, 'bulk_')) {
                             // Get the container from the database
                             $container = $this->flight->containers()->where('container_id', $containerId)->first();
-                            
+
                             if ($container) {
                                 // Update the container weight with the difference
                                 $this->flight->containers()->updateExistingPivot($containerId, [
                                     'weight' => $container->pivot->weight + $weightDifference
                                 ]);
-                                
+
                                 // Log the update for debugging
                                 \Log::info('Updated container weight after deadload edit', [
                                     'containerId' => $containerId,
@@ -446,7 +447,7 @@ class DeadloadManager extends Component
                             }
                         }
                     }
-                    
+
                     $message = 'Deadload item updated successfully';
                 } else {
                     $this->dispatch('alert', icon: 'error', message: 'Deadload item not found');
@@ -466,15 +467,15 @@ class DeadloadManager extends Component
                     'position' => null,
                     'created_at' => now()->toDateTimeString(),
                 ];
-                
+
                 $message = 'Deadload item added successfully';
             }
-            
+
             // Save the updated deadload items
             $this->saveDeadloadItems();
-            
+
             DB::commit();
-            
+
             // Reset the form and close the modal
             $this->showDeadloadModal = false;
             $this->isEditing = false;
@@ -484,13 +485,13 @@ class DeadloadManager extends Component
                 'type' => 'cargo',
                 'subtype' => 'local',
                 'pieces' => 1,
-                'weight' => 0
+                'weight' => 10
             ];
-            
+
             // Update the UI
             $this->dispatch('deadload-updated');
             $this->dispatch('alert', icon: 'success', message: $message);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             $this->dispatch('alert', icon: 'error', message: 'Failed to save deadload item: ' . $e->getMessage());
@@ -508,7 +509,7 @@ class DeadloadManager extends Component
             'type' => 'cargo',
             'subtype' => 'local',
             'pieces' => 1,
-            'weight' => 0
+            'weight' => 10
         ];
     }
 }

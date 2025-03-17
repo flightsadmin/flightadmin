@@ -135,27 +135,42 @@ class LoadingManager extends Component
 
     public function handlePositionClick($positionId)
     {
+        // If deadload selection is active, handle it differently
+        if ($this->deadloadSelectionActive) {
+            // Handle deadload assignment to position
+            return;
+        }
+
+        // If a container is selected, try to drop it here
         if ($this->selectedContainer) {
-            if (!$this->canDropHere($positionId)) {
-                $this->dispatch('alert', icon: 'error', message: 'Invalid position for this container type');
-                return;
+            if ($this->canDropHere($positionId)) {
+                $this->assignContainerToPosition($this->selectedContainer, $positionId);
+                $this->selectedContainer = null;
             }
-
-            $this->moveContainer($positionId);
-
             return;
         }
 
-        if (!$this->isPositionOccupied($positionId)) {
+        // If unplanned type is selected, handle it
+        if ($this->unplannedType) {
+            // Check if the position is in a bulk hold
+            $position = $this->getPositionById($positionId);
+            $hold = $this->getHoldByPositionId($positionId);
+
+            if ($hold && str_contains($hold['name'], 'Bulk') && !$this->isPositionOccupied($positionId)) {
+                // Open the pieces modal for bulk positions
+                $this->dispatch('open-pieces-modal', [
+                    'positionId' => $positionId,
+                    'type' => $this->unplannedType
+                ]);
+            }
             return;
         }
 
+        // Otherwise, select the container in this position
         $container = $this->getContainerInPosition($positionId);
-        if (!$container) {
-            return;
+        if ($container) {
+            $this->selectedContainer = $container['id'];
         }
-
-        $this->selectedContainer = $container['id'];
     }
 
     public function handleDoubleClick($positionId)
@@ -165,8 +180,68 @@ class LoadingManager extends Component
             return;
         }
 
+        // Check if this is a bulk container or a regular container
+        $isBulkContainer = str_starts_with($container['id'], 'bulk_');
+        $isDeadloadContainer = str_starts_with($container['id'], 'deadload_');
+
+        // For bulk containers, we need special handling
+        if ($isBulkContainer) {
+            try {
+                DB::beginTransaction();
+
+                // Remove the bulk container from the containers array
+                $this->containers = collect($this->containers)
+                    ->filter(function ($c) use ($container) {
+                        return $c['id'] !== $container['id'];
+                    })->toArray();
+
+                // Update the loadplan to reflect the removal
+                $formattedContainers = $this->formatContainers($this->containers);
+                $this->loadplan = $this->flight->loadplans()->updateOrCreate(
+                    ['flight_id' => $this->flight->id],
+                    [
+                        'loading' => $formattedContainers,
+                        'last_modified_by' => auth()->id(),
+                        'last_modified_at' => now()->toDateTimeString(),
+                        'status' => 'draft',
+                        'version' => $this->loadplan ? $this->loadplan->version : 1,
+                    ]
+                );
+
+                // Log the offload
+                \Log::info('Bulk container offloaded', [
+                    'containerId' => $container['id'],
+                    'positionId' => $positionId,
+                    'type' => $container['type'],
+                    'weight' => $container['weight']
+                ]);
+
+                DB::commit();
+                $this->dispatch('container_position_updated');
+                $this->dispatch('alert', icon: 'success', message: 'Bulk container offloaded successfully');
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                $this->dispatch('alert', icon: 'error', message: 'Failed to offload bulk container: ' . $e->getMessage());
+                \Log::error('Failed to offload bulk container: ' . $e->getMessage());
+            }
+
+            return;
+        }
+
+        // For deadload containers, we should not handle them here
+        if ($isDeadloadContainer) {
+            $this->dispatch('alert', icon: 'info', message: 'Deadload items must be offloaded from the Deadload Manager');
+            return;
+        }
+
+        // For regular containers, use the existing logic
         $this->updateContainerPosition($container['id'], null);
         $this->selectedContainer = null;
+
+        // Dispatch an event to refresh the UI
+        $this->dispatch('container_position_updated');
+        $this->dispatch('alert', icon: 'success', message: 'Container offloaded successfully');
     }
 
     public function moveContainer($positionId)
@@ -226,20 +301,54 @@ class LoadingManager extends Component
 
     public function updateContainerPosition($containerId, $positionId)
     {
-        $this->containers = collect($this->containers)->map(function ($container) use ($containerId, $positionId) {
-            if ($container['id'] === $containerId) {
-                $container['position'] = $positionId;
-                $container['position_code'] = $positionId;
-                $container['updated_at'] = now()->toDateTimeString();
-            }
+        try {
+            DB::beginTransaction();
 
-            return $container;
-        })->toArray();
+            // Update the container position in memory
+            $this->containers = collect($this->containers)->map(function ($container) use ($containerId, $positionId) {
+                if ($container['id'] === $containerId) {
+                    $container['position'] = $positionId;
+                    $container['position_code'] = $positionId;
+                    $container['status'] = $positionId ? 'loaded' : 'unloaded';
+                    $container['updated_at'] = now()->toDateTimeString();
+                }
 
-        $this->flight->containers()->updateExistingPivot($containerId, [
-            'position_id' => $positionId,
-            'status' => 'unloaded',
-        ]);
+                return $container;
+            })->toArray();
+
+            // Update the container in the database
+            $this->flight->containers()->updateExistingPivot($containerId, [
+                'position_id' => $positionId,
+                'status' => $positionId ? 'loaded' : 'unloaded',
+            ]);
+
+            // Update the loadplan
+            $formattedContainers = $this->formatContainers($this->containers);
+            $this->loadplan = $this->flight->loadplans()->updateOrCreate(
+                ['flight_id' => $this->flight->id],
+                [
+                    'loading' => $formattedContainers,
+                    'last_modified_by' => auth()->id(),
+                    'last_modified_at' => now()->toDateTimeString(),
+                    'status' => 'draft',
+                    'version' => $this->loadplan ? $this->loadplan->version : 1,
+                ]
+            );
+
+            DB::commit();
+
+            // Log the position update
+            \Log::info('Container position updated', [
+                'containerId' => $containerId,
+                'newPositionId' => $positionId,
+                'status' => $positionId ? 'loaded' : 'unloaded'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $this->dispatch('alert', icon: 'error', message: 'Failed to update container position: ' . $e->getMessage());
+            \Log::error('Failed to update container position: ' . $e->getMessage());
+        }
     }
 
     public function isPositionOccupied($positionId)
@@ -249,10 +358,43 @@ class LoadingManager extends Component
 
     public function canDropHere($positionId)
     {
+        // If no container is selected, nothing can be dropped
         if (!$this->selectedContainer) {
             return false;
         }
 
+        // Get the position
+        $position = $this->getPositionById($positionId);
+        if (!$position) {
+            return false;
+        }
+
+        // Check if the position is already occupied
+        if ($this->isPositionOccupied($positionId)) {
+            return false;
+        }
+
+        // Get the container
+        $container = collect($this->containers)->firstWhere('id', $this->selectedContainer);
+        if (!$container) {
+            return false;
+        }
+
+        // Get the hold for this position
+        $hold = collect($this->holds)->first(function ($hold) use ($positionId) {
+            return collect($hold['positions'])->contains('id', $positionId);
+        });
+
+        if (!$hold) {
+            return false;
+        }
+
+        // REMOVE OR MODIFY THIS RESTRICTION:
+        // Allow containers to be loaded into bulk positions
+        // Previously, this might have been checking if the hold name contains 'Bulk'
+        // and returning false for containers, but we want to allow it now
+
+        // Instead of restricting bulk positions, just check if the position is available
         return !$this->isPositionOccupied($positionId);
     }
 
@@ -658,7 +800,8 @@ class LoadingManager extends Component
         // Log the current containers for debugging
         \Log::info('Refreshing containers - before refresh', [
             'containerCount' => count($this->containers),
-            'containerWeights' => collect($this->containers)->pluck('weight', 'id')->toArray()
+            'containerWeights' => collect($this->containers)->pluck('weight', 'id')->toArray(),
+            'containerPositions' => collect($this->containers)->pluck('position', 'id')->toArray()
         ]);
 
         // Reload containers from database
@@ -689,7 +832,8 @@ class LoadingManager extends Component
         // Log the refreshed containers for debugging
         \Log::info('Refreshing containers - after refresh', [
             'containerCount' => count($this->containers),
-            'containerWeights' => collect($this->containers)->pluck('weight', 'id')->toArray()
+            'containerWeights' => collect($this->containers)->pluck('weight', 'id')->toArray(),
+            'containerPositions' => collect($this->containers)->pluck('position', 'id')->toArray()
         ]);
     }
 
@@ -1428,5 +1572,135 @@ class LoadingManager extends Component
     public function openDeadloadModal()
     {
         $this->dispatch('open-deadload-modal');
+    }
+
+    /**
+     * Assign a container to a position
+     */
+    public function assignContainerToPosition($containerId, $positionId)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Get the container
+            $container = collect($this->containers)->firstWhere('id', $containerId);
+            if (!$container) {
+                $this->dispatch('alert', icon: 'error', message: 'Container not found');
+                DB::rollBack();
+                return;
+            }
+
+            // Get the position
+            $position = $this->getPositionById($positionId);
+            if (!$position) {
+                $this->dispatch('alert', icon: 'error', message: 'Position not found');
+                DB::rollBack();
+                return;
+            }
+
+            // Check if the position is already occupied
+            if ($this->isPositionOccupied($positionId)) {
+                $this->dispatch('alert', icon: 'error', message: 'Position is already occupied');
+                DB::rollBack();
+                return;
+            }
+
+            // Get the hold for this position
+            $hold = $this->getHoldByPositionId($positionId);
+            if (!$hold) {
+                $this->dispatch('alert', icon: 'error', message: 'Hold not found for position');
+                DB::rollBack();
+                return;
+            }
+
+            // Check if the hold is a bulk hold - if so, handle it differently
+            $isBulkHold = str_contains($hold['name'], 'Bulk');
+
+            // Update the container's position in the database - for ALL containers, including bulk positions
+            $this->flight->containers()->updateExistingPivot($containerId, [
+                'position_id' => $positionId,
+                'status' => 'loaded'
+            ]);
+
+            // Update the container's position in memory
+            $this->containers = collect($this->containers)->map(function ($c) use ($containerId, $positionId) {
+                if ($c['id'] == $containerId) {
+                    $c['position'] = $positionId;
+                    $c['position_code'] = $positionId;
+                    $c['status'] = 'loaded';
+                }
+                return $c;
+            })->toArray();
+
+            // Update the loadplan to include this container assignment
+            $formattedContainers = $this->formatContainers($this->containers);
+            $this->loadplan = $this->flight->loadplans()->updateOrCreate(
+                ['flight_id' => $this->flight->id],
+                [
+                    'loading' => $formattedContainers,
+                    'last_modified_by' => auth()->id(),
+                    'last_modified_at' => now()->toDateTimeString(),
+                    'status' => 'draft',
+                    'version' => $this->loadplan ? $this->loadplan->version : 1,
+                ]
+            );
+
+            // Log the assignment
+            if ($isBulkHold) {
+                \Log::info('Container assigned to bulk position', [
+                    'containerId' => $containerId,
+                    'positionId' => $positionId,
+                    'holdName' => $hold['name']
+                ]);
+                $message = 'Container assigned to bulk position';
+            } else {
+                \Log::info('Container assigned to regular position', [
+                    'containerId' => $containerId,
+                    'positionId' => $positionId,
+                    'holdName' => $hold['name']
+                ]);
+                $message = 'Container assigned to position';
+            }
+
+            DB::commit();
+
+            $this->dispatch('container_position_updated');
+            $this->dispatch('alert', icon: 'success', message: $message);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $this->dispatch('alert', icon: 'error', message: 'Failed to assign container: ' . $e->getMessage());
+            \Log::error('Failed to assign container to position: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get a position by its ID
+     */
+    public function getPositionById($positionId)
+    {
+        foreach ($this->holds as $hold) {
+            foreach ($hold['positions'] as $position) {
+                if ($position['id'] == $positionId) {
+                    return $position;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the hold that contains a specific position
+     */
+    public function getHoldByPositionId($positionId)
+    {
+        foreach ($this->holds as $hold) {
+            foreach ($hold['positions'] as $position) {
+                if ($position['id'] == $positionId) {
+                    return $hold;
+                }
+            }
+        }
+        return null;
     }
 }
