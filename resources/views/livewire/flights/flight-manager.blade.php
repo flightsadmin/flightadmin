@@ -285,10 +285,10 @@
     </div>
 
     @script
-    <script>
-        $wire.on('flight-saved', () => {
-            bootstrap.Modal.getInstance(document.getElementById('flightFormModal')).hide();
-        });
-    </script>
+        <script>
+            $wire.on('flight-saved', () => {
+                bootstrap.Modal.getInstance(document.getElementById('flightFormModal')).hide();
+            });
+        </script>
     @endscript
 </div>

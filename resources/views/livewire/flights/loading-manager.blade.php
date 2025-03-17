@@ -119,7 +119,11 @@
                                                                     <span class="position-number">{{ $position['designation'] }}</span>
                                                                     <div class="container-id">{{ $container['uld_code'] }}</div>
                                                                     <div class="container-type">
-                                                                        {{ $container['pieces'] > 0 ? $container['type'] . ' (' . $container['pieces'] . 'pcs)' : 'Empty' }}
+                                                                        @if (isset($container['has_deadload']) && $container['has_deadload'])
+                                                                            DEADLOAD: {{ $container['deadload_types'] ?? 'Mixed' }}
+                                                                        @else
+                                                                            {{ $container['pieces'] > 0 ? $container['type'] . ' (' . $container['pieces'] . 'pcs)' : 'Empty' }}
+                                                                        @endif
                                                                     </div>
                                                                     <div class="container-weight">
                                                                         <i
@@ -149,7 +153,13 @@
                                                                     <span class="position-number">{{ $position['designation'] }}</span>
                                                                     <div class="container-id">{{ $container['uld_code'] }}</div>
                                                                     <div class="container-type">
-                                                                        {{ $container['pieces'] > 0 ? $container['type'] . ' (' . $container['pieces'] . 'pcs)' : 'Empty' }}
+                                                                        @if (isset($container['has_deadload']) && $container['has_deadload'])
+                                                                            <i class="bi bi-boxes">
+                                                                                {{ $container['deadload_types'] ?? 'Mixed' }}
+                                                                            </i>
+                                                                        @else
+                                                                            {{ $container['pieces'] > 0 ? $container['type'] . ' (' . $container['pieces'] . 'pcs)' : 'Empty' }}
+                                                                        @endif
                                                                     </div>
                                                                     <div class="container-weight">
                                                                         <i
@@ -221,10 +231,15 @@
                 <div class="unplanned-section mt-3">
                     <div class="row g-3">
                         <!-- Available ULDs Column -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="card h-100">
-                                <div class="card-header py-2">
+                                <div class="card-header py-2 d-flex justify-content-between align-items-center">
                                     <h6 class="card-title m-0">Available ULDs</h6>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary" wire:click="toggleAssignModal">
+                                            <i class="bi bi-plus-circle"></i> Add Container
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="card-body p-2">
                                     <div class="row g-2">
@@ -232,12 +247,20 @@
                                             <div class="col-sm-6 col-md-6 col-lg-4">
                                                 <div class="uld-container
                                                 {{ $selectedContainer === $container['id'] ? 'selected' : '' }}
-                                                {{ $container['type'] === 'baggage' ? 'baggage-container' : 'cargo-container' }}"
+                                                {{ $container['type'] === 'baggage' ? 'baggage-container' : 'cargo-container' }}
+                                                {{ isset($container['has_deadload']) && $container['has_deadload'] ? 'has-deadload' : '' }}
+                                                {{ $deadloadSelectionActive ? 'deadload-dropzone' : '' }}"
                                                     wire:click="selectContainer('{{ $container['id'] }}')">
                                                     <div class="container-info">
                                                         <div class="container-id">{{ $container['uld_code'] }}</div>
                                                         <div class="container-type">
-                                                            {{ $container['pieces'] > 0 ? $container['type'] . ' (' . $container['pieces'] . 'pcs)' : 'Empty' }}
+                                                            @if (isset($container['has_deadload']) && $container['has_deadload'])
+                                                                <i class="bi bi-exclamation-triangle-fill text-danger">
+                                                                    DEADLOAD: {{ $container['deadload_types'] ?? 'Mixed' }}
+                                                                </i>
+                                                            @else
+                                                                {{ $container['pieces'] > 0 ? $container['type'] . ' (' . $container['pieces'] . 'pcs)' : 'Empty' }}
+                                                            @endif
                                                         </div>
                                                         <div class="container-weight">
                                                             <i
@@ -258,14 +281,26 @@
                             </div>
                         </div>
 
-                        <!-- Unplanned Manager Column -->
-                        <div class="col-md-4">
-                            <livewire:flight.unplanned-manager :flight="$flight" />
-                        </div>
-
                         <!-- Deadload Manager Column -->
-                        <div class="col-md-4">
-                            <livewire:flight.deadload-manager :flight="$flight" />
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                    <h6 class="card-title m-0">Deadload Manager</h6>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary" wire:click="openDeadloadModal">
+                                            <i class="bi bi-plus-circle"></i> Add Deadload
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success"
+                                            wire:click="$dispatch('open-deadload-container-modal')"
+                                            @if (!$selectedContainer) disabled @endif>
+                                            <i class="bi bi-arrow-right-circle"></i> Add to Container
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body p-2">
+                                    <livewire:flights.deadload-manager :flight="$flight" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -437,6 +472,12 @@
             </div>
         </div>
     </div>
+    @if ($deadloadSelectionActive)
+        <div class="deadload-mode-active">
+            <i class="bi bi-exclamation-triangle"></i>
+            Deadload Assignment Mode Active
+        </div>
+    @endif
 
     <script>
         document.addEventListener('show-lirf-preview', function() {
@@ -455,7 +496,9 @@
             });
 
             document.addEventListener('unplanned-items-selected', (event) => {
-                $wire.handleUnplannedItemsSelected(event.detail.type);
+                // Make sure we're handling the type correctly
+                const type = typeof event.detail === 'object' ? event.detail.type : event.detail;
+                $wire.handleUnplannedItemsSelected(type);
             });
 
             document.addEventListener('unplanned-items-deselected', () => {
@@ -481,6 +524,85 @@
                         $wire.finalizeLoadplanAction();
                     }
                 });
+            });
+
+            // Listen for deadload selection events
+            $wire.on('deadload-selected', (data) => {
+                // Highlight valid drop targets (containers or bulk positions)
+                document.querySelectorAll('.cargo-slot:not(.occupied)').forEach(slot => {
+                    if (slot.closest('.hold-container.bulk')) {
+                        slot.classList.add('deadload-drop-target');
+                    }
+                });
+
+                document.querySelectorAll('.uld-container').forEach(container => {
+                    container.classList.add('deadload-drop-target');
+                });
+            });
+
+            $wire.on('deadload-deselected', () => {
+                // Remove highlighting from all potential drop targets
+                document.querySelectorAll('.deadload-drop-target').forEach(el => {
+                    el.classList.remove('deadload-drop-target');
+                });
+            });
+
+            // Handle dropping deadload on a position
+            document.addEventListener('deadload-to-position', (event) => {
+                $wire.call('assignDeadloadToPosition', event.detail.deadloadIndex, event.detail.positionId);
+            });
+
+            // Handle dropping deadload in a container
+            document.addEventListener('deadload-to-container', (event) => {
+                $wire.call('assignDeadloadToContainer', event.detail.deadloadIndex, event.detail.containerId);
+            });
+
+            // Handle deadload to container assignment
+            $wire.on('open-deadload-container-modal', () => {
+                if (!$wire.selectedContainer) {
+                    Swal.fire({
+                        title: 'No Container Selected',
+                        text: 'Please select a container first before assigning deadload items.',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                Livewire.dispatch('open-deadload-container-modal');
+            });
+
+            // Update the container display when deadload is updated
+            $wire.on('deadload-updated', () => {
+                $wire.refreshContainers();
+            });
+
+            // Update the deadload selection event handling
+            $wire.on('deadload-selection-changed', (isActive) => {
+                if (isActive) {
+                    // Add a class to the body to indicate deadload mode
+                    document.body.classList.add('deadload-mode');
+
+                    // Highlight all containers as potential drop targets
+                    document.querySelectorAll('.uld-container').forEach(container => {
+                        container.classList.add('deadload-dropzone');
+                    });
+                } else {
+                    // Remove the deadload mode class
+                    document.body.classList.remove('deadload-mode');
+
+                    // Remove highlighting from containers
+                    document.querySelectorAll('.uld-container').forEach(container => {
+                        container.classList.remove('deadload-dropzone');
+                    });
+                }
+            });
+
+            // Add an escape key handler to exit deadload mode
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && document.body.classList.contains('deadload-mode')) {
+                    Livewire.dispatch('cancel-deadload-selection');
+                }
             });
         </script>
     @endscript
@@ -832,6 +954,56 @@
             transform: translateX(-50%);
             top: 100%;
             text-align: left;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .deadload-drop-target {
+            border: 2px dashed #ffc107 !important;
+            background-color: #fff3cd !important;
+        }
+
+        .deadload-item.selected {
+            cursor: grab;
+        }
+
+        .cargo-slot.has-deadload {
+            background-color: #ffc107;
+            border-color: #ff9800;
+        }
+
+        .uld-container.has-deadload {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .uld-container.has-deadload:hover {
+            background-color: #ffe69c;
+        }
+
+        /* Deadload dropzone styles */
+        .uld-container.deadload-dropzone {
+            border: 2px dashed #ffc107;
+            background-color: #fff8e1;
+            cursor: cell;
+        }
+
+        .uld-container.deadload-dropzone:hover {
+            background-color: #ffe69c;
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+        }
+
+        /* Add a visual indicator for deadload mode */
+        .deadload-mode-active {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #ffc107;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            z-index: 1000;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
     </style>
