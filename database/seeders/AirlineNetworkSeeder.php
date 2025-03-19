@@ -55,9 +55,9 @@ class AirlineNetworkSeeder extends Seeder
             foreach ($airlineStations as $station) {
                 $isHub = $hubs->contains($station);
 
-                $emailDomain = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $airline->name)) . '.test';
-                $contactEmail = strtolower($station->code) . '@' . $emailDomain;
-                $contactPhone = '+' . fake()->numberBetween(1, 999) . ' ' . fake()->numberBetween(100, 999) . ' ' . fake()->numberBetween(1000, 9999);
+                $emailDomain = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $airline->name)).'.test';
+                $contactEmail = strtolower($station->code).'@'.$emailDomain;
+                $contactPhone = '+'.fake()->numberBetween(1, 999).' '.fake()->numberBetween(100, 999).' '.fake()->numberBetween(1000, 9999);
 
                 $airline->stations()->attach($station->id, [
                     'is_hub' => $isHub,
@@ -95,7 +95,7 @@ class AirlineNetworkSeeder extends Seeder
 
                         // Check if this route or its reverse already exists in our tracking array
                         $reverseKey = "{$airline->id}-{$arrival->id}-{$departure->id}";
-                        if (!isset($existingRoutes[$key]) && !isset($existingRoutes[$reverseKey])) {
+                        if (! isset($existingRoutes[$key]) && ! isset($existingRoutes[$reverseKey])) {
                             $stationPairs[] = [
                                 'departure' => $departure,
                                 'arrival' => $arrival,
@@ -119,7 +119,7 @@ class AirlineNetworkSeeder extends Seeder
                     ->where('arrival_station_id', $pair['arrival']->id)
                     ->exists();
 
-                if (!$routeExists) {
+                if (! $routeExists) {
                     try {
                         // Create route using factory
                         $route = Route::factory()
@@ -140,7 +140,7 @@ class AirlineNetworkSeeder extends Seeder
                                 ->where('arrival_station_id', $pair['departure']->id)
                                 ->exists();
 
-                            if (!$reverseRouteExists) {
+                            if (! $reverseRouteExists) {
                                 $returnRoute = Route::factory()
                                     ->forAirline($airline)
                                     ->betweenStations($pair['arrival'], $pair['departure'])

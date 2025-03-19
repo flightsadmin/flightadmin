@@ -49,7 +49,7 @@ class LoadingManager extends Component
     {
         $this->flight = $flight->load([
             'aircraft.type.holds.positions',
-            'containers' => fn($q) => $q->withPivot(['type', 'pieces', 'weight', 'status', 'position_id']),
+            'containers' => fn ($q) => $q->withPivot(['type', 'pieces', 'weight', 'status', 'position_id']),
         ]);
 
         $this->loadplan = $flight->loadplans()->latest()->first();
@@ -59,7 +59,7 @@ class LoadingManager extends Component
                 'id' => $hold->id,
                 'name' => $hold->name,
                 'max_weight' => $hold->max_weight,
-                'positions' => $hold->positions->map(fn($pos) => [
+                'positions' => $hold->positions->map(fn ($pos) => [
                     'id' => $pos->id,
                     'designation' => $pos->code,
                 ])->toArray(),
@@ -87,7 +87,7 @@ class LoadingManager extends Component
 
     public function getUnplannedContainersProperty()
     {
-        return collect($this->containers)->filter(fn($container) => !$container['position'])->values()->toArray();
+        return collect($this->containers)->filter(fn ($container) => ! $container['position'])->values()->toArray();
     }
 
     public function getTotalWeightProperty()
@@ -101,12 +101,14 @@ class LoadingManager extends Component
         if ($this->deadloadSelectionActive) {
             // Get the selected deadload IDs from the DeadloadManager component
             $this->dispatch('get-selected-deadload-ids', $containerId);
+
             return;
         }
 
         // Normal container selection behavior
         if ($this->selectedContainer === $containerId) {
             $this->selectedContainer = null;
+
             return;
         }
         $this->selectedContainer = $containerId;
@@ -120,11 +122,13 @@ class LoadingManager extends Component
 
         if (empty($deadloadIds)) {
             $this->dispatch('alert', icon: 'error', message: 'No deadload items selected');
+
             return;
         }
 
-        if (!$containerId) {
+        if (! $containerId) {
             $this->dispatch('alert', icon: 'error', message: 'No container selected');
+
             return;
         }
 
@@ -148,6 +152,7 @@ class LoadingManager extends Component
             if ($containerInPosition && $containerInPosition['id'] === $this->selectedContainer) {
                 // If clicking on the already selected container, deselect it
                 $this->selectedContainer = null;
+
                 return;
             }
 
@@ -156,6 +161,7 @@ class LoadingManager extends Component
                 $this->assignContainerToPosition($this->selectedContainer, $positionId);
                 $this->selectedContainer = null;
             }
+
             return;
         }
 
@@ -165,13 +171,14 @@ class LoadingManager extends Component
             $position = $this->getPositionById($positionId);
             $hold = $this->getHoldByPositionId($positionId);
 
-            if ($hold && str_contains($hold['name'], 'Bulk') && !$this->isPositionOccupied($positionId)) {
+            if ($hold && str_contains($hold['name'], 'Bulk') && ! $this->isPositionOccupied($positionId)) {
                 // Open the pieces modal for bulk positions
                 $this->dispatch('open-pieces-modal', [
                     'positionId' => $positionId,
-                    'type' => $this->unplannedType
+                    'type' => $this->unplannedType,
                 ]);
             }
+
             return;
         }
 
@@ -185,7 +192,7 @@ class LoadingManager extends Component
     public function handleDoubleClick($positionId)
     {
         $container = $this->getContainerInPosition($positionId);
-        if (!$container) {
+        if (! $container) {
             return;
         }
 
@@ -222,7 +229,7 @@ class LoadingManager extends Component
                     'containerId' => $container['id'],
                     'positionId' => $positionId,
                     'type' => $container['type'],
-                    'weight' => $container['weight']
+                    'weight' => $container['weight'],
                 ]);
 
                 DB::commit();
@@ -237,8 +244,8 @@ class LoadingManager extends Component
 
             } catch (\Exception $e) {
                 DB::rollBack();
-                $this->dispatch('alert', icon: 'error', message: 'Failed to offload bulk container: ' . $e->getMessage());
-                \Log::error('Failed to offload bulk container: ' . $e->getMessage());
+                $this->dispatch('alert', icon: 'error', message: 'Failed to offload bulk container: '.$e->getMessage());
+                \Log::error('Failed to offload bulk container: '.$e->getMessage());
             }
 
             return;
@@ -247,6 +254,7 @@ class LoadingManager extends Component
         // For deadload containers, we should not handle them here
         if ($isDeadloadContainer) {
             $this->dispatch('alert', icon: 'info', message: 'Deadload items must be offloaded from the Deadload Manager');
+
             return;
         }
 
@@ -269,7 +277,7 @@ class LoadingManager extends Component
             DB::beginTransaction();
 
             $container = collect($this->containers)->firstWhere('id', $this->selectedContainer);
-            if (!$container) {
+            if (! $container) {
                 $this->dispatch('alert', icon: 'error', message: 'Container not found');
 
                 return;
@@ -314,7 +322,7 @@ class LoadingManager extends Component
         } catch (\Exception $e) {
             DB::rollBack();
             $this->dispatch('alert', icon: 'error', message: 'Failed to load container');
-            \Log::error('Failed to move container: ' . $e->getMessage());
+            \Log::error('Failed to move container: '.$e->getMessage());
         }
     }
 
@@ -360,13 +368,13 @@ class LoadingManager extends Component
             \Log::info('Container position updated', [
                 'containerId' => $containerId,
                 'newPositionId' => $positionId,
-                'status' => $positionId ? 'loaded' : 'unloaded'
+                'status' => $positionId ? 'loaded' : 'unloaded',
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->dispatch('alert', icon: 'error', message: 'Failed to update container position: ' . $e->getMessage());
-            \Log::error('Failed to update container position: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to update container position: '.$e->getMessage());
+            \Log::error('Failed to update container position: '.$e->getMessage());
         }
     }
 
@@ -378,13 +386,13 @@ class LoadingManager extends Component
     public function canDropHere($positionId)
     {
         // If no container is selected, nothing can be dropped
-        if (!$this->selectedContainer) {
+        if (! $this->selectedContainer) {
             return false;
         }
 
         // Get the position
         $position = $this->getPositionById($positionId);
-        if (!$position) {
+        if (! $position) {
             return false;
         }
 
@@ -395,7 +403,7 @@ class LoadingManager extends Component
 
         // Get the container
         $container = collect($this->containers)->firstWhere('id', $this->selectedContainer);
-        if (!$container) {
+        if (! $container) {
             return false;
         }
 
@@ -404,11 +412,11 @@ class LoadingManager extends Component
             return collect($hold['positions'])->contains('id', $positionId);
         });
 
-        if (!$hold) {
+        if (! $hold) {
             return false;
         }
 
-        return !$this->isPositionOccupied($positionId);
+        return ! $this->isPositionOccupied($positionId);
     }
 
     public function getContainerInPosition($positionId)
@@ -421,7 +429,7 @@ class LoadingManager extends Component
         $hold = collect($this->holds)->firstWhere('id', $holdId);
 
         return collect($this->containers)
-            ->filter(fn($c) => collect($hold['positions'])->pluck('id')->contains($c['position']))
+            ->filter(fn ($c) => collect($hold['positions'])->pluck('id')->contains($c['position']))
             ->sum('weight');
     }
 
@@ -441,12 +449,12 @@ class LoadingManager extends Component
 
     public function toggleWeightSummary()
     {
-        $this->showWeightSummary = !$this->showWeightSummary;
+        $this->showWeightSummary = ! $this->showWeightSummary;
     }
 
     public function toggleAssignModal()
     {
-        $this->showAssignModal = !$this->showAssignModal;
+        $this->showAssignModal = ! $this->showAssignModal;
     }
 
     public function updatedSearchQuery()
@@ -526,7 +534,7 @@ class LoadingManager extends Component
         } catch (\Exception $e) {
             DB::rollBack();
             $this->dispatch('alert', icon: 'error', message: 'Failed to reset load plan');
-            \Log::error('Failed to reset loadplan: ' . $e->getMessage());
+            \Log::error('Failed to reset loadplan: '.$e->getMessage());
         }
     }
 
@@ -580,8 +588,8 @@ class LoadingManager extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->dispatch('alert', icon: 'error', message: 'Failed to attach container: ' . $e->getMessage());
-            \Log::error('Failed to attach container: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to attach container: '.$e->getMessage());
+            \Log::error('Failed to attach container: '.$e->getMessage());
         }
     }
 
@@ -626,7 +634,7 @@ class LoadingManager extends Component
         } catch (\Exception $e) {
             DB::rollBack();
             $this->dispatch('alert', icon: 'error', message: 'Failed to detach container');
-            \Log::error('Failed to detach container: ' . $e->getMessage());
+            \Log::error('Failed to detach container: '.$e->getMessage());
         }
     }
 
@@ -681,9 +689,10 @@ class LoadingManager extends Component
             // Ensure positionId is properly formatted
             $positionId = $data['positionId'] ?? null;
 
-            if (!$positionId) {
+            if (! $positionId) {
                 $this->dispatch('alert', icon: 'error', message: 'Position ID is missing');
                 DB::rollBack();
+
                 return;
             }
 
@@ -698,14 +707,15 @@ class LoadingManager extends Component
                 }
             }
 
-            if (!$position) {
-                $this->dispatch('alert', icon: 'error', message: 'Position not found: ' . $positionId);
+            if (! $position) {
+                $this->dispatch('alert', icon: 'error', message: 'Position not found: '.$positionId);
                 DB::rollBack();
+
                 return;
             }
 
             // Create or update the bulk container for this position
-            $existingContainer = collect($this->containers)->firstWhere(fn($c) => $c['position'] == $positionId);
+            $existingContainer = collect($this->containers)->firstWhere(fn ($c) => $c['position'] == $positionId);
 
             if ($existingContainer) {
                 $this->containers = collect($this->containers)->map(function ($container) use ($data, $positionId) {
@@ -719,7 +729,7 @@ class LoadingManager extends Component
             } else {
                 // Create new bulk container
                 $newContainer = [
-                    'id' => 'bulk_' . $positionId . '_' . uniqid(),
+                    'id' => 'bulk_'.$positionId.'_'.uniqid(),
                     'uld_code' => 'BULK',
                     'type' => $data['type'],
                     'weight' => $data['weight'],
@@ -765,13 +775,13 @@ class LoadingManager extends Component
             }
 
             DB::commit();
-            $this->dispatch('alert', icon: 'success', message: ucfirst($data['type']) . ' added successfully');
+            $this->dispatch('alert', icon: 'success', message: ucfirst($data['type']).' added successfully');
             $this->dispatch('container_position_updated');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->dispatch('alert', icon: 'error', message: 'Failed to add ' . ($data['type'] ?? 'items') . ': ' . $e->getMessage());
-            \Log::error('Failed to add unplanned items: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to add '.($data['type'] ?? 'items').': '.$e->getMessage());
+            \Log::error('Failed to add unplanned items: '.$e->getMessage());
             \Log::error($e->getTraceAsString());
         }
     }
@@ -814,11 +824,11 @@ class LoadingManager extends Component
         \Log::info('Refreshing containers - before refresh', [
             'containerCount' => count($this->containers),
             'containerWeights' => collect($this->containers)->pluck('weight', 'id')->toArray(),
-            'containerPositions' => collect($this->containers)->pluck('position', 'id')->toArray()
+            'containerPositions' => collect($this->containers)->pluck('position', 'id')->toArray(),
         ]);
 
         // Reload containers from database
-        $this->flight->load(['containers' => fn($q) => $q->withPivot(['type', 'pieces', 'weight', 'status', 'position_id'])]);
+        $this->flight->load(['containers' => fn ($q) => $q->withPivot(['type', 'pieces', 'weight', 'status', 'position_id'])]);
 
         // Clear the containers array to avoid duplicates
         $this->containers = [];
@@ -846,7 +856,7 @@ class LoadingManager extends Component
         \Log::info('Refreshing containers - after refresh', [
             'containerCount' => count($this->containers),
             'containerWeights' => collect($this->containers)->pluck('weight', 'id')->toArray(),
-            'containerPositions' => collect($this->containers)->pluck('position', 'id')->toArray()
+            'containerPositions' => collect($this->containers)->pluck('position', 'id')->toArray(),
         ]);
     }
 
@@ -862,7 +872,7 @@ class LoadingManager extends Component
 
             // Group deadload items by position
             $groupedItems = collect($deadloadItems)
-                ->filter(fn($item) => !empty($item['position']))
+                ->filter(fn ($item) => ! empty($item['position']))
                 ->groupBy('position')
                 ->toArray();
 
@@ -876,12 +886,12 @@ class LoadingManager extends Component
 
                 // Create a description of all items in this position
                 $description = collect($items)->map(function ($item) {
-                    return $item['pieces'] . ' pcs, ' . $item['weight'] . 'kg ' . ucfirst($item['type']);
+                    return $item['pieces'].' pcs, '.$item['weight'].'kg '.ucfirst($item['type']);
                 })->implode(', ');
 
                 // Add as a single container with combined values
                 $this->containers[] = [
-                    'id' => 'deadload_' . $positionId . '_' . md5(json_encode($items)),
+                    'id' => 'deadload_'.$positionId.'_'.md5(json_encode($items)),
                     'uld_code' => 'DEADLOAD',
                     'type' => $types,
                     'weight' => $totalWeight,
@@ -899,14 +909,14 @@ class LoadingManager extends Component
 
             // Add deadload items assigned to containers
             $containerItems = collect($deadloadItems)
-                ->filter(fn($item) => !empty($item['container_id']))
+                ->filter(fn ($item) => ! empty($item['container_id']))
                 ->groupBy('container_id')
                 ->toArray();
 
             // Log for debugging
             \Log::info('Processing deadload items assigned to containers', [
                 'containerCount' => count($containerItems),
-                'containers' => array_keys($containerItems)
+                'containers' => array_keys($containerItems),
             ]);
 
             foreach ($containerItems as $containerId => $items) {
@@ -923,7 +933,7 @@ class LoadingManager extends Component
 
                     // Create a description of all deadload items
                     $deadloadDescription = collect($items)->map(function ($item) {
-                        return $item['pieces'] . ' pcs, ' . $item['weight'] . 'kg ' . ucfirst($item['type']);
+                        return $item['pieces'].' pcs, '.$item['weight'].'kg '.ucfirst($item['type']);
                     })->implode(', ');
 
                     // IMPORTANT: Don't add the weight again here, as it's already in the database
@@ -938,12 +948,12 @@ class LoadingManager extends Component
                     \Log::info('Added deadload info to container without changing weight', [
                         'containerId' => $containerId,
                         'itemsCount' => count($items),
-                        'containerWeight' => $container['weight']
+                        'containerWeight' => $container['weight'],
                     ]);
                 } else {
                     \Log::warning('Container not found for deadload items', [
                         'containerId' => $containerId,
-                        'itemsCount' => count($items)
+                        'itemsCount' => count($items),
                     ]);
                 }
             }
@@ -953,7 +963,7 @@ class LoadingManager extends Component
     public function finalizeLoadplan()
     {
         $positionedContainers = collect($this->containers)
-            ->filter(fn($container) => !empty($container['position']))
+            ->filter(fn ($container) => ! empty($container['position']))
             ->count();
 
         if ($positionedContainers === 0) {
@@ -969,7 +979,7 @@ class LoadingManager extends Component
     {
         $loadplan = $this->flight->loadplans()->latest()->first();
 
-        if (!$loadplan) {
+        if (! $loadplan) {
             $loadplan = $this->flight->loadplans()->create([
                 'version' => 1,
                 'status' => 'released',
@@ -1005,15 +1015,15 @@ class LoadingManager extends Component
         if ($deadloadSetting) {
             $deadloadItems = json_decode($deadloadSetting->value, true) ?: [];
             // Log the deadload items for debugging
-            \Log::info('Deadload items found: ' . count($deadloadItems));
+            \Log::info('Deadload items found: '.count($deadloadItems));
 
             // Check if any deadload items have positions
-            $positionedItems = collect($deadloadItems)->filter(fn($item) => !empty($item['position']))->count();
-            \Log::info('Positioned deadload items: ' . $positionedItems);
+            $positionedItems = collect($deadloadItems)->filter(fn ($item) => ! empty($item['position']))->count();
+            \Log::info('Positioned deadload items: '.$positionedItems);
 
             // Check if any containers have is_deadload flag
-            $deadloadContainers = collect($this->containers)->filter(fn($c) => isset($c['is_deadload']) && $c['is_deadload'])->count();
-            \Log::info('Deadload containers: ' . $deadloadContainers);
+            $deadloadContainers = collect($this->containers)->filter(fn ($c) => isset($c['is_deadload']) && $c['is_deadload'])->count();
+            \Log::info('Deadload containers: '.$deadloadContainers);
         } else {
             \Log::info('No deadload setting found');
         }
@@ -1039,8 +1049,9 @@ class LoadingManager extends Component
             }
         }
 
-        if (!$position) {
-            $this->dispatch('alert', icon: 'error', message: 'Position not found: ' . $positionId);
+        if (! $position) {
+            $this->dispatch('alert', icon: 'error', message: 'Position not found: '.$positionId);
+
             return;
         }
 
@@ -1048,7 +1059,7 @@ class LoadingManager extends Component
         $this->dispatch('open-pieces-modal', [
             'positionId' => $positionId,
             'type' => $type,
-            'designation' => $position['designation'] ?? 'Unknown'
+            'designation' => $position['designation'] ?? 'Unknown',
         ]);
     }
 
@@ -1068,8 +1079,9 @@ class LoadingManager extends Component
             }
         }
 
-        if (!$position) {
-            $this->dispatch('alert', icon: 'error', message: 'Position not found: ' . $positionId);
+        if (! $position) {
+            $this->dispatch('alert', icon: 'error', message: 'Position not found: '.$positionId);
+
             return;
         }
 
@@ -1079,7 +1091,7 @@ class LoadingManager extends Component
             'positionId' => $positionId,
             'type' => $type,
             'pieces' => 1,
-            'weight' => $type === 'baggage' ? 15 : 50
+            'weight' => $type === 'baggage' ? 15 : 50,
         ];
     }
 
@@ -1099,14 +1111,15 @@ class LoadingManager extends Component
                 }
             }
 
-            if (!$position) {
-                $this->dispatch('alert', icon: 'error', message: 'Position not found: ' . $positionId);
+            if (! $position) {
+                $this->dispatch('alert', icon: 'error', message: 'Position not found: '.$positionId);
                 DB::rollBack();
+
                 return;
             }
 
             // Create or update the bulk container for this position
-            $existingContainer = collect($this->containers)->firstWhere(fn($c) => $c['position'] == $positionId);
+            $existingContainer = collect($this->containers)->firstWhere(fn ($c) => $c['position'] == $positionId);
 
             if ($existingContainer) {
                 $this->containers = collect($this->containers)->map(function ($container) use ($pieces, $weight, $positionId) {
@@ -1120,7 +1133,7 @@ class LoadingManager extends Component
             } else {
                 // Create new bulk container
                 $newContainer = [
-                    'id' => 'bulk_' . $positionId . '_' . uniqid(),
+                    'id' => 'bulk_'.$positionId.'_'.uniqid(),
                     'uld_code' => 'BULK',
                     'type' => $type,
                     'weight' => $weight,
@@ -1164,13 +1177,13 @@ class LoadingManager extends Component
             }
 
             DB::commit();
-            $this->dispatch('alert', icon: 'success', message: ucfirst($type) . ' added successfully');
+            $this->dispatch('alert', icon: 'success', message: ucfirst($type).' added successfully');
             $this->dispatch('container_position_updated');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->dispatch('alert', icon: 'error', message: 'Failed to add ' . $type . ': ' . $e->getMessage());
-            \Log::error('Failed to add items to position: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to add '.$type.': '.$e->getMessage());
+            \Log::error('Failed to add items to position: '.$e->getMessage());
             \Log::error($e->getTraceAsString());
         }
     }
@@ -1201,6 +1214,7 @@ class LoadingManager extends Component
             if ($availableContainers->count() === 0) {
                 $this->dispatch('alert', icon: 'error', message: 'No available containers found');
                 DB::rollBack();
+
                 return;
             }
 
@@ -1234,12 +1248,12 @@ class LoadingManager extends Component
 
             DB::commit();
             $this->dispatch('container_position_updated');
-            $this->dispatch('alert', icon: 'success', message: $addedCount . ' containers added successfully');
+            $this->dispatch('alert', icon: 'success', message: $addedCount.' containers added successfully');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->dispatch('alert', icon: 'error', message: 'Failed to add containers: ' . $e->getMessage());
-            \Log::error('Failed to add bulk containers: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to add containers: '.$e->getMessage());
+            \Log::error('Failed to add bulk containers: '.$e->getMessage());
         }
     }
 
@@ -1258,7 +1272,7 @@ class LoadingManager extends Component
             foreach ($this->holds as $hold) {
                 if (str_contains($hold['name'], 'Bulk')) {
                     foreach ($hold['positions'] as $position) {
-                        if (!$this->isPositionOccupied($position['id'])) {
+                        if (! $this->isPositionOccupied($position['id'])) {
                             $emptyBulkPositions[] = $position;
                         }
                     }
@@ -1268,6 +1282,7 @@ class LoadingManager extends Component
             if (count($emptyBulkPositions) === 0) {
                 $this->dispatch('alert', icon: 'error', message: 'No empty bulk positions found');
                 DB::rollBack();
+
                 return;
             }
 
@@ -1276,7 +1291,7 @@ class LoadingManager extends Component
 
             // Create new bulk container
             $newContainer = [
-                'id' => 'bulk_' . $position['id'] . '_' . uniqid(),
+                'id' => 'bulk_'.$position['id'].'_'.uniqid(),
                 'uld_code' => 'BULK',
                 'type' => $type,
                 'weight' => $weight,
@@ -1319,13 +1334,13 @@ class LoadingManager extends Component
             }
 
             DB::commit();
-            $this->dispatch('alert', icon: 'success', message: ucfirst($type) . ' added to bulk position successfully');
+            $this->dispatch('alert', icon: 'success', message: ucfirst($type).' added to bulk position successfully');
             $this->dispatch('container_position_updated');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->dispatch('alert', icon: 'error', message: 'Failed to add items to bulk position: ' . $e->getMessage());
-            \Log::error('Failed to add items to bulk position: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to add items to bulk position: '.$e->getMessage());
+            \Log::error('Failed to add items to bulk position: '.$e->getMessage());
         }
     }
 
@@ -1336,21 +1351,23 @@ class LoadingManager extends Component
             DB::beginTransaction();
 
             // If no container ID is provided, use the currently selected container
-            if (!$containerId && $this->selectedContainer) {
+            if (! $containerId && $this->selectedContainer) {
                 $containerId = $this->selectedContainer;
             }
 
-            if (!$containerId) {
+            if (! $containerId) {
                 $this->dispatch('alert', icon: 'error', message: 'No container selected');
                 DB::rollBack();
+
                 return;
             }
 
             // Get the container
             $container = collect($this->containers)->firstWhere('id', $containerId);
-            if (!$container) {
+            if (! $container) {
                 $this->dispatch('alert', icon: 'error', message: 'Container not found');
                 DB::rollBack();
+
                 return;
             }
 
@@ -1359,9 +1376,10 @@ class LoadingManager extends Component
                 ->where('key', 'manual_deadload')
                 ->first();
 
-            if (!$deadloadSetting) {
+            if (! $deadloadSetting) {
                 $this->dispatch('alert', icon: 'error', message: 'No deadload items found');
                 DB::rollBack();
+
                 return;
             }
 
@@ -1369,9 +1387,10 @@ class LoadingManager extends Component
 
             // Find the deadload item
             $deadloadItem = collect($deadloadItems)->firstWhere('id', $deadloadId);
-            if (!$deadloadItem) {
+            if (! $deadloadItem) {
                 $this->dispatch('alert', icon: 'error', message: 'Deadload item not found');
                 DB::rollBack();
+
                 return;
             }
 
@@ -1379,6 +1398,7 @@ class LoadingManager extends Component
             if (isset($deadloadItem['container_id']) && $deadloadItem['container_id'] == $containerId) {
                 $this->dispatch('alert', icon: 'error', message: 'This item is already assigned to this container');
                 DB::rollBack();
+
                 return;
             }
 
@@ -1387,7 +1407,7 @@ class LoadingManager extends Component
                 'containerId' => $containerId,
                 'deadloadId' => $deadloadId,
                 'deadloadWeight' => $deadloadItem['weight'],
-                'containerCurrentWeight' => $container['weight']
+                'containerCurrentWeight' => $container['weight'],
             ]);
 
             // Update the deadload item to assign it to the container
@@ -1396,6 +1416,7 @@ class LoadingManager extends Component
                     $item['container_id'] = $containerId;
                     $item['position'] = null; // Remove from position if it was assigned
                 }
+
                 return $item;
             })->toArray();
 
@@ -1408,7 +1429,7 @@ class LoadingManager extends Component
             $deadloadWeight = $deadloadItem['weight'];
 
             // If it's a real container (not a virtual one), update in database
-            if (!str_starts_with($containerId, 'deadload_') && !str_starts_with($containerId, 'bulk_')) {
+            if (! str_starts_with($containerId, 'deadload_') && ! str_starts_with($containerId, 'bulk_')) {
                 // Get the current container from the database to ensure we have the latest weight
                 $dbContainer = $this->flight->containers()->where('container_id', $containerId)->first();
 
@@ -1423,7 +1444,7 @@ class LoadingManager extends Component
                         'containerId' => $containerId,
                         'oldWeight' => $dbContainer->pivot->weight,
                         'addedWeight' => $deadloadWeight,
-                        'newWeight' => $dbContainer->pivot->weight + $deadloadWeight
+                        'newWeight' => $dbContainer->pivot->weight + $deadloadWeight,
                     ]);
                 }
             }
@@ -1438,8 +1459,8 @@ class LoadingManager extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->dispatch('alert', icon: 'error', message: 'Failed to assign deadload: ' . $e->getMessage());
-            \Log::error('Failed to assign deadload to container: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to assign deadload: '.$e->getMessage());
+            \Log::error('Failed to assign deadload to container: '.$e->getMessage());
         }
     }
 
@@ -1450,21 +1471,23 @@ class LoadingManager extends Component
             DB::beginTransaction();
 
             // If no container ID is provided, use the currently selected container
-            if (!$containerId && $this->selectedContainer) {
+            if (! $containerId && $this->selectedContainer) {
                 $containerId = $this->selectedContainer;
             }
 
-            if (!$containerId) {
+            if (! $containerId) {
                 $this->dispatch('alert', icon: 'error', message: 'No container selected');
                 DB::rollBack();
+
                 return;
             }
 
             // Get the container
             $container = collect($this->containers)->firstWhere('id', $containerId);
-            if (!$container) {
+            if (! $container) {
                 $this->dispatch('alert', icon: 'error', message: 'Container not found');
                 DB::rollBack();
+
                 return;
             }
 
@@ -1473,9 +1496,10 @@ class LoadingManager extends Component
                 ->where('key', 'manual_deadload')
                 ->first();
 
-            if (!$deadloadSetting) {
+            if (! $deadloadSetting) {
                 $this->dispatch('alert', icon: 'error', message: 'No deadload items found');
                 DB::rollBack();
+
                 return;
             }
 
@@ -1491,6 +1515,7 @@ class LoadingManager extends Component
             if ($alreadyAssigned > 0) {
                 $this->dispatch('alert', icon: 'error', message: 'One or more items are already assigned to this container');
                 DB::rollBack();
+
                 return;
             }
 
@@ -1498,7 +1523,7 @@ class LoadingManager extends Component
             $totalWeight = 0;
 
             // Ensure deadloadIds is an array
-            if (!is_array($deadloadIds)) {
+            if (! is_array($deadloadIds)) {
                 $deadloadIds = [$deadloadIds];
             }
 
@@ -1519,7 +1544,7 @@ class LoadingManager extends Component
                 'itemsCount' => count($itemsToAssign),
                 'totalWeight' => $totalWeight,
                 'containerCurrentWeight' => $container['weight'],
-                'itemWeights' => collect($itemsToAssign)->pluck('weight')->toArray()
+                'itemWeights' => collect($itemsToAssign)->pluck('weight')->toArray(),
             ]);
 
             // Update the deadload items to assign them to the container
@@ -1528,6 +1553,7 @@ class LoadingManager extends Component
                     $item['container_id'] = $containerId;
                     $item['position'] = null; // Remove from position if it was assigned
                 }
+
                 return $item;
             })->toArray();
 
@@ -1537,7 +1563,7 @@ class LoadingManager extends Component
                 ->update(['value' => json_encode($deadloadItems)]);
 
             // If it's a real container (not a virtual one), update in database
-            if (!str_starts_with($containerId, 'deadload_') && !str_starts_with($containerId, 'bulk_')) {
+            if (! str_starts_with($containerId, 'deadload_') && ! str_starts_with($containerId, 'bulk_')) {
                 // Get the current container from the database to ensure we have the latest weight
                 $dbContainer = $this->flight->containers()->where('container_id', $containerId)->first();
 
@@ -1552,7 +1578,7 @@ class LoadingManager extends Component
                         'containerId' => $containerId,
                         'oldWeight' => $dbContainer->pivot->weight,
                         'addedWeight' => $totalWeight,
-                        'newWeight' => $dbContainer->pivot->weight + $totalWeight
+                        'newWeight' => $dbContainer->pivot->weight + $totalWeight,
                     ]);
                 }
             }
@@ -1571,8 +1597,8 @@ class LoadingManager extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->dispatch('alert', icon: 'error', message: 'Failed to assign deadload: ' . $e->getMessage());
-            \Log::error('Failed to assign bulk deadload to container: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to assign deadload: '.$e->getMessage());
+            \Log::error('Failed to assign bulk deadload to container: '.$e->getMessage());
         }
     }
 
@@ -1597,17 +1623,19 @@ class LoadingManager extends Component
 
             // Get the container
             $container = collect($this->containers)->firstWhere('id', $containerId);
-            if (!$container) {
+            if (! $container) {
                 $this->dispatch('alert', icon: 'error', message: 'Container not found');
                 DB::rollBack();
+
                 return;
             }
 
             // Get the position
             $position = $this->getPositionById($positionId);
-            if (!$position) {
+            if (! $position) {
                 $this->dispatch('alert', icon: 'error', message: 'Position not found');
                 DB::rollBack();
+
                 return;
             }
 
@@ -1615,14 +1643,16 @@ class LoadingManager extends Component
             if ($this->isPositionOccupied($positionId)) {
                 $this->dispatch('alert', icon: 'error', message: 'Position is already occupied');
                 DB::rollBack();
+
                 return;
             }
 
             // Get the hold for this position
             $hold = $this->getHoldByPositionId($positionId);
-            if (!$hold) {
+            if (! $hold) {
                 $this->dispatch('alert', icon: 'error', message: 'Hold not found for position');
                 DB::rollBack();
+
                 return;
             }
 
@@ -1632,7 +1662,7 @@ class LoadingManager extends Component
             // Update the container's position in the database - for ALL containers, including bulk positions
             $this->flight->containers()->updateExistingPivot($containerId, [
                 'position_id' => $positionId,
-                'status' => 'loaded'
+                'status' => 'loaded',
             ]);
 
             // Update the container's position in memory
@@ -1642,6 +1672,7 @@ class LoadingManager extends Component
                     $c['position_code'] = $positionId;
                     $c['status'] = 'loaded';
                 }
+
                 return $c;
             })->toArray();
 
@@ -1663,14 +1694,14 @@ class LoadingManager extends Component
                 \Log::info('Container assigned to bulk position', [
                     'containerId' => $containerId,
                     'positionId' => $positionId,
-                    'holdName' => $hold['name']
+                    'holdName' => $hold['name'],
                 ]);
                 $message = 'Container assigned to bulk position';
             } else {
                 \Log::info('Container assigned to regular position', [
                     'containerId' => $containerId,
                     'positionId' => $positionId,
-                    'holdName' => $hold['name']
+                    'holdName' => $hold['name'],
                 ]);
                 $message = 'Container assigned to position';
             }
@@ -1682,8 +1713,8 @@ class LoadingManager extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->dispatch('alert', icon: 'error', message: 'Failed to assign container: ' . $e->getMessage());
-            \Log::error('Failed to assign container to position: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to assign container: '.$e->getMessage());
+            \Log::error('Failed to assign container to position: '.$e->getMessage());
         }
     }
 
@@ -1699,6 +1730,7 @@ class LoadingManager extends Component
                 }
             }
         }
+
         return null;
     }
 
@@ -1714,6 +1746,7 @@ class LoadingManager extends Component
                 }
             }
         }
+
         return null;
     }
 }

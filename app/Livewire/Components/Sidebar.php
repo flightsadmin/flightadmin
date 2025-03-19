@@ -3,8 +3,8 @@
 namespace App\Livewire\Components;
 
 use App\Models\Flight;
-use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Component;
 use Livewire\WithPagination;
 
 class Sidebar extends Component

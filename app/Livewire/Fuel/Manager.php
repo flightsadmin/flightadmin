@@ -69,7 +69,7 @@ class Manager extends Component
 
     public function calculatePantryWeight()
     {
-        if (!$this->pantry) {
+        if (! $this->pantry) {
             return 0;
         }
 
@@ -80,7 +80,7 @@ class Manager extends Component
 
     public function calculatePantryIndex()
     {
-        if (!$this->pantry) {
+        if (! $this->pantry) {
             return 0;
         }
 
@@ -97,7 +97,7 @@ class Manager extends Component
         $crewOptions = [];
         for ($deck = 2; $deck <= $maxDeckCrew; $deck++) {
             for ($cabin = 1; $cabin <= $maxCabinCrew; $cabin++) {
-                $crewOptions[] = $deck . '/' . $cabin;
+                $crewOptions[] = $deck.'/'.$cabin;
             }
         }
 

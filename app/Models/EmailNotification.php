@@ -92,8 +92,8 @@ class EmailNotification extends Model
         $notification = $notification->whereNull('station_id')->whereNull('route_id')->first();
 
         // If no notification found, create a default one
-        if (!$notification) {
-            $notification = new self();
+        if (! $notification) {
+            $notification = new self;
             $notification->email_addresses = [];
             $notification->sita_addresses = [];
             $notification->document_type = $documentType;

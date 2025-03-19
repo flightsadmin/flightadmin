@@ -3,32 +3,40 @@
 namespace App\Livewire\Flight;
 
 use App\Models\Flight;
-use Livewire\Component;
-use Livewire\Attributes\On;
-use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
+use Livewire\Component;
 
 class DeadloadManager extends Component
 {
     public Flight $flight;
+
     public $deadloadItems = [];
+
     public $showDeadloadModal = false;
+
     public $showContainerModal = false;
+
     public $selectedDeadloadIds = [];
+
     public $newDeadload = [
         'name' => '',
         'type' => 'cargo',
         'subtype' => 'local',
         'pieces' => 1,
-        'weight' => 10
+        'weight' => 10,
     ];
+
     public $isEditing = false;
+
     public $editDeadloadId = null;
+
     public $editDeadload = [
         'name' => '',
         'type' => '',
         'pieces' => 1,
-        'weight' => 10
+        'weight' => 10,
     ];
 
     public function mount(Flight $flight)
@@ -56,7 +64,7 @@ class DeadloadManager extends Component
     public function assignedItems()
     {
         return collect($this->deadloadItems)->filter(function ($item) {
-            return !empty($item['position']) || !empty($item['container_id']);
+            return ! empty($item['position']) || ! empty($item['container_id']);
         })->values()->toArray();
     }
 
@@ -83,7 +91,7 @@ class DeadloadManager extends Component
             'type' => 'cargo',
             'subtype' => 'local',
             'pieces' => 1,
-            'weight' => 10
+            'weight' => 10,
         ];
         $this->showDeadloadModal = true;
     }
@@ -103,7 +111,7 @@ class DeadloadManager extends Component
             'pieces' => 1,
             'weight' => 10,
             'position' => null,
-            'container_id' => null
+            'container_id' => null,
         ];
     }
 
@@ -111,7 +119,7 @@ class DeadloadManager extends Component
     {
         if ($this->newDeadload['type'] === 'cargo' || $this->newDeadload['type'] === 'mail') {
             $this->newDeadload['subtype'] = 'local';
-        } else if ($this->newDeadload['type'] === 'baggage') {
+        } elseif ($this->newDeadload['type'] === 'baggage') {
             $this->newDeadload['subtype'] = 'rush';
         } else {
             $this->newDeadload['subtype'] = '';
@@ -128,8 +136,8 @@ class DeadloadManager extends Component
         ]);
 
         $displayName = ucfirst($this->newDeadload['type']);
-        if (!empty($this->newDeadload['subtype'])) {
-            $displayName .= ' (' . ucfirst($this->newDeadload['subtype']) . ')';
+        if (! empty($this->newDeadload['subtype'])) {
+            $displayName .= ' ('.ucfirst($this->newDeadload['subtype']).')';
         }
 
         $this->newDeadload['name'] = $displayName;
@@ -157,25 +165,25 @@ class DeadloadManager extends Component
                 $item = $this->deadloadItems[$index];
 
                 // If the item was assigned to a container, update the container weight
-                if (!empty($item['container_id'])) {
+                if (! empty($item['container_id'])) {
                     $containerId = $item['container_id'];
 
                     // Log for debugging
                     \Log::info('Offloading deadload from container', [
                         'deadloadId' => $id,
                         'containerId' => $containerId,
-                        'deadloadWeight' => $item['weight']
+                        'deadloadWeight' => $item['weight'],
                     ]);
 
                     // Only update real containers in the database (not virtual ones)
-                    if (!str_starts_with($containerId, 'deadload_') && !str_starts_with($containerId, 'bulk_')) {
+                    if (! str_starts_with($containerId, 'deadload_') && ! str_starts_with($containerId, 'bulk_')) {
                         // Get the container from the database
                         $container = $this->flight->containers()->where('container_id', $containerId)->first();
 
                         if ($container) {
                             // Subtract the deadload weight from the container
                             $this->flight->containers()->updateExistingPivot($containerId, [
-                                'weight' => max(0, $container->pivot->weight - $item['weight'])
+                                'weight' => max(0, $container->pivot->weight - $item['weight']),
                             ]);
                         }
                     }
@@ -192,7 +200,7 @@ class DeadloadManager extends Component
                     // Update the UI
                     $this->dispatch('deadload-updated');
                     $this->dispatch('alert', icon: 'success', message: 'Deadload item offloaded');
-                } else if (!empty($item['position'])) {
+                } elseif (! empty($item['position'])) {
                     // Item is assigned to a position, remove the assignment
                     $this->deadloadItems[$index]['position'] = null;
 
@@ -208,8 +216,8 @@ class DeadloadManager extends Component
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->dispatch('alert', icon: 'error', message: 'Failed to offload deadload: ' . $e->getMessage());
-            \Log::error('Failed to offload deadload: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to offload deadload: '.$e->getMessage());
+            \Log::error('Failed to offload deadload: '.$e->getMessage());
         }
     }
 
@@ -227,9 +235,10 @@ class DeadloadManager extends Component
                 $item = $this->deadloadItems[$index];
 
                 // Only allow deletion of unassigned items
-                if (!empty($item['container_id']) || !empty($item['position'])) {
+                if (! empty($item['container_id']) || ! empty($item['position'])) {
                     $this->dispatch('alert', icon: 'error', message: 'Please offload the item before deleting it');
                     DB::rollBack();
+
                     return;
                 }
 
@@ -250,14 +259,14 @@ class DeadloadManager extends Component
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->dispatch('alert', icon: 'error', message: 'Failed to remove deadload: ' . $e->getMessage());
-            \Log::error('Failed to remove deadload: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to remove deadload: '.$e->getMessage());
+            \Log::error('Failed to remove deadload: '.$e->getMessage());
         }
     }
 
     public function toggleDeadloadSelection($id)
     {
-        if (!is_array($this->selectedDeadloadIds)) {
+        if (! is_array($this->selectedDeadloadIds)) {
             $this->selectedDeadloadIds = [];
         }
 
@@ -267,7 +276,7 @@ class DeadloadManager extends Component
             $this->selectedDeadloadIds[] = $id;
         }
 
-        $this->dispatch('deadload-selection-changed', !empty($this->selectedDeadloadIds));
+        $this->dispatch('deadload-selection-changed', ! empty($this->selectedDeadloadIds));
     }
 
     public function selectAllUnassigned()
@@ -276,7 +285,7 @@ class DeadloadManager extends Component
             ->pluck('id')
             ->toArray();
 
-        $this->dispatch('deadload-selection-changed', !empty($this->selectedDeadloadIds));
+        $this->dispatch('deadload-selection-changed', ! empty($this->selectedDeadloadIds));
     }
 
     public function clearSelection()
@@ -289,6 +298,7 @@ class DeadloadManager extends Component
     {
         if (empty($this->selectedDeadloadIds)) {
             $this->dispatch('alert', icon: 'error', message: 'No deadload items selected');
+
             return;
         }
 
@@ -328,13 +338,13 @@ class DeadloadManager extends Component
     #[On('get-selected-deadload-ids')]
     public function provideSelectedDeadloadIds($containerId)
     {
-        if (!is_array($this->selectedDeadloadIds)) {
+        if (! is_array($this->selectedDeadloadIds)) {
             $this->selectedDeadloadIds = [];
         }
 
         $this->dispatch('provide-selected-deadload-ids', [
             'ids' => $this->selectedDeadloadIds,
-            'containerId' => $containerId
+            'containerId' => $containerId,
         ]);
     }
 
@@ -345,14 +355,14 @@ class DeadloadManager extends Component
             [
                 'value' => json_encode(array_values($this->deadloadItems)),
                 'type' => 'json',
-                'description' => 'Manual deadload items'
+                'description' => 'Manual deadload items',
             ]
         );
     }
 
     public function render()
     {
-        if (!is_array($this->selectedDeadloadIds)) {
+        if (! is_array($this->selectedDeadloadIds)) {
             $this->selectedDeadloadIds = [];
         }
 
@@ -361,7 +371,7 @@ class DeadloadManager extends Component
 
     public function hydrate()
     {
-        if (!is_array($this->selectedDeadloadIds)) {
+        if (! is_array($this->selectedDeadloadIds)) {
             $this->selectedDeadloadIds = [];
         }
     }
@@ -380,7 +390,7 @@ class DeadloadManager extends Component
                 'type' => $item['type'],
                 'subtype' => $item['subtype'] ?? 'local',
                 'pieces' => $item['pieces'],
-                'weight' => $item['weight']
+                'weight' => $item['weight'],
             ];
             $this->isEditing = true;
             $this->showDeadloadModal = true;
@@ -400,8 +410,8 @@ class DeadloadManager extends Component
 
             // Generate display name from type and subtype
             $displayName = ucfirst($this->newDeadload['type']);
-            if (!empty($this->newDeadload['subtype'])) {
-                $displayName .= ' (' . ucfirst($this->newDeadload['subtype']) . ')';
+            if (! empty($this->newDeadload['subtype'])) {
+                $displayName .= ' ('.ucfirst($this->newDeadload['subtype']).')';
             }
             $this->newDeadload['name'] = $displayName;
 
@@ -423,18 +433,18 @@ class DeadloadManager extends Component
                     $this->deadloadItems[$index]['weight'] = $this->newDeadload['weight'];
 
                     // If the item is assigned to a container, update the container weight
-                    if (!empty($oldItem['container_id'])) {
+                    if (! empty($oldItem['container_id'])) {
                         $containerId = $oldItem['container_id'];
 
                         // Only update real containers in the database (not virtual ones)
-                        if (!str_starts_with($containerId, 'deadload_') && !str_starts_with($containerId, 'bulk_')) {
+                        if (! str_starts_with($containerId, 'deadload_') && ! str_starts_with($containerId, 'bulk_')) {
                             // Get the container from the database
                             $container = $this->flight->containers()->where('container_id', $containerId)->first();
 
                             if ($container) {
                                 // Update the container weight with the difference
                                 $this->flight->containers()->updateExistingPivot($containerId, [
-                                    'weight' => $container->pivot->weight + $weightDifference
+                                    'weight' => $container->pivot->weight + $weightDifference,
                                 ]);
 
                                 // Log the update for debugging
@@ -442,7 +452,7 @@ class DeadloadManager extends Component
                                     'containerId' => $containerId,
                                     'oldWeight' => $container->pivot->weight,
                                     'weightDifference' => $weightDifference,
-                                    'newWeight' => $container->pivot->weight + $weightDifference
+                                    'newWeight' => $container->pivot->weight + $weightDifference,
                                 ]);
                             }
                         }
@@ -452,6 +462,7 @@ class DeadloadManager extends Component
                 } else {
                     $this->dispatch('alert', icon: 'error', message: 'Deadload item not found');
                     DB::rollBack();
+
                     return;
                 }
             } else {
@@ -485,7 +496,7 @@ class DeadloadManager extends Component
                 'type' => 'cargo',
                 'subtype' => 'local',
                 'pieces' => 1,
-                'weight' => 10
+                'weight' => 10,
             ];
 
             // Update the UI
@@ -494,8 +505,8 @@ class DeadloadManager extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->dispatch('alert', icon: 'error', message: 'Failed to save deadload item: ' . $e->getMessage());
-            \Log::error('Failed to save deadload item: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to save deadload item: '.$e->getMessage());
+            \Log::error('Failed to save deadload item: '.$e->getMessage());
         }
     }
 
@@ -509,7 +520,7 @@ class DeadloadManager extends Component
             'type' => 'cargo',
             'subtype' => 'local',
             'pieces' => 1,
-            'weight' => 10
+            'weight' => 10,
         ];
     }
 }
