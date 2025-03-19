@@ -16,7 +16,7 @@
         "laravel-vite-plugin": "^1.0",
         "postcss": "^8.4.47",
         "sass": "1.76.0",
-        "sweetalert2": "11.6.13",
+        "sweetalert2": "^11.17",
         "vite": "^6.0"
     }
 }
