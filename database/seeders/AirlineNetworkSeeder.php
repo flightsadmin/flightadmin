@@ -33,14 +33,14 @@ class AirlineNetworkSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
     }
 
-    private function createAirlines(int $count = 3): array
+    private function createAirlines(int $count = 1): array
     {
-        return Airline::factory()->count($count)->create()->all();
+        return Airline::factory($count)->create()->all();
     }
 
     private function createStations(int $count = 10): array
     {
-        return Station::factory()->count($count)->create()->all();
+        return Station::factory($count)->create()->all();
     }
 
     private function assignStationsToAirlines(array $airlines, array $stations): void
