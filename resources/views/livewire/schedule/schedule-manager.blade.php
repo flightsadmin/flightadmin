@@ -182,15 +182,22 @@
                                 <select wire:model="route_id" wire:change="onRouteChange($event.target.value)"
                                     class="form-select form-select-sm" required>
                                     <option value="">Select Route</option>
-                                    @foreach ($routes->where('airline_id', $airline_id) as $route)
+                                    @foreach ($routes as $route)
                                         <option value="{{ $route->id }}">
-                                            {{ $route->departureStation->code }} - {{ $route->arrivalStation->code }}
+                                            {{ $route->departureStation->code ?? 'Unknown' }} -
+                                            {{ $route->arrivalStation->code ?? 'Unknown' }}
                                             ({{ $route->airline->name }})
                                         </option>
                                     @endforeach
                                 </select>
+                                @if ($editMode && $route_id && $routes->where('id', $route_id)->isEmpty())
+                                    <div class="alert alert-warning mt-2 py-1 small">
+                                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                        The selected route is not in the list. It may have been deleted or modified.
+                                    </div>
+                                @endif
                                 @error('route_id')
-                                    <div class="text-danger small">{{ $message }}</div>
+                                    <div class="text-danger small mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>

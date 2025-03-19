@@ -96,9 +96,9 @@ class ScheduleManager extends Component
         $this->showModal = true;
 
         // Set default values
-        $this->start_date = Carbon::today()->format('Y-m-d');
+        $this->start_date = Carbon::today()->subDays(1)->format('Y-m-d');
         $this->end_date = Carbon::today()->addMonths(3)->format('Y-m-d');
-        $this->days_of_week = [1, 2, 3, 4, 5]; // Default to weekdays
+        $this->days_of_week = [1, 2, 3, 4, 5, 6, 7]; // Default to weekdays
     }
 
     public function editSchedule(Schedule $schedule)
@@ -157,7 +157,7 @@ class ScheduleManager extends Component
 
     public function toggleStatus(Schedule $schedule)
     {
-        $schedule->update(['is_active' => ! $schedule->is_active]);
+        $schedule->update(['is_active' => !$schedule->is_active]);
 
         $status = $schedule->is_active ? 'activated' : 'deactivated';
         $this->dispatch('alert', icon: 'success', message: "Schedule {$status} successfully.");
@@ -179,7 +179,7 @@ class ScheduleManager extends Component
 
     public function deleteSchedule()
     {
-        if (! $this->scheduleToDelete) {
+        if (!$this->scheduleToDelete) {
             return;
         }
 
@@ -219,16 +219,16 @@ class ScheduleManager extends Component
             ->with(['airline', 'aircraftType', 'route.departureStation', 'route.arrivalStation'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('flight_number', 'like', '%'.$this->search.'%')
+                    $q->where('flight_number', 'like', '%' . $this->search . '%')
                         ->orWhereHas('route.departureStation', function ($sq) {
-                            $sq->where('code', 'like', '%'.$this->search.'%');
+                            $sq->where('code', 'like', '%' . $this->search . '%');
                         })
                         ->orWhereHas('route.arrivalStation', function ($sq) {
-                            $sq->where('code', 'like', '%'.$this->search.'%');
+                            $sq->where('code', 'like', '%' . $this->search . '%');
                         });
                 });
             })
-            ->when($this->airline_id, fn ($query) => $query->where('airline_id', $this->airline_id))
+            ->when($this->airline_id, fn($query) => $query->where('airline_id', $this->airline_id))
             ->when($this->status !== '', function ($query) {
                 $status = $this->status === 'active';
                 $query->where('is_active', $status);
@@ -236,19 +236,39 @@ class ScheduleManager extends Component
             ->orderBy('flight_number')
             ->paginate(10);
 
+        $routes = Route::with(['departureStation', 'arrivalStation', 'airline'])
+            ->orderBy('departure_station_id')
+            ->get();
+
+        // Get all routes, not filtered by airline_id initially
+        // $routes = Route::with(['departureStation', 'arrivalStation', 'airline'])
+        //     ->when(!$this->editMode, function ($query) {
+        //         // In create mode, filter by selected airline
+        //         if (!empty($this->airline_id)) {
+        //             $query->where('airline_id', $this->airline_id);
+        //         }
+        //     })
+        //     ->when($this->editMode && $this->route_id, function ($query) {
+        //         // In edit mode, make sure the current route is included regardless of airline
+        //         $query->where(function ($q) {
+        //             $q->where('id', $this->route_id)
+        //                 ->orWhere('airline_id', $this->airline_id);
+        //         });
+        //     })
+        //     ->orderBy('departure_station_id')
+        //     ->get();
+
         return view('livewire.schedule.schedule-manager', [
             'schedules' => $schedules,
             'airlines' => Airline::orderBy('name')->get(),
             'aircraft_types' => \App\Models\AircraftType::orderBy('code')->get(),
-            'routes' => Route::with(['departureStation', 'arrivalStation', 'airline'])
-                ->orderBy('departure_station_id')
-                ->get(),
+            'routes' => $routes,
         ]);
     }
 
     public function onRouteChange($routeId)
     {
-        if (! empty($routeId)) {
+        if (!empty($routeId)) {
             $route = Route::with(['departureStation', 'arrivalStation'])->find($routeId);
             if ($route) {
                 if ($route->airline_id != $this->airline_id) {

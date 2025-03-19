@@ -102,11 +102,9 @@
                 </table>
             </div>
 
-            @if ($assignedStations->hasPages())
-                <div class="px-3 py-2 border-top">
-                    {{ $assignedStations->links() }}
-                </div>
-            @endif
+            <div class="px-3 py-2 border-top">
+                {{ $assignedStations->links() }}
+            </div>
         </div>
     </div>
 
@@ -126,13 +124,20 @@
                         <form wire:submit="saveAssignment">
                             <div class="mb-3">
                                 <label for="station_id" class="form-label fw-medium">Station <span class="text-danger">*</span></label>
-                                <select class="form-select" id="station_id" wire:model="station_id"
-                                    @if ($station_id) disabled @endif>
+                                <select class="form-select" id="station_id" wire:model="station_id" @disabled($station_id)>
                                     <option value="">Select Station</option>
                                     @foreach ($availableStations as $station)
                                         <option value="{{ $station->id }}">{{ $station->code }} - {{ $station->name }}</option>
                                     @endforeach
                                 </select>
+                                @if ($station_id && !$availableStations->contains('id', $station_id))
+                                    <div class="alert alert-warning mt-2 mb-0 py-2">
+                                        <small>
+                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                            Station not found in the available list.
+                                        </small>
+                                    </div>
+                                @endif
                                 @if (count($availableStations) === 0 && !$station_id)
                                     <div class="alert alert-info mt-2 mb-0 py-2">
                                         <small>
@@ -155,7 +160,6 @@
                             </div>
 
                             <hr class="my-3">
-                            <h6 class="mb-3">Contact Information</h6>
 
                             <div class="mb-3">
                                 <label for="contact_email" class="form-label fw-medium">Contact Email</label>
@@ -181,20 +185,12 @@
                                 @enderror
                             </div>
 
-                            <div class="mb-3">
-                                <label for="notes" class="form-label fw-medium">Notes</label>
-                                <textarea class="form-control" id="notes" wire:model="notes" rows="3"
-                                    placeholder="Additional information about this station"></textarea>
-                                @error('notes')
-                                    <div class="text-danger small mt-1">{{ $message ?? 'Notes are required' }}</div>
-                                @enderror
-                            </div>
-
                             <div class="d-flex justify-content-end gap-2">
-                                <button type="button" class="btn btn-outline-secondary" wire:click="$set('showAssignModal', false)">
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    wire:click="$set('showAssignModal', false)">
                                     <i class="bi bi-x-circle me-1"></i> Cancel
                                 </button>
-                                <button type="submit" class="btn btn-primary">
+                                <button type="submit" class="btn btn-sm btn-primary">
                                     <i class="bi bi-{{ $station_id ? 'check-circle' : 'link' }} me-1"></i>
                                     {{ $station_id ? 'Update' : 'Assign' }} Station
                                 </button>

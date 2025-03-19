@@ -13,32 +13,20 @@ class StationManager extends Component
     use WithPagination;
 
     protected $paginationTheme = 'bootstrap';
-
     public Airline $airline;
-
     public $search = '';
-
     public $showModal = false;
-
     public $showAssignModal = false;
-
-    // Form fields for station assignment
     public $station_id;
-
     public $is_hub = false;
-
     public $contact_email;
-
     public $contact_phone;
-
-    public $notes;
 
     protected $rules = [
         'station_id' => 'required|exists:stations,id',
         'is_hub' => 'boolean',
         'contact_email' => 'nullable|email',
         'contact_phone' => 'nullable|string|max:20',
-        'notes' => 'nullable|string',
     ];
 
     public function mount(Airline $airline)
@@ -55,7 +43,6 @@ class StationManager extends Component
     {
         $this->resetForm();
 
-        // Ensure we have the latest stations
         $this->dispatch('$refresh');
 
         $this->showAssignModal = true;
@@ -67,11 +54,10 @@ class StationManager extends Component
 
         $pivot = $this->airline->stations()->where('station_id', $stationId)->first()->pivot;
 
-        $this->station_id = $stationId;
+        $this->station_id = $pivot->station_id;
         $this->is_hub = $pivot->is_hub;
         $this->contact_email = $pivot->contact_email;
         $this->contact_phone = $pivot->contact_phone;
-        $this->notes = $pivot->notes;
 
         $this->showAssignModal = true;
     }
@@ -87,7 +73,6 @@ class StationManager extends Component
             'is_hub' => $this->is_hub,
             'contact_email' => $this->contact_email,
             'contact_phone' => $this->contact_phone,
-            'notes' => $this->notes,
         ];
 
         if ($exists) {
@@ -113,16 +98,16 @@ class StationManager extends Component
     {
         $station = $this->airline->stations()->where('station_id', $stationId)->first();
         $this->airline->stations()->updateExistingPivot($stationId, [
-            'is_hub' => ! $station->pivot->is_hub,
+            'is_hub' => !$station->pivot->is_hub,
         ]);
 
-        $status = ! $station->pivot->is_hub ? 'set as hub' : 'removed as hub';
+        $status = !$station->pivot->is_hub ? 'set as hub' : 'removed as hub';
         $this->dispatch('alert', icon: 'success', message: "Station {$status} successfully");
     }
 
     public function resetForm()
     {
-        $this->reset(['station_id', 'is_hub', 'contact_email', 'contact_phone', 'notes']);
+        $this->reset(['station_id', 'is_hub', 'contact_email', 'contact_phone']);
         $this->resetValidation();
     }
 
@@ -139,9 +124,9 @@ class StationManager extends Component
         $assignedStations = $this->airline->stations()
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('code', 'like', '%'.$this->search.'%')
-                        ->orWhere('name', 'like', '%'.$this->search.'%')
-                        ->orWhere('country', 'like', '%'.$this->search.'%');
+                    $q->where('code', 'like', '%' . $this->search . '%')
+                        ->orWhere('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('country', 'like', '%' . $this->search . '%');
                 });
             })
             ->orderBy('is_hub', 'desc')
@@ -150,7 +135,17 @@ class StationManager extends Component
 
         // Get all stations for the dropdown
         $availableStations = Station::where('is_active', true)
-            ->whereNotIn('id', $this->airline->stations()->pluck('stations.id'))
+            ->when(!$this->station_id, function ($query) {
+                $query->whereNotIn('id', $this->airline->stations()->pluck('stations.id'));
+            })
+            ->when($this->station_id, function ($query) {
+                $query->where(function ($q) {
+                    $q->whereNotIn('id', $this->airline->stations()
+                        ->where('station_id', '!=', $this->station_id)
+                        ->pluck('stations.id'))
+                        ->orWhere('id', $this->station_id);
+                });
+            })
             ->orderBy('code')
             ->get();
 

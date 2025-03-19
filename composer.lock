@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e7f137ec885ebf43dd2ed8c80c2299de",
+    "content-hash": "de6757e0af2664ea696a5cb30111e857",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -1288,16 +1288,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v12.1.1",
+            "version": "v12.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "9be5738f1ca1530055bb9d6db81f909a7ed34842"
+                "reference": "ca0412e978f78ecea0cafbe34dd8b18010064f73"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/9be5738f1ca1530055bb9d6db81f909a7ed34842",
-                "reference": "9be5738f1ca1530055bb9d6db81f909a7ed34842",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/ca0412e978f78ecea0cafbe34dd8b18010064f73",
+                "reference": "ca0412e978f78ecea0cafbe34dd8b18010064f73",
                 "shasum": ""
             },
             "require": {
@@ -1499,7 +1499,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2025-03-05T15:31:19+00:00"
+            "time": "2025-03-18T13:49:19+00:00"
         },
         {
             "name": "laravel/prompts",
@@ -2303,16 +2303,16 @@
         },
         {
             "name": "livewire/livewire",
-            "version": "v3.6.1",
+            "version": "v3.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/livewire/livewire.git",
-                "reference": "0df0a762698176d714e42e2dfed92b6b9e24b8e4"
+                "reference": "8f8914731f5eb43b6bb145d87c8d5a9edfc89313"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/livewire/livewire/zipball/0df0a762698176d714e42e2dfed92b6b9e24b8e4",
-                "reference": "0df0a762698176d714e42e2dfed92b6b9e24b8e4",
+                "url": "https://api.github.com/repos/livewire/livewire/zipball/8f8914731f5eb43b6bb145d87c8d5a9edfc89313",
+                "reference": "8f8914731f5eb43b6bb145d87c8d5a9edfc89313",
                 "shasum": ""
             },
             "require": {
@@ -2367,7 +2367,7 @@
             "description": "A front-end framework for Laravel.",
             "support": {
                 "issues": "https://github.com/livewire/livewire/issues",
-                "source": "https://github.com/livewire/livewire/tree/v3.6.1"
+                "source": "https://github.com/livewire/livewire/tree/v3.6.2"
             },
             "funding": [
                 {
@@ -2375,7 +2375,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-03-04T21:48:52+00:00"
+            "time": "2025-03-12T20:24:15+00:00"
         },
         {
             "name": "masterminds/html5",
@@ -2546,256 +2546,6 @@
                 }
             ],
             "time": "2024-12-05T17:15:07+00:00"
-        },
-        {
-            "name": "nativephp/electron",
-            "version": "1.0.0-beta.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/NativePHP/electron.git",
-                "reference": "e3010a0774ee0ae51676e0e50fca70490e657d2e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/NativePHP/electron/zipball/e3010a0774ee0ae51676e0e50fca70490e657d2e",
-                "reference": "e3010a0774ee0ae51676e0e50fca70490e657d2e",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/contracts": "^10.0|^11.0|^12.0",
-                "laravel/prompts": "^0.1.1|^0.2|^0.3",
-                "nativephp/laravel": "^1.0-beta.2",
-                "nativephp/php-bin": "^0.6",
-                "php": "^8.1",
-                "spatie/laravel-package-tools": "^1.16.4",
-                "symfony/filesystem": "^6.4|^7.2"
-            },
-            "require-dev": {
-                "larastan/larastan": "^2.0.1|^3.0",
-                "laravel/pint": "^1.0",
-                "nunomaduro/collision": "^7.9|^8.1.1",
-                "orchestra/testbench": "^8.18|^9.0|^10.0",
-                "pestphp/pest": "^2.7|^3.7",
-                "pestphp/pest-plugin-arch": "^2.0|^3.0",
-                "pestphp/pest-plugin-laravel": "^2.0|^3.1",
-                "phpstan/extension-installer": "^1.1",
-                "phpstan/phpstan-deprecation-rules": "^1.0|^2.0",
-                "phpstan/phpstan-phpunit": "^1.0|^2.0",
-                "spatie/laravel-ray": "^1.26"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "Updater": "Native\\Electron\\Facades\\Updater"
-                    },
-                    "providers": [
-                        "Native\\Electron\\ElectronServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Native\\Electron\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Marcel Pociot",
-                    "email": "marcel@beyondco.de",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Simon Hamp",
-                    "email": "simon.hamp@me.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Electron wrapper for the NativePHP framework.",
-            "homepage": "https://github.com/nativephp/electron",
-            "keywords": [
-                "electron",
-                "laravel",
-                "nativephp"
-            ],
-            "support": {
-                "source": "https://github.com/NativePHP/electron/tree/1.0.0-beta.5"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/sponsors/simonhamp",
-                    "type": "github"
-                },
-                {
-                    "url": "https://opencollective.com/nativephp",
-                    "type": "opencollective"
-                }
-            ],
-            "time": "2025-03-11T10:57:26+00:00"
-        },
-        {
-            "name": "nativephp/laravel",
-            "version": "1.0.0-beta.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/NativePHP/laravel.git",
-                "reference": "0102a92c7eec291bf12e1477a31a59f67698034b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/NativePHP/laravel/zipball/0102a92c7eec291bf12e1477a31a59f67698034b",
-                "reference": "0102a92c7eec291bf12e1477a31a59f67698034b",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/contracts": "^10.0|^11.0|^12.0",
-                "php": "^8.1",
-                "spatie/laravel-package-tools": "^1.16.4",
-                "symfony/finder": "^6.2|^7.0"
-            },
-            "require-dev": {
-                "guzzlehttp/guzzle": "^7.0",
-                "larastan/larastan": "^2.0|^3.1",
-                "laravel/pint": "^1.0",
-                "nunomaduro/collision": "^7.11|^8.1.1",
-                "orchestra/testbench": "^8.0|^9.0|^10.0",
-                "pestphp/pest": "^v2.30|^3.0",
-                "pestphp/pest-plugin-arch": "^2.0|^3.0",
-                "pestphp/pest-plugin-laravel": "^2.0|^3.1",
-                "phpstan/extension-installer": "^1.1",
-                "phpstan/phpstan-deprecation-rules": "^1.0|^2.0",
-                "phpstan/phpstan-phpunit": "^1.0|^2.0",
-                "spatie/laravel-ray": "^1.26"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "App": "Native\\Laravel\\Facades\\App",
-                        "Dock": "Native\\Laravel\\Facades\\Dock",
-                        "Menu": "Native\\Laravel\\Facades\\Menu",
-                        "Shell": "Native\\Laravel\\Facades\\Shell",
-                        "Screen": "Native\\Laravel\\Facades\\Screen",
-                        "System": "Native\\Laravel\\Facades\\System",
-                        "Window": "Native\\Laravel\\Facades\\Window",
-                        "MenuBar": "Native\\Laravel\\Facades\\MenuBar",
-                        "Process": "Native\\Laravel\\Facades\\Process",
-                        "Settings": "Native\\Laravel\\Facades\\Settings",
-                        "Clipboard": "Native\\Laravel\\Facades\\Clipboard",
-                        "ContextMenu": "Native\\Laravel\\Facades\\ContextMenu",
-                        "QueueWorker": "Native\\Laravel\\Facades\\QueueWorker",
-                        "ChildProcess": "Native\\Laravel\\Facades\\ChildProcess",
-                        "Notification": "Native\\Laravel\\Facades\\Notification",
-                        "PowerMonitor": "Native\\Laravel\\Facades\\PowerMonitor",
-                        "GlobalShortcut": "Native\\Laravel\\Facades\\GlobalShortcut"
-                    },
-                    "providers": [
-                        "Native\\Laravel\\NativeServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Native\\Laravel\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Marcel Pociot",
-                    "email": "marcel@beyondco.de",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Simon Hamp",
-                    "email": "simon.hamp@me.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Laravel wrapper for the NativePHP framework.",
-            "homepage": "https://github.com/nativephp/laravel",
-            "keywords": [
-                "laravel",
-                "nativephp",
-                "nativephp-laravel"
-            ],
-            "support": {
-                "issues": "https://github.com/NativePHP/laravel/issues",
-                "source": "https://github.com/NativePHP/laravel/tree/1.0.0-beta.2"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/sponsors/simonhamp",
-                    "type": "github"
-                },
-                {
-                    "url": "https://opencollective.com/nativephp",
-                    "type": "opencollective"
-                }
-            ],
-            "time": "2025-02-24T16:00:58+00:00"
-        },
-        {
-            "name": "nativephp/php-bin",
-            "version": "0.6.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/NativePHP/php-bin.git",
-                "reference": "bc3c8ee24c45c85e6cd78e8e366d7d65219af3d2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/NativePHP/php-bin/zipball/bc3c8ee24c45c85e6cd78e8e366d7d65219af3d2",
-                "reference": "bc3c8ee24c45c85e6cd78e8e366d7d65219af3d2",
-                "shasum": ""
-            },
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0",
-                "GPL-3.0-or-later",
-                "MIT",
-                "PHP-3.01"
-            ],
-            "authors": [
-                {
-                    "name": "Marcel Pociot",
-                    "email": "marcel@beyondco.de",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Simon Hamp",
-                    "email": "simon.hamp@me.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "PHP binaries used by the NativePHP framework",
-            "homepage": "https://nativephp.com",
-            "keywords": [
-                "nativephp",
-                "php"
-            ],
-            "support": {
-                "source": "https://github.com/NativePHP/php-bin/tree/0.6.0"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/sponsors/simonhamp",
-                    "type": "github"
-                },
-                {
-                    "url": "https://opencollective.com/nativephp",
-                    "type": "opencollective"
-                }
-            ],
-            "time": "2025-03-10T15:47:04+00:00"
         },
         {
             "name": "nesbot/carbon",
@@ -3685,16 +3435,16 @@
         },
         {
             "name": "psy/psysh",
-            "version": "v0.12.7",
+            "version": "v0.12.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bobthecow/psysh.git",
-                "reference": "d73fa3c74918ef4522bb8a3bf9cab39161c4b57c"
+                "reference": "85057ceedee50c49d4f6ecaff73ee96adb3b3625"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bobthecow/psysh/zipball/d73fa3c74918ef4522bb8a3bf9cab39161c4b57c",
-                "reference": "d73fa3c74918ef4522bb8a3bf9cab39161c4b57c",
+                "url": "https://api.github.com/repos/bobthecow/psysh/zipball/85057ceedee50c49d4f6ecaff73ee96adb3b3625",
+                "reference": "85057ceedee50c49d4f6ecaff73ee96adb3b3625",
                 "shasum": ""
             },
             "require": {
@@ -3758,9 +3508,9 @@
             ],
             "support": {
                 "issues": "https://github.com/bobthecow/psysh/issues",
-                "source": "https://github.com/bobthecow/psysh/tree/v0.12.7"
+                "source": "https://github.com/bobthecow/psysh/tree/v0.12.8"
             },
-            "time": "2024-12-10T01:58:33+00:00"
+            "time": "2025-03-16T03:05:19+00:00"
         },
         {
             "name": "ralouphie/getallheaders",
@@ -4038,66 +3788,6 @@
                 "source": "https://github.com/MyIntervals/PHP-CSS-Parser/tree/v8.7.0"
             },
             "time": "2024-10-27T17:38:32+00:00"
-        },
-        {
-            "name": "spatie/laravel-package-tools",
-            "version": "1.19.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/spatie/laravel-package-tools.git",
-                "reference": "1c9c30ac6a6576b8d15c6c37b6cf23d748df2faa"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-package-tools/zipball/1c9c30ac6a6576b8d15c6c37b6cf23d748df2faa",
-                "reference": "1c9c30ac6a6576b8d15c6c37b6cf23d748df2faa",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/contracts": "^9.28|^10.0|^11.0|^12.0",
-                "php": "^8.0"
-            },
-            "require-dev": {
-                "mockery/mockery": "^1.5",
-                "orchestra/testbench": "^7.7|^8.0|^9.0|^10.0",
-                "pestphp/pest": "^1.23|^2.1|^3.1",
-                "phpunit/phpunit": "^9.5.24|^10.5|^11.5",
-                "spatie/pest-plugin-test-time": "^1.1|^2.2"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Spatie\\LaravelPackageTools\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Freek Van der Herten",
-                    "email": "freek@spatie.be",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Tools for creating Laravel packages",
-            "homepage": "https://github.com/spatie/laravel-package-tools",
-            "keywords": [
-                "laravel-package-tools",
-                "spatie"
-            ],
-            "support": {
-                "issues": "https://github.com/spatie/laravel-package-tools/issues",
-                "source": "https://github.com/spatie/laravel-package-tools/tree/1.19.0"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/spatie",
-                    "type": "github"
-                }
-            ],
-            "time": "2025-02-06T14:58:20+00:00"
         },
         {
             "name": "spatie/laravel-permission",
@@ -4711,72 +4401,6 @@
                 }
             ],
             "time": "2024-09-25T14:20:29+00:00"
-        },
-        {
-            "name": "symfony/filesystem",
-            "version": "v7.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/filesystem.git",
-                "reference": "b8dce482de9d7c9fe2891155035a7248ab5c7fdb"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/b8dce482de9d7c9fe2891155035a7248ab5c7fdb",
-                "reference": "b8dce482de9d7c9fe2891155035a7248ab5c7fdb",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=8.2",
-                "symfony/polyfill-ctype": "~1.8",
-                "symfony/polyfill-mbstring": "~1.8"
-            },
-            "require-dev": {
-                "symfony/process": "^6.4|^7.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Filesystem\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Provides basic utilities for the filesystem",
-            "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/filesystem/tree/v7.2.0"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2024-10-25T15:15:23+00:00"
         },
         {
             "name": "symfony/finder",
@@ -6814,16 +6438,16 @@
         },
         {
             "name": "filp/whoops",
-            "version": "2.17.0",
+            "version": "2.18.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filp/whoops.git",
-                "reference": "075bc0c26631110584175de6523ab3f1652eb28e"
+                "reference": "a7de6c3c6c3c022f5cfc337f8ede6a14460cf77e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filp/whoops/zipball/075bc0c26631110584175de6523ab3f1652eb28e",
-                "reference": "075bc0c26631110584175de6523ab3f1652eb28e",
+                "url": "https://api.github.com/repos/filp/whoops/zipball/a7de6c3c6c3c022f5cfc337f8ede6a14460cf77e",
+                "reference": "a7de6c3c6c3c022f5cfc337f8ede6a14460cf77e",
                 "shasum": ""
             },
             "require": {
@@ -6873,7 +6497,7 @@
             ],
             "support": {
                 "issues": "https://github.com/filp/whoops/issues",
-                "source": "https://github.com/filp/whoops/tree/2.17.0"
+                "source": "https://github.com/filp/whoops/tree/2.18.0"
             },
             "funding": [
                 {
@@ -6881,7 +6505,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-01-25T12:00:00+00:00"
+            "time": "2025-03-15T12:00:00+00:00"
         },
         {
             "name": "hamcrest/hamcrest-php",
@@ -7014,16 +6638,16 @@
         },
         {
             "name": "laravel/pint",
-            "version": "v1.21.0",
+            "version": "v1.21.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/pint.git",
-                "reference": "531fa0871fbde719c51b12afa3a443b8f4e4b425"
+                "reference": "370772e7d9e9da087678a0edf2b11b6960e40558"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/pint/zipball/531fa0871fbde719c51b12afa3a443b8f4e4b425",
-                "reference": "531fa0871fbde719c51b12afa3a443b8f4e4b425",
+                "url": "https://api.github.com/repos/laravel/pint/zipball/370772e7d9e9da087678a0edf2b11b6960e40558",
+                "reference": "370772e7d9e9da087678a0edf2b11b6960e40558",
                 "shasum": ""
             },
             "require": {
@@ -7034,9 +6658,9 @@
                 "php": "^8.2.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.68.5",
-                "illuminate/view": "^11.42.0",
-                "larastan/larastan": "^3.0.4",
+                "friendsofphp/php-cs-fixer": "^3.72.0",
+                "illuminate/view": "^11.44.2",
+                "larastan/larastan": "^3.2.0",
                 "laravel-zero/framework": "^11.36.1",
                 "mockery/mockery": "^1.6.12",
                 "nunomaduro/termwind": "^2.3",
@@ -7076,7 +6700,7 @@
                 "issues": "https://github.com/laravel/pint/issues",
                 "source": "https://github.com/laravel/pint"
             },
-            "time": "2025-02-18T03:18:57+00:00"
+            "time": "2025-03-14T22:31:42+00:00"
         },
         {
             "name": "laravel/sail",
@@ -7286,20 +6910,20 @@
         },
         {
             "name": "nunomaduro/collision",
-            "version": "v8.6.1",
+            "version": "v8.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nunomaduro/collision.git",
-                "reference": "86f003c132143d5a2ab214e19933946409e0cae7"
+                "reference": "586cb8181a257a2152b6a855ca8d9598878a1a26"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nunomaduro/collision/zipball/86f003c132143d5a2ab214e19933946409e0cae7",
-                "reference": "86f003c132143d5a2ab214e19933946409e0cae7",
+                "url": "https://api.github.com/repos/nunomaduro/collision/zipball/586cb8181a257a2152b6a855ca8d9598878a1a26",
+                "reference": "586cb8181a257a2152b6a855ca8d9598878a1a26",
                 "shasum": ""
             },
             "require": {
-                "filp/whoops": "^2.16.0",
+                "filp/whoops": "^2.17.0",
                 "nunomaduro/termwind": "^2.3.0",
                 "php": "^8.2.0",
                 "symfony/console": "^7.2.1"
@@ -7309,14 +6933,14 @@
                 "phpunit/phpunit": "<11.5.3 || >=12.0.0"
             },
             "require-dev": {
-                "larastan/larastan": "^2.9.12",
-                "laravel/framework": "^11.39.1",
-                "laravel/pint": "^1.20.0",
-                "laravel/sail": "^1.40.0",
-                "laravel/sanctum": "^4.0.7",
-                "laravel/tinker": "^2.10.0",
-                "orchestra/testbench-core": "^9.9.2",
-                "pestphp/pest": "^3.7.3",
+                "larastan/larastan": "^2.10.0",
+                "laravel/framework": "^11.44.2",
+                "laravel/pint": "^1.21.2",
+                "laravel/sail": "^1.41.0",
+                "laravel/sanctum": "^4.0.8",
+                "laravel/tinker": "^2.10.1",
+                "orchestra/testbench-core": "^9.12.0",
+                "pestphp/pest": "^3.7.4",
                 "sebastian/environment": "^6.1.0 || ^7.2.0"
             },
             "type": "library",
@@ -7380,7 +7004,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2025-01-23T13:41:43+00:00"
+            "time": "2025-03-14T22:37:40+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -7825,16 +7449,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "11.5.12",
+            "version": "11.5.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "d42785840519401ed2113292263795eb4c0f95da"
+                "reference": "9d6046153c2893b521784069e6b5249ce7d2acae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/d42785840519401ed2113292263795eb4c0f95da",
-                "reference": "d42785840519401ed2113292263795eb4c0f95da",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/9d6046153c2893b521784069e6b5249ce7d2acae",
+                "reference": "9d6046153c2893b521784069e6b5249ce7d2acae",
                 "shasum": ""
             },
             "require": {
@@ -7854,14 +7478,14 @@
                 "phpunit/php-text-template": "^4.0.1",
                 "phpunit/php-timer": "^7.0.1",
                 "sebastian/cli-parser": "^3.0.2",
-                "sebastian/code-unit": "^3.0.2",
+                "sebastian/code-unit": "^3.0.3",
                 "sebastian/comparator": "^6.3.1",
                 "sebastian/diff": "^6.0.2",
                 "sebastian/environment": "^7.2.0",
                 "sebastian/exporter": "^6.3.0",
                 "sebastian/global-state": "^7.0.2",
                 "sebastian/object-enumerator": "^6.0.1",
-                "sebastian/type": "^5.1.0",
+                "sebastian/type": "^5.1.2",
                 "sebastian/version": "^5.0.2",
                 "staabm/side-effects-detector": "^1.0.5"
             },
@@ -7906,7 +7530,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.12"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.14"
             },
             "funding": [
                 {
@@ -7922,7 +7546,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-03-07T07:31:03+00:00"
+            "time": "2025-03-19T13:45:48+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -7983,16 +7607,16 @@
         },
         {
             "name": "sebastian/code-unit",
-            "version": "3.0.2",
+            "version": "3.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/code-unit.git",
-                "reference": "ee88b0cdbe74cf8dd3b54940ff17643c0d6543ca"
+                "reference": "54391c61e4af8078e5b276ab082b6d3c54c9ad64"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/code-unit/zipball/ee88b0cdbe74cf8dd3b54940ff17643c0d6543ca",
-                "reference": "ee88b0cdbe74cf8dd3b54940ff17643c0d6543ca",
+                "url": "https://api.github.com/repos/sebastianbergmann/code-unit/zipball/54391c61e4af8078e5b276ab082b6d3c54c9ad64",
+                "reference": "54391c61e4af8078e5b276ab082b6d3c54c9ad64",
                 "shasum": ""
             },
             "require": {
@@ -8028,7 +7652,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/code-unit/issues",
                 "security": "https://github.com/sebastianbergmann/code-unit/security/policy",
-                "source": "https://github.com/sebastianbergmann/code-unit/tree/3.0.2"
+                "source": "https://github.com/sebastianbergmann/code-unit/tree/3.0.3"
             },
             "funding": [
                 {
@@ -8036,7 +7660,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-12-12T09:59:06+00:00"
+            "time": "2025-03-19T07:56:08+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
@@ -8741,16 +8365,16 @@
         },
         {
             "name": "sebastian/type",
-            "version": "5.1.0",
+            "version": "5.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/type.git",
-                "reference": "461b9c5da241511a2a0e8f240814fb23ce5c0aac"
+                "reference": "a8a7e30534b0eb0c77cd9d07e82de1a114389f5e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/type/zipball/461b9c5da241511a2a0e8f240814fb23ce5c0aac",
-                "reference": "461b9c5da241511a2a0e8f240814fb23ce5c0aac",
+                "url": "https://api.github.com/repos/sebastianbergmann/type/zipball/a8a7e30534b0eb0c77cd9d07e82de1a114389f5e",
+                "reference": "a8a7e30534b0eb0c77cd9d07e82de1a114389f5e",
                 "shasum": ""
             },
             "require": {
@@ -8786,7 +8410,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/type/issues",
                 "security": "https://github.com/sebastianbergmann/type/security/policy",
-                "source": "https://github.com/sebastianbergmann/type/tree/5.1.0"
+                "source": "https://github.com/sebastianbergmann/type/tree/5.1.2"
             },
             "funding": [
                 {
@@ -8794,7 +8418,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-09-17T13:12:04+00:00"
+            "time": "2025-03-18T13:35:50+00:00"
         },
         {
             "name": "sebastian/version",
@@ -9026,7 +8650,7 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
