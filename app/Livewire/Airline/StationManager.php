@@ -13,13 +13,21 @@ class StationManager extends Component
     use WithPagination;
 
     protected $paginationTheme = 'bootstrap';
+
     public Airline $airline;
+
     public $search = '';
+
     public $showModal = false;
+
     public $showAssignModal = false;
+
     public $station_id;
+
     public $is_hub = false;
+
     public $contact_email;
+
     public $contact_phone;
 
     protected $rules = [
@@ -98,10 +106,10 @@ class StationManager extends Component
     {
         $station = $this->airline->stations()->where('station_id', $stationId)->first();
         $this->airline->stations()->updateExistingPivot($stationId, [
-            'is_hub' => !$station->pivot->is_hub,
+            'is_hub' => ! $station->pivot->is_hub,
         ]);
 
-        $status = !$station->pivot->is_hub ? 'set as hub' : 'removed as hub';
+        $status = ! $station->pivot->is_hub ? 'set as hub' : 'removed as hub';
         $this->dispatch('alert', icon: 'success', message: "Station {$status} successfully");
     }
 
@@ -124,9 +132,9 @@ class StationManager extends Component
         $assignedStations = $this->airline->stations()
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('code', 'like', '%' . $this->search . '%')
-                        ->orWhere('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('country', 'like', '%' . $this->search . '%');
+                    $q->where('code', 'like', '%'.$this->search.'%')
+                        ->orWhere('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('country', 'like', '%'.$this->search.'%');
                 });
             })
             ->orderBy('is_hub', 'desc')
@@ -135,7 +143,7 @@ class StationManager extends Component
 
         // Get all stations for the dropdown
         $availableStations = Station::where('is_active', true)
-            ->when(!$this->station_id, function ($query) {
+            ->when(! $this->station_id, function ($query) {
                 $query->whereNotIn('id', $this->airline->stations()->pluck('stations.id'));
             })
             ->when($this->station_id, function ($query) {

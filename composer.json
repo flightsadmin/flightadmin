@@ -16,10 +16,10 @@
         "laravel/ui": "^4.6",
         "livewire/livewire": "^3.6",
         "nativephp/electron": "1.0.0-beta.5",
+        "fakerphp/faker": "^1.23",
         "spatie/laravel-permission": "^6.16"
     },
     "require-dev": {
-        "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.41",
