@@ -22,9 +22,6 @@ class Station extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Get the airlines associated with this station.
-     */
     public function airlines()
     {
         return $this->belongsToMany(Airline::class)

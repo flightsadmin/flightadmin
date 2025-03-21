@@ -34,41 +34,26 @@ class Schedule extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Get the airline that owns the schedule.
-     */
     public function airline(): BelongsTo
     {
         return $this->belongsTo(Airline::class);
     }
 
-    /**
-     * Get the aircraft type for this schedule.
-     */
     public function aircraftType(): BelongsTo
     {
         return $this->belongsTo(AircraftType::class);
     }
 
-    /**
-     * Get the route for this schedule.
-     */
     public function route(): BelongsTo
     {
         return $this->belongsTo(Route::class);
     }
 
-    /**
-     * Get the flights for this schedule.
-     */
     public function flights(): HasMany
     {
         return $this->hasMany(Flight::class);
     }
 
-    /**
-     * Generate flights based on this schedule.
-     */
     public function generateFlights()
     {
         $createdFlights = [];
@@ -95,10 +80,9 @@ class Schedule extends Model
                     ->first();
 
                 if (! $existingFlight) {
-                    // Create flight data without aircraft_type_id since it doesn't exist in the flights table
                     $flightData = [
                         'airline_id' => $this->airline_id,
-                        'aircraft_id' => null, // Explicitly set to null since aircraft is not known yet
+                        'aircraft_id' => null,
                         'route_id' => $this->route_id,
                         'schedule_id' => $this->id,
                         'flight_number' => $this->flight_number,
@@ -118,21 +102,11 @@ class Schedule extends Model
         return $createdFlights;
     }
 
-    /**
-     * Get the departure airport code.
-     *
-     * @return string|null
-     */
     public function getDepartureAirportAttribute()
     {
         return $this->route ? $this->route->departureStation->code : null;
     }
 
-    /**
-     * Get the arrival airport code.
-     *
-     * @return string|null
-     */
     public function getArrivalAirportAttribute()
     {
         return $this->route ? $this->route->arrivalStation->code : null;

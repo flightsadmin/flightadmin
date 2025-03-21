@@ -219,33 +219,21 @@ class Flight extends Model
         );
     }
 
-    /**
-     * Get the flight schedule that generated this flight.
-     */
     public function schedule(): BelongsTo
     {
         return $this->belongsTo(Schedule::class, 'schedule_id');
     }
 
-    /**
-     * Get the route associated with the flight.
-     */
     public function route(): BelongsTo
     {
         return $this->belongsTo(Route::class);
     }
 
-    /**
-     * Get the departure station for this flight.
-     */
     public function departureStation()
     {
         return $this->route ? $this->route->departureStation() : null;
     }
 
-    /**
-     * Get the arrival station for this flight.
-     */
     public function arrivalStation()
     {
         return $this->route ? $this->route->arrivalStation() : null;

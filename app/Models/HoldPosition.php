@@ -13,9 +13,9 @@ class HoldPosition extends Model
 
     protected $fillable = [
         'hold_id',
-        'code',      // e.g., '31L', '32R'
-        'row',       // e.g., 3
-        'side',      // 'L' or 'R' or null for center
+        'code', // e.g., '31L', '32R'
+        'row',  // e.g., 3
+        'side', // 'L' or 'R' or null for center
         'max_weight',
         'index',
         'is_active',

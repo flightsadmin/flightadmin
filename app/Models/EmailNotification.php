@@ -43,15 +43,10 @@ class EmailNotification extends Model
 
     public static function getRecipientsForFlight(Flight $flight, string $documentType)
     {
-        // Start with a base query for the document type and airline
-        $query = self::where('document_type', $documentType)
-            ->where('airline_id', $flight->airline_id)
-            ->where('is_active', true);
+        $query = self::where('document_type', $documentType)->where('airline_id', $flight->airline_id)->where('is_active', true);
 
         $notification = null;
         $route = null;
-
-        // Try to find the most specific match in this order
 
         // 1. Check if we have a route
         $route = Route::where('departure_station_id', $flight->departure_airport)
@@ -61,7 +56,6 @@ class EmailNotification extends Model
 
         // 2. Try to find a notification in order of specificity
         if ($route) {
-            // Route-specific
             $notification = clone $query;
             $notification = $notification->where('route_id', $route->id)->first();
             if ($notification) {

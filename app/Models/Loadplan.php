@@ -11,9 +11,9 @@ class Loadplan extends Model
 
     protected $fillable = [
         'flight_id',
-        'status', // draft, released, archived
+        'status',
         'version',
-        'loading', // JSON field storing container positions
+        'loading',
         'last_modified_by',
         'released_at',
         'released_by',

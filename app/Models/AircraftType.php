@@ -29,33 +29,21 @@ class AircraftType extends Model
         'max_cabin_crew',
     ];
 
-    /**
-     * Get the settings for this aircraft type
-     */
     public function settings()
     {
         return $this->morphMany(Setting::class, 'settingable');
     }
 
-    /**
-     * Get the aircraft of this type
-     */
     public function aircraft(): HasMany
     {
         return $this->hasMany(Aircraft::class);
     }
 
-    /**
-     * Get the holds for this aircraft type
-     */
     public function holds(): HasMany
     {
         return $this->hasMany(Hold::class)->orderBy('position');
     }
 
-    /**
-     * Get all available positions in all holds
-     */
     public function getAllPositions()
     {
         return $this->holds
@@ -79,9 +67,6 @@ class AircraftType extends Model
         return $this->belongsToMany(Airline::class)->withTimestamps();
     }
 
-    /**
-     * Get all active airlines using this aircraft type
-     */
     public function activeAirlines(): BelongsToMany
     {
         return $this->airlines()->wherePivot('is_active', true);
