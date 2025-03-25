@@ -37,6 +37,11 @@ class Overview extends Component
         $loadplan = $this->flight->loadplans()->latest()->first();
         $containers = $this->flight->containers()->withPivot('type')->get();
 
+        if ($this->flight->aircraft_id == (int) $registrationId) {
+            $this->dispatch('alert', icon: 'info', message: 'Same registration is assigned, No changes done');
+            return;
+        }
+
         if ($loadplan) {
             $loadplan->update(['loading' => null]);
             foreach ($containers as $container) {
@@ -68,7 +73,7 @@ class Overview extends Component
             'timeForm.datetime' => 'required|after:scheduled_departure_time',
         ]);
 
-        if (! $this->selectedFlight) {
+        if (!$this->selectedFlight) {
             $this->dispatch('alert', icon: 'danger', message: 'Flight not found');
 
             return;

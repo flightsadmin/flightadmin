@@ -20,7 +20,15 @@
                                     <td>{{ $flight->flight_number }}
                                         <span class="dropdown d-inline float-end">
                                             <button
-                                                class="btn btn-sm btn-{{ $flight->status === 'cancelled' ? 'danger' : ($flight->status === 'arrived' ? 'success' : 'warning') }} dropdown-toggle"
+                                                class="btn btn-sm btn-{{ match ($flight->status) {
+                                                    'scheduled' => 'secondary',
+                                                    'boarding' => 'warning',
+                                                    'departed' => 'info',
+                                                    'arrived' => 'success',
+                                                    'cancelled' => 'danger',
+                                                    'post_departure' => 'warning',
+                                                    default => 'secondary',
+                                                } }} dropdown-toggle"
                                                 type="button" data-bs-toggle="dropdown">
                                                 {{ str(str_replace('_', ' ', $flight->status))->title() }}
                                             </button>
@@ -88,7 +96,7 @@
                                                     <li>
                                                         <button class="dropdown-item"
                                                             wire:click="updateRegistration('{{ $registration->id }}')"
-                                                            wire:confirm="Are you sure you want to update the aircraft? All containers will be moved to unplanned.">
+                                                            @if ($flight->aircraft->id != $registration->id) wire:confirm="Are you sure you want to update the aircraft? All containers will be moved to unplanned." @endif>
                                                             {{ ucfirst($registration->registration_number) ?? 'Not assigned' }}
                                                         </button>
                                                     </li>

@@ -164,143 +164,144 @@
                     </div>
                 </div>
             @elseif ($activeTab === 'settings')
-                    <div class="row g-2">
-                        <div class="col-md-3">
-                            <div class="list-group">
-                                @foreach ($defaultSettings as $category => $items)
-                                                    <button
-                                                        class="list-group-item list-group-item-action {{ $settingCategory === $category ? 'active' : '' }}"
-                                                        wire:click="setSettingCategory('{{ $category }}')">
-                                                        <i class="bi bi-{{ match ($category) {
-                                        'general' => 'gear',
-                                        'operations' => 'clock',
-                                        'cargo' => 'box',
-                                        'notifications' => 'bell',
-                                        default => 'circle',
-                                    } }}"></i>
-                                                        {{ str_replace('_', ' ', ucfirst($category)) }}
-                                                    </button>
-                                @endforeach
-                            </div>
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <div class="list-group">
+                            @foreach ($defaultSettings as $category => $items)
+                                <button
+                                    class="list-group-item list-group-item-action {{ $settingCategory === $category ? 'active' : '' }}"
+                                    wire:click="setSettingCategory('{{ $category }}')">
+                                    <i
+                                        class="bi bi-{{ match ($category) {
+                                            'general' => 'gear',
+                                            'operations' => 'clock',
+                                            'cargo' => 'box',
+                                            'notifications' => 'bell',
+                                            default => 'circle',
+                                        } }}"></i>
+                                    {{ str_replace('_', ' ', ucfirst($category)) }}
+                                </button>
+                            @endforeach
                         </div>
+                    </div>
 
-                        <div class="col-md-9">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title m-0">{{ str_replace('_', ' ', ucfirst($settingCategory)) }} Settings
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-hover">
-                                            <thead>
+                    <div class="col-md-9">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title m-0">{{ str_replace('_', ' ', ucfirst($settingCategory)) }} Settings
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Setting</th>
+                                                <th>Value</th>
+                                                <th>Type</th>
+                                                <th>Description</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($currentSettings as $key => $config)
                                                 <tr>
-                                                    <th>Setting</th>
-                                                    <th>Value</th>
-                                                    <th>Type</th>
-                                                    <th>Description</th>
-                                                    <th>Actions</th>
+                                                    <td>{{ str_replace('_', ' ', ucfirst($key)) }}</td>
+                                                    <td>
+                                                        @if (isset($settings[$settingCategory][$key]))
+                                                            @if ($config['type'] === 'boolean')
+                                                                <span
+                                                                    class="badge bg-{{ $settings[$settingCategory][$key] ? 'success' : 'danger' }}">
+                                                                    {{ $settings[$settingCategory][$key] ? 'Yes' : 'No' }}
+                                                                </span>
+                                                            @elseif ($config['type'] === 'json')
+                                                                @php
+                                                                    $value = $settings[$settingCategory][$key] ?? $config['default'];
+                                                                @endphp
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <div class="p-2 rounded"
+                                                                        style="background-color: {{ $value['color'] }}">
+                                                                        <i class="bi bi-{{ $value['icon'] }} text-white"></i>
+                                                                    </div>
+                                                                    <div>
+                                                                        <strong>{{ $value['name'] }}</strong><br>
+                                                                        <small class="text-muted">
+                                                                            Max: {{ $value['max_gross_weight'] }}kg
+                                                                            (Tare: {{ $value['tare_weight'] }}kg)
+                                                                        </small>
+                                                                    </div>
+                                                                </div>
+                                                            @else
+                                                                {{ $settings[$settingCategory][$key] }}
+                                                            @endif
+                                                        @else
+                                                            <span class="text-muted">Not set</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>{{ $config['type'] }}</td>
+                                                    <td>{{ $config['description'] }}</td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-primary"
+                                                            wire:click="editSetting('{{ $settingCategory }}', '{{ $key }}', {{ json_encode($config) }})">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                    </td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach ($currentSettings as $key => $config)
-                                                                            <tr>
-                                                                                <td>{{ str_replace('_', ' ', ucfirst($key)) }}</td>
-                                                                                <td>
-                                                                                    @if (isset($settings[$settingCategory][$key]))
-                                                                                                                        @if ($config['type'] === 'boolean')
-                                                                                                                            <span
-                                                                                                                                class="badge bg-{{ $settings[$settingCategory][$key] ? 'success' : 'danger' }}">
-                                                                                                                                {{ $settings[$settingCategory][$key] ? 'Yes' : 'No' }}
-                                                                                                                            </span>
-                                                                                                                        @elseif ($config['type'] === 'json')
-                                                                                                                                                            @php
-                                                                                                                                                                $value = $settings[$settingCategory][$key] ?? $config['default'];
-                                                                                                                                                            @endphp
-                                                                                                                                                            <div class="d-flex align-items-center gap-2">
-                                                                                                                                                                <div class="p-2 rounded"
-                                                                                                                                                                    style="background-color: {{ $value['color'] }}">
-                                                                                                                                                                    <i class="bi bi-{{ $value['icon'] }} text-white"></i>
-                                                                                                                                                                </div>
-                                                                                                                                                                <div>
-                                                                                                                                                                    <strong>{{ $value['name'] }}</strong><br>
-                                                                                                                                                                    <small class="text-muted">
-                                                                                                                                                                        Max: {{ $value['max_gross_weight'] }}kg
-                                                                                                                                                                        (Tare: {{ $value['tare_weight'] }}kg)
-                                                                                                                                                                    </small>
-                                                                                                                                                                </div>
-                                                                                                                                                            </div>
-                                                                                                                        @else
-                                                                                                                            {{ $settings[$settingCategory][$key] }}
-                                                                                                                        @endif
-                                                                                    @else
-                                                                                        <span class="text-muted">Not set</span>
-                                                                                    @endif
-                                                                                </td>
-                                                                                <td>{{ $config['type'] }}</td>
-                                                                                <td>{{ $config['description'] }}</td>
-                                                                                <td class="text-end">
-                                                                                    <button class="btn btn-sm btn-primary"
-                                                                                        wire:click="editSetting('{{ $settingCategory }}', '{{ $key }}', {{ json_encode($config) }})">
-                                                                                        <i class="bi bi-pencil"></i>
-                                                                                    </button>
-                                                                                </td>
-                                                                            </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Setting Modal -->
-                    <div class="modal fade" id="settingModal" tabindex="-1" wire:model="showSettingModal" wire:ignore.self>
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <form wire:submit="saveSetting">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Edit Setting</h5>
-                                        <button type="button" class="btn-close" wire:click="closeModal"
-                                            aria-label="Close"></button>
+                <!-- Setting Modal -->
+                <div class="modal fade" id="settingModal" tabindex="-1" wire:model="showSettingModal" wire:ignore.self>
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form wire:submit="saveSetting">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Edit Setting</h5>
+                                    <button type="button" class="btn-close" wire:click="closeModal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Value</label>
+                                        @if ($form['type'] === 'boolean')
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" wire:model="form.value">
+                                            </div>
+                                        @elseif ($form['type'] === 'json')
+                                            <textarea class="form-control form-control-sm" rows="10"
+                                                wire:model="form.value"></textarea>
+                                        @else
+                                            <input
+                                                type="{{ $form['type'] === 'float' || $form['type'] === 'integer' ? 'number' : 'text' }}"
+                                                class="form-control form-control-sm"
+                                                step="{{ $form['type'] === 'float' ? '0.01' : '1' }}" wire:model="form.value">
+                                        @endif
+                                        @error('form.value')
+                                            <div class="text-danger small">{{ $message }}</div>
+                                        @enderror
                                     </div>
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label class="form-label">Value</label>
-                                            @if ($form['type'] === 'boolean')
-                                                <div class="form-check form-switch">
-                                                    <input class="form-check-input" type="checkbox" wire:model="form.value">
-                                                </div>
-                                            @elseif ($form['type'] === 'json')
-                                                <textarea class="form-control form-control-sm" rows="10"
-                                                    wire:model="form.value"></textarea>
-                                            @else
-                                                <input
-                                                    type="{{ $form['type'] === 'float' || $form['type'] === 'integer' ? 'number' : 'text' }}"
-                                                    class="form-control form-control-sm"
-                                                    step="{{ $form['type'] === 'float' ? '0.01' : '1' }}" wire:model="form.value">
-                                            @endif
-                                            @error('form.value')
-                                                <div class="text-danger small">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                        <div class="text-muted small">
-                                            {{ $form['description'] }}
-                                        </div>
+                                    <div class="text-muted small">
+                                        {{ $form['description'] }}
                                     </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" wire:click="closeModal">
-                                            Cancel
-                                        </button>
-                                        <button type="submit" class="btn btn-primary">
-                                            Save Changes
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" wire:click="closeModal">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
+                </div>
             @elseif ($activeTab === 'uld_types')
                 <livewire:airline.uld-manager :airline="$airline" />
             @elseif ($activeTab === 'stations')
@@ -317,13 +318,13 @@
 </div>
 
 @script
-<script>
-    $wire.on('uld-saved', () => {
-        bootstrap.Modal.getInstance(document.getElementById('uldTypeModal')).hide();
-    });
+    <script>
+        $wire.on('uld-saved', () => {
+            bootstrap.Modal.getInstance(document.getElementById('uldTypeModal')).hide();
+        });
 
-    $wire.on('setting-saved', () => {
-        bootstrap.Modal.getInstance(document.getElementById('settingModal')).hide();
-    });
-</script>
+        $wire.on('setting-saved', () => {
+            bootstrap.Modal.getInstance(document.getElementById('settingModal')).hide();
+        });
+    </script>
 @endscript
