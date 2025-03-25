@@ -242,7 +242,8 @@
                                                     <td>{{ $config['description'] }}</td>
                                                     <td class="text-end">
                                                         <button class="btn btn-sm btn-primary"
-                                                            wire:click="editSetting('{{ $settingCategory }}', '{{ $key }}', {{ json_encode($config) }})">
+                                                            wire:click="editSetting('{{ $settingCategory }}', '{{ $key }}', {{ json_encode($config) }})"
+                                                            data-bs-toggle="modal" data-bs-target="#settingModal">
                                                             <i class="bi bi-pencil"></i>
                                                         </button>
                                                     </td>
@@ -257,10 +258,10 @@
                 </div>
 
                 <!-- Setting Modal -->
-                <div class="modal fade" id="settingModal" tabindex="-1" wire:model="showSettingModal" wire:ignore.self>
+                <div class="modal fade" id="settingModal" tabindex="-1" wire:ignore.self>
                     <div class="modal-dialog">
                         <div class="modal-content">
-                            <form wire:submit="saveSetting">
+                            <form wire:submit.prevent="saveSetting">
                                 <div class="modal-header">
                                     <h5 class="modal-title">Edit Setting</h5>
                                     <button type="button" class="btn-close" wire:click="closeModal"
@@ -291,10 +292,12 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" wire:click="closeModal">
+                                    <button type="button" class="btn btn-sm btn-secondary" wire:click="closeModal">
+                                        <i class="bi bi-x-lg"></i>
                                         Cancel
                                     </button>
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-check-lg"></i>
                                         Save Changes
                                     </button>
                                 </div>
