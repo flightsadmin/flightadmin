@@ -21,12 +21,12 @@
                         <i class="bi bi-info-circle"></i> Overview
                     </button>
                 </li>
-                <li class="nav-item">
+                {{-- <li class="nav-item">
                     <button class="nav-link {{ $activeTab === 'settings' ? 'active' : '' }}"
                         wire:click="$set('activeTab', 'settings')">
                         <i class="bi bi-gear"></i> Settings
                     </button>
-                </li>
+                </li> --}}
                 <li class="nav-item">
                     <button class="nav-link {{ $activeTab === 'uld_types' ? 'active' : '' }}"
                         wire:click="$set('activeTab', 'uld_types')">
@@ -55,6 +55,12 @@
                     <button class="nav-link {{ $activeTab === 'email_templates' ? 'active' : '' }}"
                         wire:click="$set('activeTab', 'email_templates')">
                         <i class="bi bi-envelope-paper"></i> Email Templates
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link {{ $activeTab === 'manage_settings' ? 'active' : '' }}"
+                        wire:click="$set('activeTab', 'manage_settings')">
+                        <i class="bi bi-sliders"></i> Manage Settings
                     </button>
                 </li>
             </ul>
@@ -264,7 +270,7 @@
                             <form wire:submit.prevent="saveSetting">
                                 <div class="modal-header">
                                     <h5 class="modal-title">Edit Setting</h5>
-                                    <button type="button" class="btn-close" wire:click="closeModal"
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
                                         aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
@@ -292,7 +298,7 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-sm btn-secondary" wire:click="closeModal">
+                                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
                                         <i class="bi bi-x-lg"></i>
                                         Cancel
                                     </button>
@@ -315,6 +321,8 @@
                 <livewire:airline.email-notification-manager :airline="$airline" />
             @elseif ($activeTab === 'email_templates')
                 <livewire:airline.email-templates />
+            @elseif ($activeTab === 'manage_settings')
+                <livewire:airline.settings-manager :airline="$airline" />
             @endif
         </div>
     </div>
@@ -322,12 +330,27 @@
 
 @script
     <script>
-        $wire.on('uld-saved', () => {
-            bootstrap.Modal.getInstance(document.getElementById('uldTypeModal')).hide();
-        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const settingModal = new bootstrap.Modal(document.getElementById('settingModal'));
 
-        $wire.on('setting-saved', () => {
-            bootstrap.Modal.getInstance(document.getElementById('settingModal')).hide();
+            $wire.on('open-setting-modal', () => {
+                settingModal.show();
+            });
+
+            $wire.on('close-setting-modal', () => {
+                settingModal.hide();
+            });
+
+            $wire.on('setting-saved', () => {
+                settingModal.hide();
+            });
+
+            $wire.on('uld-saved', () => {
+                const uldModal = document.getElementById('uldTypeModal');
+                if (uldModal) {
+                    bootstrap.Modal.getInstance(uldModal).hide();
+                }
+            });
         });
     </script>
 @endscript

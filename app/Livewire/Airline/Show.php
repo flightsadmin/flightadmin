@@ -3,6 +3,7 @@
 namespace App\Livewire\Airline;
 
 use App\Models\Airline;
+use App\Models\Setting;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -77,7 +78,7 @@ class Show extends Component
         $this->airline = $airline->load([
             'settings',
             'aircraft.type',
-            'flights' => fn ($q) => $q->latest('scheduled_departure_time')->take(5),
+            'flights' => fn($q) => $q->latest('scheduled_departure_time')->take(5),
         ]);
     }
 
@@ -158,9 +159,33 @@ class Show extends Component
 
     public function toggleStatus()
     {
-        $this->airline->active = ! $this->airline->active;
+        $this->airline->active = !$this->airline->active;
         $this->airline->save();
         $this->dispatch('alert', icon: 'success', message: 'Airline status updated successfully.');
+    }
+
+    public function loadSettings()
+    {
+        // Load the airline-specific settings from the database
+        $settingRecord = Setting::where('key', 'airline_settings')
+            ->where('airline_id', $this->airline->id)
+            ->first();
+
+        if ($settingRecord) {
+            $this->settings = json_decode($settingRecord->value, true);
+        } else {
+            // If no airline-specific settings, load the defaults
+            $defaultRecord = Setting::where('key', 'airline_settings')
+                ->where('airline_id', null)
+                ->first();
+
+            if ($defaultRecord) {
+                $this->settings = json_decode($defaultRecord->value, true);
+            } else {
+                // Fall back to hardcoded defaults
+                $this->settings = $this->defaultSettings;
+            }
+        }
     }
 
     public function render()

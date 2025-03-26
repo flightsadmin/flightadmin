@@ -57,7 +57,7 @@ class DatabaseSeeder extends Seeder
                     $route = $routes->random();
 
                     Flight::factory()->forAircraft($aircraft)->forRoute($route)->create([
-                        'flight_number' => $airline->iata_code.rand(100, 999),
+                        'flight_number' => $airline->iata_code . rand(100, 999),
                     ])->each(function ($flight) use ($airline, $captains, $firstOfficers, $cabinCrew, $baggageContainers, $cargoContainers) {
                         // Assign random crew from the pool instead of creating new ones
                         $flight->crew()->attach($captains->random()->id);
@@ -86,7 +86,7 @@ class DatabaseSeeder extends Seeder
                         // Use containers from the pool instead of creating new ones
                         if (isset($baggageContainers[$airline->id])) {
                             $container = $baggageContainers[$airline->id][array_rand($baggageContainers[$airline->id])];
-                            if (! $flight->containers()->where('container_id', $container->id)->exists()) {
+                            if (!$flight->containers()->where('container_id', $container->id)->exists()) {
                                 $flight->containers()->attach($container->id, [
                                     'type' => 'baggage',
                                     'weight' => $container->tare_weight,
@@ -97,7 +97,7 @@ class DatabaseSeeder extends Seeder
 
                         if (isset($cargoContainers[$airline->id])) {
                             $container = $cargoContainers[$airline->id][array_rand($cargoContainers[$airline->id])];
-                            if (! $flight->containers()->where('container_id', $container->id)->exists()) {
+                            if (!$flight->containers()->where('container_id', $container->id)->exists()) {
                                 $flight->containers()->attach($container->id, [
                                     'type' => 'cargo',
                                     'weight' => $container->tare_weight,
