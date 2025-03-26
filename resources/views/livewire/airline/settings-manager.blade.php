@@ -28,10 +28,12 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title m-0">{{ str_replace('_', ' ', ucfirst($selectedCategory)) }} Settings</h5>
-                    <button class="btn btn-sm btn-warning" wire:click="repairSettings"
-                        wire:confirm="Are you sure you want to repair the settings? This will overwrite all existing settings with the default values.">
-                        <i class="bi bi-wrench"></i> Repair Settings
-                    </button>
+                    @role('admin|super-admin')
+                        <button class="btn btn-sm btn-warning" wire:click="repairSettings"
+                            wire:confirm="Are you sure you want to repair the settings? This will overwrite all existing settings with the default values.">
+                            <i class="bi bi-wrench"></i> Repair Settings
+                        </button>
+                    @endrole
                 </div>
                 <div class="card-body">
                     <table class="table table-sm table-hover">

@@ -45,7 +45,6 @@ class SettingsManager extends Component
                 $this->defaultSettings = $decoded;
             } else {
                 $this->defaultSettings = $this->getDefaultSettingsStructure();
-                $this->logJsonError('Template settings JSON invalid');
             }
         } else {
             $this->defaultSettings = $this->getDefaultSettingsStructure();
@@ -58,7 +57,6 @@ class SettingsManager extends Component
                 $this->airlineSettings = $decoded;
             } else {
                 $this->airlineSettings = $this->defaultSettings;
-                $this->logJsonError('Airline settings JSON invalid for airline ' . $this->airline->id);
 
                 // Fix the invalid data in the database
                 Setting::updateOrCreate(
@@ -85,12 +83,6 @@ class SettingsManager extends Component
                 'airline_id' => $this->airline->id
             ]);
         }
-    }
-
-    private function logJsonError($message)
-    {
-        logger($message);
-        logger('JSON error: ' . json_last_error_msg());
     }
 
     private function getDefaultSettingsStructure()
@@ -401,17 +393,14 @@ class SettingsManager extends Component
             [
                 'value' => json_encode($defaultStructure),
                 'type' => 'json',
-                'description' => 'Repaired settings for ' . $this->airline->name
+                'description' => 'Default settings'
             ]
         );
 
         // Reload the settings
         $this->loadSettings();
 
-        $this->dispatch('notify', [
-            'type' => 'success',
-            'message' => 'Settings have been repaired'
-        ]);
+        $this->dispatch('alert', icon: 'success', message: 'Settings have been repaired');
     }
 
     public function render()
