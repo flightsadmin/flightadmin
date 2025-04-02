@@ -5,6 +5,7 @@ namespace App\Livewire\Flight;
 use App\Models\Flight;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Livewire\Component;
+use Illuminate\Support\Facades\Notification;
 
 class LoadsheetManager extends Component
 {
@@ -298,7 +299,7 @@ class LoadsheetManager extends Component
             ];
 
             foreach ($notification->email_addresses as $email) {
-                \Notification::route('mail', $email)->notify(
+                Notification::route('mail', $email)->notify(
                     new \App\Notifications\GeneralNotification(
                         'load-sheet-released',
                         $variables,
