@@ -6,6 +6,7 @@ use App\Models\Aircraft;
 use App\Models\Airline;
 use App\Models\Flight;
 use App\Models\Route;
+use App\Models\Schedule;
 use App\Models\Station;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -180,7 +181,7 @@ class FlightManager extends Component
             'flights' => $flights,
             'airlines' => Airline::orderBy('name')->get(),
             'aircraft' => Aircraft::with('airline')->orderBy('registration_number')->get(),
-            'schedules' => \App\Models\Schedule::orderBy('flight_number')->get(),
+            'schedules' => Schedule::orderBy('flight_number')->get(),
             'stations' => Station::orderBy('code')->get(),
             'routes' => Route::where('airline_id', $this->airline_id)->orderBy('departure_station_id')->get(),
         ]);

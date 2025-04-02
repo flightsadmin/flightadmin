@@ -12,7 +12,8 @@
         <ul class="nav flex-column">
             @forelse ($flights as $f)
                 <li class="nav-item text-body-dark">
-                    <a class="nav-link {{ isset($selectedFlight) && $selectedFlight->id == $f->id ? 'active bg-secondary text-white' : '' }} text-reset"
+                    <a class="nav-link 
+                    {{ isset($selectedFlight) && $selectedFlight->id == $f->id ? 'active bg-secondary text-white' : '' }} text-reset"
                         wire:click.prevent="setActiveFlight({{ $f->id }})" wire:navigate
                         href="{{ route('flights.show', ['flight' => $f->id]) }}">
                         {{ $f->flight_number }} - {{ $f->scheduled_departure_time->format('dS, M Y') }}

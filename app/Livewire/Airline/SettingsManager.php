@@ -9,18 +9,25 @@ use Livewire\Component;
 class SettingsManager extends Component
 {
     public $airline;
+
     public $categories = ['general', 'operations', 'cargo', 'notifications'];
+
     public $selectedCategory = 'general';
+
     public $defaultSettings;
+
     public $airlineSettings;
+
     public $newSettingForm = [
         'key' => '',
         'value' => '',
         'type' => 'string',
         'description' => '',
-        'category' => ''
+        'category' => '',
     ];
+
     public $editingForm = [];
+
     public $showNewSettingModal = false;
 
     public function mount(Airline $airline)
@@ -62,12 +69,12 @@ class SettingsManager extends Component
                 Setting::updateOrCreate(
                     [
                         'key' => 'airline_settings',
-                        'airline_id' => $this->airline->id
+                        'airline_id' => $this->airline->id,
                     ],
                     [
                         'value' => json_encode($this->defaultSettings),
                         'type' => 'json',
-                        'description' => 'Fixed settings for ' . $this->airline->name
+                        'description' => 'Fixed settings for '.$this->airline->name,
                     ]
                 );
             }
@@ -79,8 +86,8 @@ class SettingsManager extends Component
                 'key' => 'airline_settings',
                 'value' => json_encode($this->defaultSettings),
                 'type' => 'json',
-                'description' => 'Settings for ' . $this->airline->name,
-                'airline_id' => $this->airline->id
+                'description' => 'Settings for '.$this->airline->name,
+                'airline_id' => $this->airline->id,
             ]);
         }
     }
@@ -92,113 +99,113 @@ class SettingsManager extends Component
                 'standard_passenger_weight' => [
                     'type' => 'integer',
                     'description' => 'Standard passenger weight (kg)',
-                    'default' => 84
+                    'default' => 84,
                 ],
                 'standard_male_passenger_weight' => [
                     'type' => 'integer',
                     'description' => 'Standard male passenger weight (kg)',
-                    'default' => 88
+                    'default' => 88,
                 ],
                 'standard_female_passenger_weight' => [
                     'type' => 'integer',
                     'description' => 'Standard female passenger weight (kg)',
-                    'default' => 70
+                    'default' => 70,
                 ],
                 'standard_child_passenger_weight' => [
                     'type' => 'integer',
                     'description' => 'Standard child passenger weight (kg)',
-                    'default' => 35
+                    'default' => 35,
                 ],
                 'standard_infant_passenger_weight' => [
                     'type' => 'integer',
                     'description' => 'Standard infant passenger weight (kg)',
-                    'default' => 10
+                    'default' => 10,
                 ],
                 'standard_cockpit_crew_weight' => [
                     'type' => 'integer',
                     'description' => 'Standard cockpit crew weight (kg)',
-                    'default' => 85
+                    'default' => 85,
                 ],
                 'standard_cabin_crew_weight' => [
                     'type' => 'integer',
                     'description' => 'Standard cabin crew weight (kg)',
-                    'default' => 70
+                    'default' => 70,
                 ],
                 'standard_baggage_weight' => [
                     'type' => 'integer',
                     'description' => 'Standard baggage weight (kg)',
-                    'default' => 23
+                    'default' => 23,
                 ],
                 'standard_fuel_density' => [
                     'type' => 'float',
                     'description' => 'Standard fuel density (kg/L)',
-                    'default' => 0.8
+                    'default' => 0.8,
                 ],
             ],
             'operations' => [
                 'checkin_open_time' => [
                     'type' => 'integer',
                     'description' => 'Check-in opens before departure (minutes)',
-                    'default' => 120
+                    'default' => 120,
                 ],
                 'checkin_close_time' => [
                     'type' => 'integer',
                     'description' => 'Check-in closes before departure (minutes)',
-                    'default' => 45
+                    'default' => 45,
                 ],
                 'boarding_open_time' => [
                     'type' => 'integer',
                     'description' => 'Boarding opens before departure (minutes)',
-                    'default' => 45
+                    'default' => 45,
                 ],
                 'boarding_close_time' => [
                     'type' => 'integer',
                     'description' => 'Boarding closes before departure (minutes)',
-                    'default' => 15
+                    'default' => 15,
                 ],
             ],
             'cargo' => [
                 'dangerous_goods_allowed' => [
                     'type' => 'boolean',
                     'description' => 'Allow dangerous goods',
-                    'default' => false
+                    'default' => false,
                 ],
                 'live_animals_allowed' => [
                     'type' => 'boolean',
                     'description' => 'Allow live animals',
-                    'default' => false
+                    'default' => false,
                 ],
                 'max_cargo_piece_weight' => [
                     'type' => 'integer',
                     'description' => 'Maximum cargo piece weight (kg)',
-                    'default' => 150
+                    'default' => 150,
                 ],
                 'max_baggage_piece_weight' => [
                     'type' => 'integer',
                     'description' => 'Maximum baggage piece weight (kg)',
-                    'default' => 32
+                    'default' => 32,
                 ],
             ],
             'notifications' => [
                 'enable_email_notifications' => [
                     'type' => 'boolean',
                     'description' => 'Enable email notifications',
-                    'default' => true
+                    'default' => true,
                 ],
                 'enable_sms_notifications' => [
                     'type' => 'boolean',
                     'description' => 'Enable SMS notifications',
-                    'default' => false
+                    'default' => false,
                 ],
                 'notification_email' => [
                     'type' => 'string',
                     'description' => 'Notification email address',
-                    'default' => ''
+                    'default' => '',
                 ],
                 'notification_phone' => [
                     'type' => 'string',
                     'description' => 'Notification phone number',
-                    'default' => ''
+                    'default' => '',
                 ],
             ],
         ];
@@ -214,16 +221,16 @@ class SettingsManager extends Component
         $category = $this->selectedCategory;
 
         // Ensure airlineSettings and defaultSettings are arrays
-        if (!is_array($this->airlineSettings)) {
+        if (! is_array($this->airlineSettings)) {
             $this->airlineSettings = [];
         }
 
-        if (!is_array($this->defaultSettings)) {
+        if (! is_array($this->defaultSettings)) {
             $this->defaultSettings = $this->getDefaultSettingsStructure();
         }
 
         // Check if category exists
-        if (!isset($this->airlineSettings[$category])) {
+        if (! isset($this->airlineSettings[$category])) {
             $this->airlineSettings[$category] = [];
         }
 
@@ -265,33 +272,33 @@ class SettingsManager extends Component
         $key = $this->editingForm['key'];
 
         // Update the airline settings
-        if (!isset($this->airlineSettings[$category])) {
+        if (! isset($this->airlineSettings[$category])) {
             $this->airlineSettings[$category] = [];
         }
 
         $this->airlineSettings[$category][$key] = [
             'type' => $this->editingForm['type'],
             'description' => $this->editingForm['description'],
-            'default' => $this->editingForm['value']
+            'default' => $this->editingForm['value'],
         ];
 
         // Save to database
         Setting::updateOrCreate(
             [
                 'key' => 'airline_settings',
-                'airline_id' => $this->airline->id
+                'airline_id' => $this->airline->id,
             ],
             [
                 'value' => json_encode($this->airlineSettings),
                 'type' => 'json',
-                'description' => 'Custom settings for ' . $this->airline->name
+                'description' => 'Custom settings for '.$this->airline->name,
             ]
         );
 
         $this->dispatch('close-edit-setting-modal');
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => 'Setting saved successfully'
+            'message' => 'Setting saved successfully',
         ]);
     }
 
@@ -302,7 +309,7 @@ class SettingsManager extends Component
             'value' => '',
             'type' => 'string',
             'description' => '',
-            'category' => $this->selectedCategory
+            'category' => $this->selectedCategory,
         ];
         $this->showNewSettingModal = true;
         $this->dispatch('open-new-setting-modal');
@@ -321,26 +328,26 @@ class SettingsManager extends Component
         $key = $this->newSettingForm['key'];
 
         // Add to airline settings
-        if (!isset($this->airlineSettings[$category])) {
+        if (! isset($this->airlineSettings[$category])) {
             $this->airlineSettings[$category] = [];
         }
 
         $this->airlineSettings[$category][$key] = [
             'type' => $this->newSettingForm['type'],
             'description' => $this->newSettingForm['description'],
-            'default' => $this->newSettingForm['value']
+            'default' => $this->newSettingForm['value'],
         ];
 
         // Save to database
         Setting::updateOrCreate(
             [
                 'key' => 'airline_settings',
-                'airline_id' => $this->airline->id
+                'airline_id' => $this->airline->id,
             ],
             [
                 'value' => json_encode($this->airlineSettings),
                 'type' => 'json',
-                'description' => 'Custom settings for ' . $this->airline->name
+                'description' => 'Custom settings for '.$this->airline->name,
             ]
         );
 
@@ -348,7 +355,7 @@ class SettingsManager extends Component
         $this->dispatch('close-new-setting-modal');
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => 'New setting added successfully'
+            'message' => 'New setting added successfully',
         ]);
     }
 
@@ -363,18 +370,18 @@ class SettingsManager extends Component
             Setting::updateOrCreate(
                 [
                     'key' => 'airline_settings',
-                    'airline_id' => $this->airline->id
+                    'airline_id' => $this->airline->id,
                 ],
                 [
                     'value' => json_encode($this->airlineSettings),
                     'type' => 'json',
-                    'description' => 'Custom settings for ' . $this->airline->name
+                    'description' => 'Custom settings for '.$this->airline->name,
                 ]
             );
 
             $this->dispatch('notify', [
                 'type' => 'success',
-                'message' => 'Setting removed successfully'
+                'message' => 'Setting removed successfully',
             ]);
         }
     }
@@ -388,12 +395,12 @@ class SettingsManager extends Component
         Setting::updateOrCreate(
             [
                 'key' => 'airline_settings',
-                'airline_id' => $this->airline->id
+                'airline_id' => $this->airline->id,
             ],
             [
                 'value' => json_encode($defaultStructure),
                 'type' => 'json',
-                'description' => 'Default settings'
+                'description' => 'Default settings',
             ]
         );
 

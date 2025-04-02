@@ -140,7 +140,7 @@ class LoadsheetManager extends Component
             [
                 'value' => json_encode($this->paxDistribution),
                 'type' => 'json',
-                'description' => 'Actual PAX distribution - '.$this->flight->flight_number,
+                'description' => 'Actual PAX distribution - ' . $this->flight->flight_number,
             ]
         );
 
@@ -214,7 +214,7 @@ class LoadsheetManager extends Component
 
     private function calculatePantryIndex()
     {
-        if (! $this->flight->fuel?->pantry) {
+        if (!$this->flight->fuel?->pantry) {
             $this->dispatch('alert', icon: 'error', message: 'No pantry code found.');
 
             return;
@@ -236,7 +236,7 @@ class LoadsheetManager extends Component
 
     public function finalizeLoadsheet()
     {
-        if (! $this->loadsheet) {
+        if (!$this->loadsheet) {
             $this->dispatch('alert', icon: 'error', message: 'No loadsheet found to finalize.');
 
             return;
@@ -257,7 +257,7 @@ class LoadsheetManager extends Component
         try {
             $notification = \App\Models\EmailNotification::getRecipientsForFlight($this->flight, 'loadsheet');
 
-            if (! $notification) {
+            if (!$notification) {
                 $this->dispatch('alert', icon: 'warning', message: 'No notification recipients configured for this flight. Loadsheet saved but not sent.');
 
                 return;
@@ -268,13 +268,13 @@ class LoadsheetManager extends Component
             $flightNumber = $this->flight->flight_number;
             $edition = $this->loadsheet->edition;
             $date = $this->flight->scheduled_departure_time->format('d-M-Y');
-            $filename = strtoupper("loadsheet_{$flightNumber}_{$edition}_{$date}").'.pdf';
+            $filename = strtoupper("loadsheet_{$flightNumber}_{$edition}_{$date}") . '.pdf';
 
-            if (! empty($notification->email_addresses)) {
+            if (!empty($notification->email_addresses)) {
                 $this->sendEmailNotification($notification, $pdf, $filename);
             }
 
-            if (! empty($notification->sita_addresses)) {
+            if (!empty($notification->sita_addresses)) {
                 $this->sendSitaNotification($notification, $pdf, $filename);
             }
 
@@ -283,8 +283,8 @@ class LoadsheetManager extends Component
             }
 
         } catch (\Exception $e) {
-            \Log::error('Failed to send loadsheet notifications: '.$e->getMessage());
-            $this->dispatch('alert', icon: 'error', message: 'Failed to send notifications: '.$e->getMessage());
+            \Log::error('Failed to send loadsheet notifications: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to send notifications: ' . $e->getMessage());
         }
     }
 
@@ -313,10 +313,10 @@ class LoadsheetManager extends Component
                 );
             }
 
-            $this->dispatch('alert', icon: 'success', message: 'Loadsheet emailed successfully to '.count($notification->email_addresses).' recipients.');
+            $this->dispatch('alert', icon: 'success', message: 'Loadsheet emailed successfully to ' . count($notification->email_addresses) . ' recipients.');
         } catch (\Exception $e) {
-            \Log::error('Failed to send loadsheet email: '.$e->getMessage());
-            $this->dispatch('alert', icon: 'error', message: 'Failed to send email: '.$e->getMessage());
+            \Log::error('Failed to send loadsheet email: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to send email: ' . $e->getMessage());
         }
     }
 
@@ -327,14 +327,14 @@ class LoadsheetManager extends Component
             $sitaMessage = $this->formatLoadsheetForSita();
 
             // Log the SITA message that would be sent
-            \Log::info('SITA notification would be sent to: '.implode(', ', $notification->sita_addresses), [
+            \Log::info('SITA notification would be sent to: ' . implode(', ', $notification->sita_addresses), [
                 $sitaMessage,
             ]);
 
-            $this->dispatch('alert', icon: 'success', message: 'Loadsheet SITA message prepared for '.count($notification->sita_addresses).' addresses.');
+            $this->dispatch('alert', icon: 'success', message: 'Loadsheet SITA message prepared for ' . count($notification->sita_addresses) . ' addresses.');
         } catch (\Exception $e) {
-            \Log::error('Failed to send SITA notification: '.$e->getMessage());
-            $this->dispatch('alert', icon: 'error', message: 'Failed to prepare SITA message: '.$e->getMessage());
+            \Log::error('Failed to send SITA notification: ' . $e->getMessage());
+            $this->dispatch('alert', icon: 'error', message: 'Failed to prepare SITA message: ' . $e->getMessage());
         }
     }
 
@@ -380,13 +380,13 @@ class LoadsheetManager extends Component
 
     public function revokeLoadsheet()
     {
-        if (! $this->loadsheet) {
+        if (!$this->loadsheet) {
             $this->dispatch('alert', icon: 'error', message: 'No loadsheet found to revoke.');
 
             return;
         }
 
-        if (! $this->loadsheet->final) {
+        if (!$this->loadsheet->final) {
             $this->dispatch('alert', icon: 'error', message: 'Only finalized loadsheets can be revoked.');
 
             return;
@@ -454,7 +454,7 @@ class LoadsheetManager extends Component
             }
         }
 
-        $orderedWeightsUsed = collect($pax)->mapWithKeys(fn ($type) => [
+        $orderedWeightsUsed = collect($pax)->mapWithKeys(fn($type) => [
             $type => $this->flight->airline->getStandardPassengerWeight($type),
         ])->toArray();
 
@@ -473,7 +473,7 @@ class LoadsheetManager extends Component
                     'weight' => $weight,
                     'index' => round($weight * $hold->index, 2),
                 ];
-            })->filter(fn ($hold) => $hold['weight'] > 0)->values()->toArray();
+            })->filter(fn($hold) => $hold['weight'] > 0)->values()->toArray();
 
         return [
             'pax_by_zone' => $paxDistribution,
@@ -520,7 +520,7 @@ class LoadsheetManager extends Component
                     ];
                 })->values()->toArray();
 
-                return [strtolower($envelope->name).'Envelope' => $points];
+                return [strtolower($envelope->name) . 'Envelope' => $points];
             })
             ->toArray();
 
@@ -529,13 +529,13 @@ class LoadsheetManager extends Component
 
     public function generateLoadsheet()
     {
-        if (! $this->flight->fuel) {
+        if (!$this->flight->fuel) {
             $this->dispatch('alert', icon: 'error', message: 'Fuel data must be added before generating loadsheet.');
 
             return;
         }
 
-        if (! $this->loadplan || $this->loadplan->status !== 'released') {
+        if (!$this->loadplan || $this->loadplan->status !== 'released') {
             $this->dispatch('alert', icon: 'error', message: 'Load plan must be released before generating loadsheet.');
 
             return;
@@ -574,7 +574,7 @@ class LoadsheetManager extends Component
             'short_flight_date' => $this->flight->scheduled_departure_time?->format('d'),
             'registration' => $this->flight->aircraft->registration_number,
             'destination' => $this->flight->arrival_airport,
-            'sector' => $this->flight->departure_airport.'/'.$this->flight->arrival_airport,
+            'sector' => $this->flight->departure_airport . '/' . $this->flight->arrival_airport,
             'version' => $this->flight->aircraft->type->code,
             'release_time' => now('Asia/Qatar')->format('Hi'),
             'underload' => $this->calculateUnderload(),
@@ -628,7 +628,7 @@ class LoadsheetManager extends Component
     public function calculateCrewIndexes()
     {
         $crewConfig = $this->flight->fuel->crew;
-        if (! $crewConfig) {
+        if (!$crewConfig) {
             $this->dispatch('alert', icon: 'error', message: 'No crew configuration found.');
 
             return ['index' => 0, 'weight' => 0];
