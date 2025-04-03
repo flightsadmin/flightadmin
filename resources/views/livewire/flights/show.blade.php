@@ -38,7 +38,8 @@
                     <a wire:click.prevent="setTab('boarding')" href=""
                         class="dropdown-item {{ $activeTab === 'boarding' ? 'active' : '' }}">
                         <i class="bi bi-door-open-fill"></i> Boarding
-                        <span class="badge bg-secondary">{{ $flight->boarded_count }}/{{ $flight->accepted_count }}</span>
+                        <span
+                            class="badge bg-secondary">{{ $flight->boarded_count }}/{{ $flight->accepted_count }}</span>
                     </a>
                 </li>
             </ul>
@@ -69,15 +70,13 @@
             </ul>
         </li>
         <li class="nav-item">
-            <a wire:click.prevent="setTab('crew')" href=""
-                class="nav-link {{ $activeTab === 'crew' ? 'active' : '' }}">
+            <a wire:click.prevent="setTab('crew')" href="" class="nav-link {{ $activeTab === 'crew' ? 'active' : '' }}">
                 <i class="bi bi-person-badge"></i> Crew
                 <span class="badge bg-secondary">{{ $flight->crew_count }}</span>
             </a>
         </li>
         <li class="nav-item">
-            <a wire:click.prevent="setTab('fuel')" href=""
-                class="nav-link {{ $activeTab === 'fuel' ? 'active' : '' }}">
+            <a wire:click.prevent="setTab('fuel')" href="" class="nav-link {{ $activeTab === 'fuel' ? 'active' : '' }}">
                 <i class="bi bi-fuel-pump"></i> Fuel
             </a>
         </li>
@@ -91,6 +90,12 @@
             <a wire:click.prevent="setTab('loadsheet')" href=""
                 class="nav-link {{ $activeTab === 'loadsheet' ? 'active' : '' }}">
                 <i class="bi bi-speedometer2"></i> Loadsheet
+            </a>
+        </li>
+        <li class="nav-item">
+            <a wire:click.prevent="setTab('documents')" href=""
+                class="nav-link {{ $activeTab === 'documents' ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-text"></i> Documents
             </a>
         </li>
     </ul>
@@ -115,6 +120,8 @@
             <livewire:flight.loading-manager :flight="$flight" />
         @elseif ($activeTab === 'loadsheet')
             <livewire:flight.loadsheet-manager :flight="$flight" />
+        @elseif ($activeTab === 'documents')
+            <livewire:flight.documents :flight="$flight" />
         @endif
     </div>
 </div>

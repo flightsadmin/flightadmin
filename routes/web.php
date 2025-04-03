@@ -38,11 +38,19 @@ Route::middleware(['auth'])->group(function () {
 
     // Station management
     Route::get('/stations', App\Livewire\Admin\StationManager::class)->name('admin.stations');
+
+    Route::get('/loadsheets/{loadsheet}/preview', function (App\Models\Loadsheet $loadsheet) {
+        return response()->json();
+    })->name('loadsheets.preview');
+
+    Route::get('/loadplans/{loadplan}/preview', function (App\Models\Loadplan $loadplan) {
+        return response()->json();
+    })->name('loadplans.preview');
 });
 
 Auth::routes([
     'register' => false,
     'verify' => true,
-    'reset' => true,     // Enable password reset
+    'reset' => true,
     'confirm' => false,
 ]);
