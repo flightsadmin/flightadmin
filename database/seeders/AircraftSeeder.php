@@ -55,7 +55,11 @@ class AircraftSeeder extends Seeder
 
         $aircraftType->settings()->updateOrCreate(
             ['key' => 'pantries', 'airline_id' => $airline->id],
-            ['value' => json_encode($pantries), 'type' => 'json', 'description' => 'Aircraft Type Pantry Configurations']
+            [
+                'value' => json_encode($pantries),
+                'type' => 'json',
+                'description' => 'Aircraft Type Pantry Configurations'
+            ]
         );
 
         // Airline Settings
