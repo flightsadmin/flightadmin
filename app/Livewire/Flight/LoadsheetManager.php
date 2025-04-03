@@ -276,7 +276,7 @@ class LoadsheetManager extends Component
             }
 
             if (!empty($notification->sita_addresses)) {
-                $this->sendSitaNotification($notification, $pdf, $filename);
+                $this->sendSitaNotification($notification);
             }
 
             if (empty($notification->email_addresses) && empty($notification->sita_addresses)) {
@@ -296,6 +296,7 @@ class LoadsheetManager extends Component
                 'name' => $this->flight->airline->name,
                 'flight_number' => $this->flight->flight_number,
                 'date' => $this->flight->scheduled_departure_time->format('d-M-Y'),
+                'company_name' => config('app.name')
             ];
 
             foreach ($notification->email_addresses as $email) {
@@ -321,18 +322,11 @@ class LoadsheetManager extends Component
         }
     }
 
-    protected function sendSitaNotification($notification, $pdf, $filename)
+    protected function sendSitaNotification($notification)
     {
         try {
-            // Format the loadsheet data for SITA Type B message
             $sitaMessage = $this->formatLoadsheetForSita();
-
-            // Log the SITA message that would be sent
-            \Log::info('SITA notification would be sent to: ' . implode(', ', $notification->sita_addresses), [
-                $sitaMessage,
-            ]);
-
-            $this->dispatch('alert', icon: 'success', message: 'Loadsheet SITA message prepared for ' . count($notification->sita_addresses) . ' addresses.');
+            \Log::info(implode(', ', $notification->sita_addresses), [$sitaMessage]);
         } catch (\Exception $e) {
             \Log::error('Failed to send SITA notification: ' . $e->getMessage());
             $this->dispatch('alert', icon: 'error', message: 'Failed to prepare SITA message: ' . $e->getMessage());
@@ -344,12 +338,9 @@ class LoadsheetManager extends Component
         $flight = $this->flight;
         $loadsheet = $this->loadsheet;
 
-        $message = "LOADSHEET\n";
+        $message = "\nLOADSHEET\n";
         $message .= "{$flight->airline->iata}{$flight->flight_number}/{$flight->scheduled_departure_time->format('dM')}\n";
         $message .= "{$flight->departure_airport}{$flight->arrival_airport}\n";
-
-        // Add loadsheet details
-        $message .= "LOADSHEET\n";
 
         // Add passenger information
         $paxByType = $loadsheet->distribution['load_data']['pax_by_type'] ?? [];
@@ -358,13 +349,13 @@ class LoadsheetManager extends Component
 
         // Add weight information
         $weights = $loadsheet->distribution['weights'] ?? [];
-        $message .= "ZFW: {$weights['zero_fuel_weight']} KG\n";
-        $message .= "TOW: {$weights['takeoff_weight']} KG\n";
-        $message .= "LDW: {$weights['landing_weight']} KG\n";
+        $message .= "ZFW: {$weights['zero_fuel_weight']}KG\n";
+        $message .= "TOW: {$weights['takeoff_weight']}KG\n";
+        $message .= "LDW: {$weights['landing_weight']}KG\n";
 
         // Add fuel information
         $fuel = $loadsheet->distribution['fuel'] ?? [];
-        $message .= "FUEL: {$fuel['takeoff']} KG\n";
+        $message .= "TOF: {$fuel['takeoff']}KG";
 
         return $message;
     }
@@ -383,13 +374,11 @@ class LoadsheetManager extends Component
     {
         if (!$this->loadsheet) {
             $this->dispatch('alert', icon: 'error', message: 'No loadsheet found to revoke.');
-
             return;
         }
 
         if (!$this->loadsheet->final) {
             $this->dispatch('alert', icon: 'error', message: 'Only finalized loadsheets can be revoked.');
-
             return;
         }
 
@@ -487,14 +476,14 @@ class LoadsheetManager extends Component
                     'weight' => $this->flight->containers()
                         ->where('container_flight.type', 'cargo')
                         ->where('container_flight.status', 'loaded')
-                        ->sum('container_flight.weight'), // Use pivot weight for cargo
+                        ->sum('container_flight.weight'),
                 ],
                 'B' => [
                     'pieces' => $this->flight->baggage->where('status', 'loaded')->count(),
                     'weight' => $this->flight->containers()
                         ->where('container_flight.type', 'baggage')
                         ->where('container_flight.status', 'loaded')
-                        ->sum('container_flight.weight'), // Use pivot weight for baggage
+                        ->sum('container_flight.weight'),
                 ],
                 'M' => [
                     'pieces' => 0,

@@ -19,14 +19,19 @@
                                 wire:loading.attr="disabled">
                                 <i class="bi bi-check2-circle"></i> Finalize Loadsheet
                             </button>
-                        @elseif ($loadsheet && $loadsheet->status === 'released')
+                        @endif
+
+                        @if ($loadsheet && $loadsheet->status === 'released')
                             <button class="btn btn-secondary btn-sm mb-0" wire:click="revokeLoadsheet"
-                                wire:confirm="Are you sure you want to revoke this loadsheet?" wire:loading.attr="disabled">
+                                wire:confirm="Are you sure you want to revoke this loadsheet?"
+                                wire:loading.attr="disabled">
                                 <i class="bi bi-trash-fill"></i> Revoke Loadsheet
                             </button>
-                        @elseif (!$loadsheet || $loadsheet->status === 'revoked' || $loadsheet->status === 'draft')
+                        @endif
+
+                        @if ((!$loadsheet || $loadsheet->status === 'revoked') && $flight->fuel && $loadplan && $loadplan->status === 'released')
                             <button class="btn btn-primary btn-sm mb-0" wire:click="generateLoadsheet"
-                                wire:loading.attr="disabled" @disabled(!$flight->fuel || !$loadplan || $loadplan->status !== 'released')>
+                                wire:loading.attr="disabled">
                                 <i class="bi bi-plus-circle"></i> Generate Loadsheet
                             </button>
                         @endif
