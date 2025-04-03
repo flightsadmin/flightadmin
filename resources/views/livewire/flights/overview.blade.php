@@ -96,7 +96,9 @@
                                                     <li>
                                                         <button class="dropdown-item"
                                                             wire:click="updateRegistration('{{ $registration->id }}')"
-                                                            @if ($flight->aircraft->id != $registration->id) wire:confirm="Are you sure you want to update the aircraft? All containers will be moved to unplanned." @endif>
+                                                            @if ($flight->aircraft && $registration && $flight->aircraft->id != $registration->id) 
+                                                                wire:confirm="Are you sure you want to update the aircraft? All containers will be moved to unplanned." 
+                                                            @endif>
                                                             {{ ucfirst($registration->registration_number) ?? 'Not assigned' }}
                                                         </button>
                                                     </li>
