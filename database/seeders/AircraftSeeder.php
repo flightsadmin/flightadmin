@@ -61,33 +61,117 @@ class AircraftSeeder extends Seeder
         // Airline Settings
         $settings = [
             'general' => [
-                'standard_passenger_weight' => 84,
-                'standard_male_passenger_weight' => 88,
-                'standard_female_passenger_weight' => 70,
-                'standard_child_passenger_weight' => 35,
-                'standard_infant_passenger_weight' => 10,
-                'standard_cockpit_crew_weight' => 85,
-                'standard_cabin_crew_weight' => 75,
-                'standard_baggage_weight' => 13,
-                'standard_fuel_density' => 0.89,
+                'standard_passenger_weight' => [
+                    'type' => 'integer',
+                    'description' => 'Standard passenger weight (kg)',
+                    'default' => 84,
+                ],
+                'standard_male_passenger_weight' => [
+                    'type' => 'integer',
+                    'description' => 'Standard male passenger weight (kg)',
+                    'default' => 88,
+                ],
+                'standard_female_passenger_weight' => [
+                    'type' => 'integer',
+                    'description' => 'Standard female passenger weight (kg)',
+                    'default' => 70,
+                ],
+                'standard_child_passenger_weight' => [
+                    'type' => 'integer',
+                    'description' => 'Standard child passenger weight (kg)',
+                    'default' => 35,
+                ],
+                'standard_infant_passenger_weight' => [
+                    'type' => 'integer',
+                    'description' => 'Standard infant passenger weight (kg)',
+                    'default' => 10,
+                ],
+                'standard_cockpit_crew_weight' => [
+                    'type' => 'integer',
+                    'description' => 'Standard cockpit crew weight (kg)',
+                    'default' => 85,
+                ],
+                'standard_cabin_crew_weight' => [
+                    'type' => 'integer',
+                    'description' => 'Standard cabin crew weight (kg)',
+                    'default' => 70,
+                ],
+                'standard_baggage_weight' => [
+                    'type' => 'integer',
+                    'description' => 'Standard baggage weight (kg)',
+                    'default' => 23,
+                ],
+                'standard_fuel_density' => [
+                    'type' => 'float',
+                    'description' => 'Standard fuel density (kg/L)',
+                    'default' => 0.8,
+                ],
             ],
             'operations' => [
-                'checkin_open_time' => 180,
-                'checkin_close_time' => 45,
-                'boarding_open_time' => 60,
-                'boarding_close_time' => 15,
+                'checkin_open_time' => [
+                    'type' => 'integer',
+                    'description' => 'Check-in opens before departure (minutes)',
+                    'default' => 120,
+                ],
+                'checkin_close_time' => [
+                    'type' => 'integer',
+                    'description' => 'Check-in closes before departure (minutes)',
+                    'default' => 45,
+                ],
+                'boarding_open_time' => [
+                    'type' => 'integer',
+                    'description' => 'Boarding opens before departure (minutes)',
+                    'default' => 45,
+                ],
+                'boarding_close_time' => [
+                    'type' => 'integer',
+                    'description' => 'Boarding closes before departure (minutes)',
+                    'default' => 15,
+                ],
             ],
             'cargo' => [
-                'dangerous_goods_allowed' => false,
-                'live_animals_allowed' => false,
-                'max_cargo_piece_weight' => 150,
-                'max_baggage_piece_weight' => 32,
+                'dangerous_goods_allowed' => [
+                    'type' => 'boolean',
+                    'description' => 'Allow dangerous goods',
+                    'default' => false,
+                ],
+                'live_animals_allowed' => [
+                    'type' => 'boolean',
+                    'description' => 'Allow live animals',
+                    'default' => false,
+                ],
+                'max_cargo_piece_weight' => [
+                    'type' => 'integer',
+                    'description' => 'Maximum cargo piece weight (kg)',
+                    'default' => 150,
+                ],
+                'max_baggage_piece_weight' => [
+                    'type' => 'integer',
+                    'description' => 'Maximum baggage piece weight (kg)',
+                    'default' => 32,
+                ],
             ],
             'notifications' => [
-                'enable_email_notifications' => true,
-                'enable_sms_notifications' => false,
-                'notification_email' => '',
-                'notification_phone' => '',
+                'enable_email_notifications' => [
+                    'type' => 'boolean',
+                    'description' => 'Enable email notifications',
+                    'default' => true,
+                ],
+                'enable_sms_notifications' => [
+                    'type' => 'boolean',
+                    'description' => 'Enable SMS notifications',
+                    'default' => false,
+                ],
+                'notification_email' => [
+                    'type' => 'string',
+                    'description' => 'Notification email address',
+                    'default' => '',
+                ],
+                'notification_phone' => [
+                    'type' => 'string',
+                    'description' => 'Notification phone number',
+                    'default' => '',
+                ],
             ],
         ];
 
@@ -132,7 +216,7 @@ class AircraftSeeder extends Seeder
                         'cabin_zone_id' => $zone->id,
                         'row' => $actualRow,
                         'column' => $column,
-                        'designation' => $actualRow.$column,
+                        'designation' => $actualRow . $column,
                         'type' => 'economy',
                         'is_exit' => in_array($actualRow, [5, 13]),
                         'created_at' => now(),
@@ -152,7 +236,7 @@ class AircraftSeeder extends Seeder
                     ->get();
 
                 foreach ($exitRowSeats as $seat) {
-                    if (! $flight->seats()->where('seat_id', $seat->id)->exists()) {
+                    if (!$flight->seats()->where('seat_id', $seat->id)->exists()) {
                         $flight->seats()->attach($seat->id, [
                             'is_blocked' => true,
                             'blocked_reason' => 'Exit Row',
@@ -177,7 +261,7 @@ class AircraftSeeder extends Seeder
                     $seatId = $availableSeats[$randomIndex];
                     unset($availableSeats[$randomIndex]);
 
-                    if (! $flight->seats()->where('seat_id', $seatId)->exists()) {
+                    if (!$flight->seats()->where('seat_id', $seatId)->exists()) {
                         $flight->seats()->attach($seatId, [
                             'is_blocked' => false,
                             'created_at' => now(),

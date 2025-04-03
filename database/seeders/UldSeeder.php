@@ -87,12 +87,16 @@ class UldSeeder extends Seeder
         foreach ($airlines as $airline) {
             $airline->settings()->updateOrCreate(
                 ['key' => 'uld_types'],
-                ['value' => json_encode($uldTypes)]
+                [
+                    'value' => json_encode($uldTypes),
+                    'type' => 'json',
+                    'description' => 'Airline ULD Settings'
+                ],
             );
 
             foreach ($uldTypes as $key => $type) {
                 for ($i = 1; $i <= 2; $i++) {
-                    $containerNumber = $type['code'].str_pad($i, 5, '0', STR_PAD_LEFT).$airline->iata_code;
+                    $containerNumber = $type['code'] . str_pad($i, 5, '0', STR_PAD_LEFT) . $airline->iata_code;
 
                     $airline->containers()->updateOrCreate(
                         ['container_number' => $containerNumber],
