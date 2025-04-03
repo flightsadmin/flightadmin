@@ -60,18 +60,6 @@ class EmailNotificationManager extends Component
         'weather' => 'Weather Report',
     ];
 
-    protected $rules = [
-        'document_type' => 'required|string',
-        'station_id' => 'nullable|exists:stations,id',
-        'route_id' => 'nullable|exists:routes,id',
-        'email_addresses' => 'required_without:sita_addresses|array',
-        'sita_addresses' => 'required_without:email_addresses|array',
-        'notes' => 'nullable|string',
-        'is_active' => 'boolean',
-    ];
-
-    protected $listeners = ['refreshNotifications' => '$refresh'];
-
     public function mount(Airline $airline)
     {
         $this->airline = $airline;
@@ -94,7 +82,6 @@ class EmailNotificationManager extends Component
 
     public function updatedStationId()
     {
-        // Reset route_id if station changes
         $this->reset(['route_id']);
     }
 
@@ -122,10 +109,8 @@ class EmailNotificationManager extends Component
 
     public function save()
     {
-        // Validate that at least one recipient is provided
         if (empty($this->email_addresses) && empty($this->sita_addresses)) {
             $this->addError('email_addresses', 'At least one email or SITA address is required');
-
             return;
         }
 
@@ -156,7 +141,7 @@ class EmailNotificationManager extends Component
             $message = 'Notification created successfully';
         }
 
-        $this->dispatch('notify', ['message' => $message, 'type' => 'success']);
+        $this->dispatch('alert', icon: 'success', message: $message);
         $this->resetForm();
         $this->showModal = false;
     }
@@ -164,16 +149,16 @@ class EmailNotificationManager extends Component
     public function deleteNotification($id)
     {
         EmailNotification::findOrFail($id)->delete();
-        $this->dispatch('notify', ['message' => 'Notification deleted successfully', 'type' => 'success']);
+        $this->dispatch('alert', icon: 'success', message: "Notification deleted successfully");
     }
 
     public function toggleActive($id)
     {
         $notification = EmailNotification::findOrFail($id);
-        $notification->update(['is_active' => ! $notification->is_active]);
+        $notification->update(['is_active' => !$notification->is_active]);
 
         $status = $notification->is_active ? 'activated' : 'deactivated';
-        $this->dispatch('notify', ['message' => "Notification {$status} successfully", 'type' => 'success']);
+        $this->dispatch('alert', icon: 'success', message: "Notification {$status} successfully");
     }
 
     public function addEmail()
@@ -193,7 +178,7 @@ class EmailNotificationManager extends Component
             return;
         }
 
-        if (! in_array($this->newEmail, $this->email_addresses)) {
+        if (!in_array($this->newEmail, $this->email_addresses)) {
             $this->email_addresses[] = $this->newEmail;
         }
 
@@ -225,7 +210,7 @@ class EmailNotificationManager extends Component
             return;
         }
 
-        if (! in_array($this->newSita, $this->sita_addresses)) {
+        if (!in_array($this->newSita, $this->sita_addresses)) {
             $this->sita_addresses[] = strtoupper($this->newSita);
         }
 
@@ -279,10 +264,10 @@ class EmailNotificationManager extends Component
                     $q->whereJsonContains('email_addresses', $this->search)
                         ->orWhereJsonContains('sita_addresses', $this->search)
                         ->orWhereHas('station', function ($sq) {
-                            $sq->where('name', 'like', '%'.$this->search.'%')
-                                ->orWhere('code', 'like', '%'.$this->search.'%');
+                            $sq->where('name', 'like', '%' . $this->search . '%')
+                                ->orWhere('code', 'like', '%' . $this->search . '%');
                         })
-                        ->orWhere('document_type', 'like', '%'.$this->search.'%');
+                        ->orWhere('document_type', 'like', '%' . $this->search . '%');
                 });
             })
             ->when($this->documentTypeFilter, function ($query) {
