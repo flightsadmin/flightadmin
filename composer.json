@@ -15,7 +15,7 @@
         "laravel/tinker": "^2.10.1",
         "laravel/ui": "^4.6",
         "livewire/livewire": "^3.6",
-        "nativephp/electron": "1.0.0-beta.5",
+        "nativephp/electron": "^1.0.0",
         "fakerphp/faker": "^1.23",
         "spatie/laravel-permission": "^6.16"
     },
@@ -79,6 +79,6 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }

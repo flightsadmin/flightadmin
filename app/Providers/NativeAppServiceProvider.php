@@ -22,9 +22,11 @@ class NativeAppServiceProvider implements ProvidesPhpIni
             Menu::edit(),
             Menu::view(),
             Menu::make(
-                Menu::link('https://docs.flightadmin.info', 'Documentation'),
+                Menu::link('https://docs.flightadmin.info', 'Documentation')->openInBrowser(),
                 Menu::separator(),
-                Menu::link('https://docs.flightadmin.info', 'Sign Out'),
+                Menu::link('https://docs.flightadmin.info', 'Learn More ...')->openInBrowser(),
+                Menu::separator(),
+                Menu::checkbox('Accept Terms')->checked(),
             )->label('Help'),
             Menu::window(),
         );
