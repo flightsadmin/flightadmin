@@ -19,97 +19,89 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Run these seeders first to set up airlines, stations, and routes
         $this->call([
             AdminSeeder::class,
             EmailTemplateSeeder::class,
             AirlineNetworkSeeder::class,
         ]);
 
-        $airlines = Airline::inRandomOrder()->limit(3)->get();
-
-        // Create a pool of crew members to reuse
-        $captains = Crew::factory(3)->captain()->create();
-        $firstOfficers = Crew::factory(3)->firstOfficer()->create();
-        $cabinCrew = Crew::factory(10)->cabinCrew()->create();
-
-        // Create a pool of containers to reuse
-        $baggageContainers = [];
-        $cargoContainers = [];
+        // Now create flights based on the routes we've created
+        $airlines = Airline::all();
 
         foreach ($airlines as $airline) {
-            // Create 2-3 containers per airline for reuse
-            for ($i = 0; $i < 3; $i++) {
-                $baggageContainers[$airline->id][] = Container::factory()->forAirline($airline)->create();
-                $cargoContainers[$airline->id][] = Container::factory()->forAirline($airline)->create();
-            }
-
-            AircraftType::factory()->forAirline($airline)->create()->each(function ($aircraftType) use ($airline, $captains, $firstOfficers, $cabinCrew, $baggageContainers, $cargoContainers) {
-                Aircraft::factory(2)->create([
+            // Create aircraft types and aircraft for this airline
+            AircraftType::factory()->forAirline($airline)->create()->each(function ($aircraftType) use ($airline) {
+                Aircraft::factory(3)->create([
                     'airline_id' => $airline->id,
                     'aircraft_type_id' => $aircraftType->id,
-                ])->each(function ($aircraft) use ($airline, $captains, $firstOfficers, $cabinCrew, $baggageContainers, $cargoContainers) {
+                ])->each(function ($aircraft) use ($airline) {
+                    // Get routes for this airline
                     $routes = Route::where('airline_id', $airline->id)->get();
 
+                    // Skip if no routes exist for this airline
                     if ($routes->isEmpty()) {
                         return;
                     }
 
-                    $route = $routes->random();
+                    // Create 1-3 flights for each aircraft
+                    $flightCount = rand(1, 3);
 
-                    Flight::factory()->forAircraft($aircraft)->forRoute($route)->create([
-                        'flight_number' => $airline->iata_code.rand(100, 999),
-                    ])->each(function ($flight) use ($airline, $captains, $firstOfficers, $cabinCrew, $baggageContainers, $cargoContainers) {
-                        // Assign random crew from the pool instead of creating new ones
-                        $flight->crew()->attach($captains->random()->id);
-                        $flight->crew()->attach($firstOfficers->random()->id);
+                    for ($i = 0; $i < $flightCount; $i++) {
+                        // Get a random route
+                        $route = $routes->random();
 
-                        // Assign 2-3 cabin crew members from the pool
-                        $randomCabinCrew = $cabinCrew->random(rand(2, 3));
-                        foreach ($randomCabinCrew as $crew) {
-                            $flight->crew()->attach($crew->id);
-                        }
+                        // Create a flight using this route
+                        $flight = Flight::factory()
+                            ->forAircraft($aircraft)
+                            ->forRoute($route)
+                            ->create();
 
-                        Passenger::factory(rand(20, 30))->forFlight($flight)->create()->each(function ($passenger) use ($flight) {
+                        // Create crew for this flight
+                        $captain = Crew::factory()->captain()->create();
+                        $captain->flights()->attach($flight);
+
+                        $firstOfficer = Crew::factory()->firstOfficer()->create();
+                        $firstOfficer->flights()->attach($flight);
+
+                        Crew::factory(rand(4, 6))->cabinCrew()->create()
+                            ->each(function ($crew) use ($flight) {
+                                $crew->flights()->attach($flight);
+                            });
+
+                        // Create passengers and baggage
+                        Passenger::factory(rand(10, 30))->forFlight($flight)->create()->each(function ($passenger) use ($flight) {
                             $passenger->baggage()->saveMany(Baggage::factory(rand(1, 3))->make([
                                 'flight_id' => $flight->id,
                             ]));
                         });
 
-                        Cargo::factory(rand(10, 15))->create([
+                        // Create cargo
+                        Cargo::factory(rand(5, 10))->create([
                             'flight_id' => $flight->id,
                         ]);
 
+                        // Create fuel
                         Fuel::factory()->create([
                             'flight_id' => $flight->id,
                         ]);
 
-                        // Use containers from the pool instead of creating new ones
-                        if (isset($baggageContainers[$airline->id])) {
-                            $container = $baggageContainers[$airline->id][array_rand($baggageContainers[$airline->id])];
-                            if (! $flight->containers()->where('container_id', $container->id)->exists()) {
+                        // Create containers
+                        foreach (['baggage', 'cargo'] as $type) {
+                            Container::factory(rand(1, 2))->forAirline($airline)->create()->each(function ($container) use ($flight, $type) {
                                 $flight->containers()->attach($container->id, [
-                                    'type' => 'baggage',
+                                    'type' => $type,
                                     'weight' => $container->tare_weight,
                                     'status' => 'unloaded',
                                 ]);
-                            }
+                            });
                         }
-
-                        if (isset($cargoContainers[$airline->id])) {
-                            $container = $cargoContainers[$airline->id][array_rand($cargoContainers[$airline->id])];
-                            if (! $flight->containers()->where('container_id', $container->id)->exists()) {
-                                $flight->containers()->attach($container->id, [
-                                    'type' => 'cargo',
-                                    'weight' => $container->tare_weight,
-                                    'status' => 'unloaded',
-                                ]);
-                            }
-                        }
-                    });
+                    }
                 });
             });
         }
 
+        // Run remaining seeders
         $this->call([
             AircraftSeeder::class,
             EnvelopeSeeder::class,
