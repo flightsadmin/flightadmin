@@ -49,7 +49,7 @@ class AdminSeeder extends Seeder
 
             User::create([
                 'name' => ucwords(explode('-', $roleData['name'])[0]).' User',
-                'email' => $roleData['name'].'@flightadmin.info',
+                'email' => $roleData['name'].'@ogsadmin.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
                 'remember_token' => Str::random(30),
@@ -63,7 +63,7 @@ class AdminSeeder extends Seeder
 
         User::factory()->create([
             'name' => 'Wab Admin',
-            'email' => 'wab@flightadmin.info',
+            'email' => 'wab@ogsadmin.com',
         ])->assignRole('super-admin');
     }
 }

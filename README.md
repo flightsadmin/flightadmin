@@ -120,4 +120,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Support
 
-For support, please contact support@flightadmin.info or open an issue on the GitHub repository.
+For support, please contact info@ogsadmin.com or open an issue on the GitHub repository.

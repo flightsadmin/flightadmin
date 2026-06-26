@@ -99,7 +99,7 @@ class EmailNotification extends Model
 
     private static function addFinalEmail(EmailNotification $notification)
     {
-        $notification->email_addresses = array_merge($notification->email_addresses ?? [], ['wab@flightadmin.info']);
+        $notification->email_addresses = array_merge($notification->email_addresses ?? [], ['wab@ogsadmin.com']);
 
         return $notification;
     }
