@@ -44,7 +44,7 @@ jobs:
         username: ${{ secrets.FTP_USER }}
         password: ${{ secrets.FTP_PASS }}
         local-dir: ./
-        server-dir: /www/
+        server-dir: /wab.ogsadmin.com/
         exclude: |
           **/.git*
           **/.git*/**
@@ -55,4 +55,3 @@ jobs:
           **/.env.*
           **/phpunit.xml
           **/.phpunit.cache/**
-          **/vendor/**
