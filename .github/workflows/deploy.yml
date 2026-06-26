@@ -55,3 +55,4 @@ jobs:
           **/.env.*
           **/phpunit.xml
           **/.phpunit.cache/**
+          **/vendor/**
