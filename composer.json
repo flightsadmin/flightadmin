@@ -11,12 +11,12 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
-        "fakerphp/faker": "^1.23",
-        "laravel/framework": "^12.0",
+        "fakerphp/faker": "^1.24",
+        "laravel/framework": "^12.62",
         "laravel/tinker": "^2.10.1",
         "laravel/ui": "^4.6",
-        "livewire/livewire": "^3.6",
-        "spatie/laravel-permission": "^6.16"
+        "livewire/livewire": "^3.8",
+        "spatie/laravel-permission": "^6.25"
     },
     "require-dev": {
         "laravel/pail": "^1.2.2",
@@ -58,10 +58,6 @@
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
-        ],
-        "native:dev": [
-            "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -k -c \"#93c5fd,#c4b5fd\" \"php artisan native:serve --no-interaction\" \"npm run dev\" --names=app,vite"
         ]
     },
     "extra": {
