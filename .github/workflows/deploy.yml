@@ -3,6 +3,8 @@ on:
     push:
       branches:
         - main
+    workflow_dispatch: # Manual trigger
+    
 jobs:
   web-deploy:
     runs-on: ubuntu-latest
